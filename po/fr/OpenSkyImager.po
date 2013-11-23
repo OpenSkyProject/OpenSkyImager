@@ -9,13 +9,13 @@ msgstr ""
 "Project-Id-Version: OpenSkyImager 0.5.0\n"
 "Report-Msgid-Bugs-To: gspezzano@gmail.com\n"
 "POT-Creation-Date: 2013-11-19 22:25+0100\n"
-"PO-Revision-Date: 2013-11-23 14:22+0100\n"
+"PO-Revision-Date: 2013-11-23 19:14+0100\n"
 "Last-Translator: fphg <fabrice@phung.fr>\n"
 "Language-Team: français <>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Gtranslator 2.91.6\n"
+"X-Generator: Poedit 1.5.4\n"
 "Language: fr\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -64,13 +64,13 @@ msgstr "Image: %s sauvegardée"
 #: ../imgWCallbacks.c:181
 msgctxt "main"
 msgid "Error starting capture thread"
-msgstr "Erreur au démarrage du fil d'acquisition"
+msgstr "Erreur au démarrage de la capture"
 
 #. / This goes concat with last saved frame
 #: ../imgWCallbacks.c:202
 msgctxt "main"
 msgid ", capture end"
-msgstr ", fin d'acquisition"
+msgstr ", fin de capture"
 
 #. / Message to confirm end of capture thread in focus mode
 #: ../imgWCallbacks.c:210
@@ -141,7 +141,7 @@ msgstr "Recherche traducteurs :-) "
 msgctxt "about"
 msgid ""
 "OpenSkyImager is a capture program written for Astronomy camera operation"
-msgstr "OpenSkyImager est un programme d'acquisition pour caméras astro"
+msgstr "OpenSkyImager est un programme de capture pour caméras astro"
 
 #: ../imgWCallbacks.c:373
 msgctxt "about"
@@ -194,7 +194,7 @@ msgstr "Site web OpenSkyImager"
 #: ../imgWCallbacks.c:429
 msgctxt "main"
 msgid "Capture mode"
-msgstr "Mode acquisition"
+msgstr "Mode capture"
 
 #: ../imgWCallbacks.c:435 ../imgWindow.c:61
 msgctxt "main"
@@ -204,7 +204,7 @@ msgstr "Mode focus"
 #: ../imgWCallbacks.c:442
 msgctxt "main"
 msgid "Folder or base name not set!"
-msgstr "Répertoire ou nom de base non paramétrés!"
+msgstr "Répertoire ou nom de fichier non paramétrés!"
 
 #: ../imgWCallbacks.c:541
 msgctxt "main"
@@ -214,7 +214,7 @@ msgstr "La lecture depuis le thread caméra n'a pas pu démarrer"
 #: ../imgWCallbacks.c:562
 msgctxt "main"
 msgid "Capture start"
-msgstr "Démarrage acquisition"
+msgstr "Démarrage capture"
 
 #: ../imgWCallbacks.c:566
 msgctxt "main"
@@ -230,15 +230,15 @@ msgstr "Démarrer"
 #: ../imgWCallbacks.c:592 ../imgWCallbacks.c:639
 msgctxt "main"
 msgid "Running exposure aborted"
-msgstr "Acquisition en cours interrompue"
+msgstr "Exposition en cours interrompue"
 
 #: ../imgWCallbacks.c:599
 msgctxt "main"
 msgid ""
 "Abort capture failed or not supported, please wait end of current exposure"
 msgstr ""
-"L'interruption d'acquisition a échoué ou est non supportée, merci d'attendre "
-"la fin de l'acquisition courante"
+"L'interruption de capture a échoué ou est non supportée, merci d'attendre la "
+"fin de l'exposition en cours"
 
 #. / Start / Stop / Kill button state message
 #: ../imgWCallbacks.c:612 ../imgWCallbacks.c:663
@@ -249,7 +249,7 @@ msgstr "Interrompre"
 #: ../imgWCallbacks.c:625
 msgctxt "main"
 msgid "Wait last capture end"
-msgstr "Attendre la fin de la dernière acquisition"
+msgstr "Attendre la fin de la dernière capture"
 
 #: ../imgWCallbacks.c:667
 msgctxt "main"
@@ -265,7 +265,7 @@ msgstr "Reprendre"
 #: ../imgWCallbacks.c:689
 msgctxt "main"
 msgid "Capture hold"
-msgstr "Pause acquisition"
+msgstr "Pause capture"
 
 #: ../imgWCallbacks.c:693
 msgctxt "main"
@@ -281,7 +281,7 @@ msgstr "Pause"
 #: ../imgWCallbacks.c:702
 msgctxt "main"
 msgid "Capture resume"
-msgstr "Reprendre acquisition"
+msgstr "Reprendre capture"
 
 #: ../imgWCallbacks.c:706
 msgctxt "main"
@@ -307,7 +307,7 @@ msgstr "1:1"
 #: ../imgWCallbacks.c:724
 msgctxt "main"
 msgid "Original size"
-msgstr "Dimension originale"
+msgstr "Taille originale"
 
 #: ../imgWCallbacks.c:734
 msgctxt "main"
@@ -317,17 +317,17 @@ msgstr "Masquer graphe"
 #: ../imgWCallbacks.c:736
 msgctxt "main"
 msgid "Show graph image"
-msgstr "Montrer image du graphe"
+msgstr "Afficher graphe"
 
 #: ../imgWCallbacks.c:741 ../imgWindow.c:250
 msgctxt "main"
 msgid "Show graph"
-msgstr "Montrer graphe"
+msgstr "Afficher graphe"
 
 #: ../imgWCallbacks.c:743
 msgctxt "main"
 msgid "Show preview thumbnail"
-msgstr "Montrer vignette de prévisualisation"
+msgstr "Afficher prévisualisation"
 
 #: ../imgWCallbacks.c:842
 msgctxt "quit-message"
@@ -377,12 +377,12 @@ msgstr "Caméra %s connectée"
 #: ../imgWCallbacks.c:1034
 msgctxt "main"
 msgid "Full camera list set"
-msgstr "Selezionalta lista completa dei modelli"
+msgstr "Sélection de la liste complète des caméras"
 
 #: ../imgWCallbacks.c:1038
 msgctxt "main"
 msgid "Active camera list set"
-msgstr "Selezionata lista dei modelli attivi"
+msgstr "Sélection de la liste des caméras actives"
 
 #: ../imgWCallbacks.c:1059
 #, c-format
@@ -394,7 +394,7 @@ msgstr "Gain sur: %d"
 #, c-format
 msgctxt "main"
 msgid "Offset set to: %d"
-msgstr "Offset sur: %d"
+msgstr "Décalage sur: %d"
 
 #: ../imgWCallbacks.c:1088
 #, c-format
@@ -406,7 +406,7 @@ msgstr "Mode binning sur: %dx%d"
 #, c-format
 msgctxt "main"
 msgid "Capture size set to: %dx%d"
-msgstr "Taille acquisition sur: %dx%d"
+msgstr "Taille capture sur: %dx%d"
 
 #: ../imgWCallbacks.c:1137
 #, c-format
@@ -426,19 +426,19 @@ msgstr "%s sur: %s"
 #, c-format
 msgctxt "main"
 msgid "Amp control set to: %s"
-msgstr "Contrôle amplification sur: %s"
+msgstr "Amplification sur: %s"
 
 #: ../imgWCallbacks.c:1217
 #, c-format
 msgctxt "main"
 msgid "Noise reduction set to: %s"
-msgstr "Réduction bruit sur: %s"
+msgstr "Réduction du bruit sur: %s"
 
 #: ../imgWCallbacks.c:1241
 #, c-format
 msgctxt "main"
 msgid "Image depth set to: %s"
-msgstr "Profondeur image sur: %s"
+msgstr "Profondeur d'image sur: %s"
 
 #: ../imgWCallbacks.c:1271 ../imgWCallbacks.c:1559 ../imgWCallbacks.c:1566
 #, c-format
@@ -628,7 +628,7 @@ msgstr "----"
 #: ../imgWindow.c:490
 msgctxt "fileanme"
 msgid "Save As"
-msgstr "Sauver sous"
+msgstr "Enregistrer sous"
 
 #: ../imgWindow.c:499
 msgctxt "filename"
@@ -668,12 +668,12 @@ msgstr "Mode simple"
 #: ../imgWindow.c:707
 msgctxt "settings"
 msgid "Camera Controls"
-msgstr "Contrôle camera"
+msgstr "Contrôles caméra"
 
 #: ../imgWindow.c:709
 msgctxt "settings"
 msgid "User Profiles Settings"
-msgstr "Paramètres profil utilisateur"
+msgstr "Réglage profils utilisateur"
 
 #: ../imgWindow.c:712
 msgctxt "settings"
@@ -683,7 +683,7 @@ msgstr "Modèle"
 #: ../imgWindow.c:720
 msgctxt "settings"
 msgid "Offset"
-msgstr "Offset"
+msgstr "Décalage"
 
 #: ../imgWindow.c:723
 msgctxt "settings"
@@ -698,27 +698,27 @@ msgstr "Mode binning"
 #: ../imgWindow.c:729
 msgctxt "settings"
 msgid "Capture Size"
-msgstr "Taille acquisition"
+msgstr "Taille capture"
 
 #: ../imgWindow.c:732
 msgctxt "settings"
 msgid "Download Speed"
-msgstr "Vitesse téléchargement"
+msgstr "Vitesse de transfert"
 
 #: ../imgWindow.c:738
 msgctxt "settings"
 msgid "Amp Control"
-msgstr "Contrôle amplification"
+msgstr "Amplification"
 
 #: ../imgWindow.c:741
 msgctxt "settings"
 msgid "Noise reduction"
-msgstr "Réduction bruit"
+msgstr "Réduction du bruit"
 
 #: ../imgWindow.c:744
 msgctxt "settings"
 msgid "Image depth"
-msgstr "Profondeur image"
+msgstr "Profondeur d'image"
 
 #: ../imgWindow.c:749
 msgctxt "settings"
@@ -768,7 +768,7 @@ msgstr "Refroidissement"
 #: ../imgWindow.c:947
 msgctxt "main"
 msgid "Filename"
-msgstr "Nom de fichier"
+msgstr "Fichiers"
 
 #: ../imgWindow.c:948
 msgctxt "main"
@@ -798,17 +798,17 @@ msgstr "Calcul FOW"
 #: ../imgWindow.c:986
 msgctxt "main"
 msgid "Exp. time (s)"
-msgstr "Exposition (s)"
+msgstr "Durée d'exposition (s)"
 
 #: ../imgWindow.c:988
 msgctxt "main"
 msgid "Total shots"
-msgstr "Total clichés"
+msgstr "Total captures"
 
 #: ../imgWindow.c:990
 msgctxt "main"
 msgid "Saved shots"
-msgstr "Clichés enregistrés"
+msgstr "Captures enregistrées"
 
 #: ../libusbio.c:94
 msgctxt "usbio"
@@ -818,14 +818,14 @@ msgstr "Erreur: Caméra trouvée, mais l'ouverture a échoué!"
 #: ../libusbio.c:103
 msgctxt "usbio"
 msgid "Error: Camera NOT found!"
-msgstr "Erreur: Cémera NON trouvée!"
+msgstr "Erreur: Caméra NON trouvée!"
 
 #. / Combo box values list, keep N-<desc> format. Just translate <desc>
 #: ../qhy11.c:81 ../qhy2old.c:86 ../qhy5ii.c:94 ../qhy6.c:81 ../qhy6old.c:86
 #: ../qhy7.c:82 ../qhy8l.c:81 ../qhy8old.c:86 ../qhy9.c:81
 msgctxt "camio"
 msgid "0-Slow|1-Fast:0"
-msgstr "0-Lent|1-Rapide:0"
+msgstr "0-Lente|1-Rapide:0"
 
 #: ../qhy11.c:82 ../qhy2old.c:87 ../qhy6.c:82 ../qhy6old.c:87 ../qhy7.c:83
 #: ../qhy8l.c:82 ../qhy8old.c:87 ../qhy9.c:82
@@ -875,7 +875,7 @@ msgstr "0-Off|1-On:0"
 #: ../qhy5ii.c:98
 msgctxt "camio"
 msgid "Usb bus speed"
-msgstr "Vitesse bus USB"
+msgstr "Vitesse du bus USB"
 
 #: ../qhy6old.c:88
 msgctxt "camio"
