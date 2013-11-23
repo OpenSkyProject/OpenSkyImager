@@ -2,21 +2,23 @@
 # Copyright (C) YEAR 2013 JP & C Software
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# fphg <fabrice@phung.fr>, 2013.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSkyImager 0.5.0\n"
 "Report-Msgid-Bugs-To: gspezzano@gmail.com\n"
 "POT-Creation-Date: 2013-11-19 22:25+0100\n"
-"PO-Revision-Date: 2013-11-22 00:06+0100\n"
+"PO-Revision-Date: 2013-11-23 14:22+0100\n"
 "Last-Translator: fphg <fabrice@phung.fr>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language-Team: français <>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Gtranslator 2.91.6\n"
 "Language: fr\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. / Value "No cam" of the models combo
 #: ../imgCamio.c:154 ../imgCamio.c:278 ../imgWindow.c:1137
@@ -32,7 +34,7 @@ msgstr "Script reset caméra terminé"
 #: ../imgCamio.c:453
 msgctxt "camio"
 msgid "Reset for this camera model is unsupported"
-msgstr "Reset n'est pas supporté pour cette caméra"
+msgstr "Reset non supporté pour cette caméra"
 
 #: ../imgFitsio.c:185
 msgctxt "fitsio"
@@ -74,14 +76,14 @@ msgstr ", fin d'acquisition"
 #: ../imgWCallbacks.c:210
 msgctxt "main"
 msgid "Focus end"
-msgstr "Fin focus/prévisualisation"
+msgstr "Fin de capture mode focus"
 
 #. / Statusbar feedback message about tec power
 #: ../imgWCallbacks.c:251
 #, c-format
 msgctxt "main"
 msgid "Tec power set to: %d%%"
-msgstr "Puissance du refroidissement sur: %d%%"
+msgstr "Puissance refroidissement sur: %d%%"
 
 #. / Statusbar feedback message about cooling status in automatic mode
 #: ../imgWCallbacks.c:273
@@ -107,14 +109,13 @@ msgstr "Erreur de communication avec le refroidissement"
 #, c-format
 msgctxt "main"
 msgid "TimeLapse mode full, start at: %s, end at: %s, interval: %d seconds"
-msgstr ""
-"Mode 'timelapse' avancé, début: %s, fin: %s, intervalle en secondes: %d"
+msgstr "Mode 'timelapse' avancé, début: %s, fin: %s, intervalle: %d secondes"
 
 #: ../imgWCallbacks.c:319
 #, c-format
 msgctxt "main"
 msgid "TimeLapse mode simple, interval: %d seconds"
-msgstr "Mode 'timelapse' normal, intervalle en secondes: %d"
+msgstr "Mode 'timelapse' normal, intervalle: %d secondes"
 
 #: ../imgWCallbacks.c:324
 msgctxt "main"
@@ -124,24 +125,23 @@ msgstr "Mode 'timelapse' terminé"
 #: ../imgWCallbacks.c:355
 msgctxt "main"
 msgid "Hide settings"
-msgstr "Masquer les paramètres"
+msgstr "Masquer paramètres"
 
 #: ../imgWCallbacks.c:359 ../imgWindow.c:37
 msgctxt "main"
 msgid "Show settings"
-msgstr "Afficher les paramètres"
+msgstr "Afficher paramètres"
 
 #: ../imgWCallbacks.c:370
 msgctxt "about"
 msgid "Wanted, possibly alive :-) "
-msgstr "On recherche des traducteurs :-) "
+msgstr "Recherche traducteurs :-) "
 
 #: ../imgWCallbacks.c:372
 msgctxt "about"
 msgid ""
 "OpenSkyImager is a capture program written for Astronomy camera operation"
-msgstr ""
-"OpenSkyImager est un programme d'acquisition par caméras spéciales astronomie"
+msgstr "OpenSkyImager est un programme d'acquisition pour caméras astro"
 
 #: ../imgWCallbacks.c:373
 msgctxt "about"
@@ -171,19 +171,20 @@ msgstr ""
 "\n"
 "Sous licence GNU GPL 3.0\n"
 "\n"
-"Questo programma è software gratuito: può essere distribuito e modificato\n"
-"a termini di licenza 'GNU General Public License' come pubblicato dalla\n"
-"'the Free Software Foundation', versione 3 della licenza, oppure\n"
-"versioni successive.\n"
+"Ce programme est un logiciel libre: vous pouvez le redistribuer et/ou le "
+"modifier\n"
+"sous les termes de la Licence Publique Générale GNU telle que publiée par\n"
+"la Free Software Foundation, soit en version 3 de la Licence, soit \n"
+"dans toute version ultérieure.\n"
 "\n"
-"Questo programma è dstribuito sperando che sia utile,\n"
-"ma SENZA ALCUNA GARANZIA; esclusa anche la garanzia implicita di\n"
-"COMMERCIABILITA' o ADATTABILITA' AD UN USO SPECIFICO.\n"
-"Per maggiori dettagli consultare la 'GNU General Public License'.\n"
+"ce programme est distribué dans l'espoir qu'il vous sera utile,\n"
+"mais SANS AUCUNE GARANTIE; sans même les garanties implicites de\n"
+"COMMERCIABILITE ou d'ADEQUATION POUR UN BESOIN PARTICULIER. Voir la\n"
+"Licence Publique Générale GNU pour d'autres détails.\n"
 "\n"
-"Insieme al programma si dovrebbe ricevere una copia della 'GNU General "
-"Public License'.\n"
-"In caso contrario, consultare <http://www.gnu.org/licenses/>."
+"Vous devez avoir reçu une copie de la Licence Publique Générale GNU\n"
+"avec ce programme. Si ce n'est pas le cas, voir <http://www.gnu.org/licenses/"
+">."
 
 #: ../imgWCallbacks.c:377
 msgctxt "about"
@@ -198,7 +199,7 @@ msgstr "Mode acquisition"
 #: ../imgWCallbacks.c:435 ../imgWindow.c:61
 msgctxt "main"
 msgid "Focus mode"
-msgstr "Mode focus/prévisualisation"
+msgstr "Mode focus"
 
 #: ../imgWCallbacks.c:442
 msgctxt "main"
@@ -208,17 +209,17 @@ msgstr "Répertoire ou nom de base non paramétrés!"
 #: ../imgWCallbacks.c:541
 msgctxt "main"
 msgid "Read from camera thread failed to start"
-msgstr "Le démarrage du fil de lecture caméra a échoué au démarrage"
+msgstr "La lecture depuis le thread caméra n'a pas pu démarrer"
 
 #: ../imgWCallbacks.c:562
 msgctxt "main"
 msgid "Capture start"
-msgstr "Démarrage de l'acquisition"
+msgstr "Démarrage acquisition"
 
 #: ../imgWCallbacks.c:566
 msgctxt "main"
 msgid "Focus start"
-msgstr "Démarrage focus/prévisualisation"
+msgstr "Démarrage focus"
 
 #: ../imgWCallbacks.c:586 ../imgWCallbacks.c:637 ../imgWCallbacks.c:647
 #: ../imgWCallbacks.c:672 ../imgWindow.c:142
@@ -236,8 +237,8 @@ msgctxt "main"
 msgid ""
 "Abort capture failed or not supported, please wait end of current exposure"
 msgstr ""
-"Interruzione acquisizione non supportata, attendere il completamento "
-"dell'immagine corrente"
+"L'interruption d'acquisition a échoué ou est non supportée, merci d'attendre "
+"la fin de l'acquisition courante"
 
 #. / Start / Stop / Kill button state message
 #: ../imgWCallbacks.c:612 ../imgWCallbacks.c:663
@@ -248,18 +249,18 @@ msgstr "Interrompre"
 #: ../imgWCallbacks.c:625
 msgctxt "main"
 msgid "Wait last capture end"
-msgstr "Attendere il completamento dell'ultima immagine"
+msgstr "Attendre la fin de la dernière acquisition"
 
 #: ../imgWCallbacks.c:667
 msgctxt "main"
 msgid "Stop"
-msgstr "Fermer"
+msgstr "Arrêter"
 
 #. / Hold / Resume status message
 #: ../imgWCallbacks.c:686
 msgctxt "main"
 msgid "Resume"
-msgstr "Riprendi"
+msgstr "Reprendre"
 
 #: ../imgWCallbacks.c:689
 msgctxt "main"
@@ -269,7 +270,7 @@ msgstr "Pause acquisition"
 #: ../imgWCallbacks.c:693
 msgctxt "main"
 msgid "Focus hold"
-msgstr "Pause focus/prévisualisation"
+msgstr "Pause focus"
 
 #. / Hold resume status message
 #: ../imgWCallbacks.c:699 ../imgWindow.c:171
@@ -285,7 +286,7 @@ msgstr "Reprendre acquisition"
 #: ../imgWCallbacks.c:706
 msgctxt "main"
 msgid "Focus resume"
-msgstr "Reprendre focus/prévisualisation"
+msgstr "Reprendre focus"
 
 #. / 1:1 / Fit status message
 #: ../imgWCallbacks.c:716
@@ -296,7 +297,7 @@ msgstr "Adapter"
 #: ../imgWCallbacks.c:718
 msgctxt "main"
 msgid "Fit to screen"
-msgstr "Adatta allo schermo"
+msgstr "Adapter à l'écran"
 
 #: ../imgWCallbacks.c:722 ../imgWindow.c:192
 msgctxt "main"
@@ -316,56 +317,56 @@ msgstr "Masquer graphe"
 #: ../imgWCallbacks.c:736
 msgctxt "main"
 msgid "Show graph image"
-msgstr "Afficher graphe"
+msgstr "Montrer image du graphe"
 
 #: ../imgWCallbacks.c:741 ../imgWindow.c:250
 msgctxt "main"
 msgid "Show graph"
-msgstr "Grafico"
+msgstr "Montrer graphe"
 
 #: ../imgWCallbacks.c:743
 msgctxt "main"
 msgid "Show preview thumbnail"
-msgstr "Mostra icona dell'immagine"
+msgstr "Montrer vignette de prévisualisation"
 
 #: ../imgWCallbacks.c:842
 msgctxt "quit-message"
 msgid "Do you really want to quit?"
-msgstr "Vuoi veramente uscire?"
+msgstr "Voulez-vous vraiment quitter ?"
 
 #: ../imgWCallbacks.c:873
 #, c-format
 msgctxt "main"
 msgid "Debayer strategy set to: %s"
-msgstr "Maschera debayer: %s"
+msgstr "Stratégie debayer sur: %s"
 
 #: ../imgWCallbacks.c:894
 #, c-format
 msgctxt "main"
 msgid "Exposure time set to: %s"
-msgstr "Tempo di esposizione: %s"
+msgstr "Temps d'exposition sur: %s"
 
 #: ../imgWCallbacks.c:906
 #, c-format
 msgctxt "main"
 msgid "Camera %s selected"
-msgstr "Camera selezionata: %s"
+msgstr "Camera %s sélectionnée"
 
 #: ../imgWCallbacks.c:945 ../imgWindow.c:360
 msgctxt "settings"
 msgid "Connect"
-msgstr "Connetti"
+msgstr "Connecter"
 
 #: ../imgWCallbacks.c:946
 #, c-format
 msgctxt "main"
 msgid "Camera %s disconnected"
-msgstr "Camera %s disconnessa"
+msgstr "Caméra %s déconnectée"
 
 #: ../imgWCallbacks.c:1001
 msgctxt "settings"
 msgid "Disconnect"
-msgstr "Disconnetti"
+msgstr "Déconnecter"
 
 #: ../imgWCallbacks.c:1003
 #, c-format
@@ -387,19 +388,19 @@ msgstr "Selezionata lista dei modelli attivi"
 #, c-format
 msgctxt "main"
 msgid "Gain set to: %d"
-msgstr "Guadagno: %d"
+msgstr "Gain sur: %d"
 
 #: ../imgWCallbacks.c:1070
 #, c-format
 msgctxt "main"
 msgid "Offset set to: %d"
-msgstr "Offset: %d"
+msgstr "Offset sur: %d"
 
 #: ../imgWCallbacks.c:1088
 #, c-format
 msgctxt "main"
 msgid "Binning mode set to: %dx%d"
-msgstr "Mode binning: %dx%d"
+msgstr "Mode binning sur: %dx%d"
 
 #: ../imgWCallbacks.c:1113
 #, c-format
@@ -419,7 +420,7 @@ msgstr "Vitesse de transfert sur: %s"
 #, c-format
 msgctxt "main"
 msgid "%s set to: %s"
-msgstr "%s: %s"
+msgstr "%s sur: %s"
 
 #: ../imgWCallbacks.c:1193
 #, c-format
@@ -431,39 +432,39 @@ msgstr "Contrôle amplification sur: %s"
 #, c-format
 msgctxt "main"
 msgid "Noise reduction set to: %s"
-msgstr "Réduction du bruit sur: %s"
+msgstr "Réduction bruit sur: %s"
 
 #: ../imgWCallbacks.c:1241
 #, c-format
 msgctxt "main"
 msgid "Image depth set to: %s"
-msgstr "Profondeur image: %s"
+msgstr "Profondeur image sur: %s"
 
 #: ../imgWCallbacks.c:1271 ../imgWCallbacks.c:1559 ../imgWCallbacks.c:1566
 #, c-format
 msgctxt "main"
 msgid "Base folder/file set: %s%s"
-msgstr "Cartella/nome immagine %s%s"
+msgstr "Répertoire de base/nom fichier sur: %s%s"
 
 #: ../imgWCallbacks.c:1307
 msgctxt "main"
 msgid "Audela naming convention selected"
-msgstr "Selezionata nomenclatura 'Audela'"
+msgstr "Convention de nommage 'Audela' sélectionnée"
 
 #: ../imgWCallbacks.c:1315
 msgctxt "main"
 msgid "Audela naming convention removed"
-msgstr "Nommage 'Audela' supprimé"
+msgstr "Convention de nommage 'Audela' supprimée"
 
 #: ../imgWCallbacks.c:1324
 msgctxt "main"
 msgid "Iris naming convention selected"
-msgstr "Nommage 'Iris' sélectionné"
+msgstr "Convention de nommage 'Iris' sélectionnée"
 
 #: ../imgWCallbacks.c:1328
 msgctxt "main"
 msgid "Iris naming convention removed"
-msgstr "Nommage 'Iris' supprimé"
+msgstr "Convention de nommage 'Iris' supprimée"
 
 #: ../imgWCallbacks.c:1337
 msgctxt "main"
@@ -473,7 +474,7 @@ msgstr "Le compteur de trames sera initialisé à chaque démarrage"
 #: ../imgWCallbacks.c:1341
 msgctxt "main"
 msgid "Frame counter absolute"
-msgstr "Compteur de trame absolu"
+msgstr "Compteur absolu de trames"
 
 #: ../imgWCallbacks.c:1351
 msgctxt "main"
@@ -490,70 +491,71 @@ msgstr "Mode 'timelapse' désactivé"
 #, c-format
 msgctxt "main"
 msgid "Time lapse date start set to: %s"
-msgstr "Inizio 'timelapse': %s"
+msgstr "Date de démarrage 'timelapse' sur: %s"
 
 #: ../imgWCallbacks.c:1427 ../imgWCallbacks.c:1441 ../imgWCallbacks.c:1455
 #: ../imgWCallbacks.c:1528
 #, c-format
 msgctxt "main"
 msgid "Time lapse date end set to: %s"
-msgstr "Fine 'timelapse': %s"
+msgstr "Date de fin 'timelapse' sur: %s"
 
 #: ../imgWCallbacks.c:1480
 msgctxt "main"
 msgid "TimeLapse set to use calendar driven start and stop plus interval"
 msgstr ""
-"Modo 'timelapse' impostato per avvio e termine sul calendario + intervallo"
+"Mode 'timelapse' paramétré pour démarrage et arrêt pilotés par calendrier, "
+"plus intervalles"
 
 #: ../imgWCallbacks.c:1496
 msgctxt "main"
 msgid "TimeLapse set to use frame count driven start and stop plus interval"
 msgstr ""
-"Modo 'timelapse' impostato per avvio e termine sul conteggio immagini + "
-"intervallo"
+"Modo 'timelapse' paramétré pour démarrage et arrêt pilotés par le nombre de "
+"trames, plus intervalle"
 
 #: ../imgWCallbacks.c:1540
 #, c-format
 msgctxt "main"
 msgid "Time Lapse period set to: %d"
-msgstr "Intervallo del 'timelapse': %d"
+msgstr "Intervalle 'timelapse' sur: %d"
 
 #: ../imgWCallbacks.c:1575
 msgctxt "main"
 msgid "Add date to naming convention selected"
-msgstr "Aggiungere la data al nome immagine"
+msgstr "Ajout date à convention de nommage sélectionné"
 
 #: ../imgWCallbacks.c:1579
 msgctxt "main"
 msgid "Add date to naming convention removed"
-msgstr "Non aggiungere la data al nome immagine"
+msgstr "Ajout date à convention de nommage supprimé"
 
 #: ../imgWCallbacks.c:1588
 msgctxt "main"
 msgid "Add time to naming convention selected"
-msgstr "Aggiungere l'orario al nome immagine"
+msgstr "Ajout heure à convention de nommage sélectionné"
 
 #: ../imgWCallbacks.c:1592
 msgctxt "main"
 msgid "Add time to naming convention removed"
-msgstr "Non aggiungere l'orario al nome immagine"
+msgstr "Ajout heure à convention de nommage supprimé"
 
 #: ../imgWCallbacks.c:1601
 #, c-format
 msgctxt "main"
 msgid "Filter name: %s add to naming convention"
-msgstr "Aggiungere il filtro %s al nome immagine"
+msgstr "Nom de filtre: %s ajouté à convention de nommage"
 
 #: ../imgWCallbacks.c:1606
 msgctxt "main"
 msgid "Filter name removed from naming convention"
-msgstr "Nom du filtre supprimé de la liste"
+msgstr "Nom du filtre supprimé de la convention de nommage"
 
 #: ../imgWCallbacks.c:1637
 #, c-format
 msgctxt "main"
 msgid "Tec controlling thread failed to start (%s)"
-msgstr "Le contrôle de la température n'a pas démarré (%s)"
+msgstr "Le contrôle température n'a pas démarré (%s)"
 
 #: ../imgWCallbacks.c:1651
 msgctxt "cooling"
@@ -574,7 +576,7 @@ msgstr "Le modèle %s n'a pas de contrôle température"
 #: ../imgWCallbacks.c:1703
 msgctxt "cooling"
 msgid "Auto mode"
-msgstr "Automatique"
+msgstr "Mode automatique"
 
 #: ../imgWCallbacks.c:1708 ../imgWCallbacks.c:1729
 #, c-format
@@ -590,7 +592,7 @@ msgstr "Mode manuel"
 #: ../imgWCallbacks.c:1719
 msgctxt "main"
 msgid "Tec set manual"
-msgstr "Contrôle manuel temp."
+msgstr "Temp. sur manuel"
 
 #: ../imgWFuncs.c:30
 msgctxt "dialog-open"
@@ -615,7 +617,7 @@ msgstr "Rafraîchir"
 #: ../imgWindow.c:385
 msgctxt "main"
 msgid "Reset"
-msgstr "Reset"
+msgstr "Réinitialiser"
 
 #. / This is the "no bayer mask" value in the debayer combo box, other values are just intl as they are
 #: ../imgWindow.c:478
@@ -626,17 +628,17 @@ msgstr "----"
 #: ../imgWindow.c:490
 msgctxt "fileanme"
 msgid "Save As"
-msgstr "Salva come"
+msgstr "Sauver sous"
 
 #: ../imgWindow.c:499
 msgctxt "filename"
 msgid "Audela naming"
-msgstr "Nomi Audela"
+msgstr "Nommage Audela"
 
 #: ../imgWindow.c:506
 msgctxt "filename"
 msgid "Iris naming"
-msgstr "Nom Iris"
+msgstr "Nommage Iris"
 
 #: ../imgWindow.c:513
 msgctxt "filename"
@@ -671,7 +673,7 @@ msgstr "Contrôle camera"
 #: ../imgWindow.c:709
 msgctxt "settings"
 msgid "User Profiles Settings"
-msgstr "Impostazioni profili utente"
+msgstr "Paramètres profil utilisateur"
 
 #: ../imgWindow.c:712
 msgctxt "settings"
@@ -686,7 +688,7 @@ msgstr "Offset"
 #: ../imgWindow.c:723
 msgctxt "settings"
 msgid "Gain"
-msgstr "Gain %"
+msgstr "Gain"
 
 #: ../imgWindow.c:726
 msgctxt "settings"
@@ -696,17 +698,17 @@ msgstr "Mode binning"
 #: ../imgWindow.c:729
 msgctxt "settings"
 msgid "Capture Size"
-msgstr "Dimensione ROI"
+msgstr "Taille acquisition"
 
 #: ../imgWindow.c:732
 msgctxt "settings"
 msgid "Download Speed"
-msgstr "Trasferimento"
+msgstr "Vitesse téléchargement"
 
 #: ../imgWindow.c:738
 msgctxt "settings"
 msgid "Amp Control"
-msgstr "Amplificatore"
+msgstr "Contrôle amplification"
 
 #: ../imgWindow.c:741
 msgctxt "settings"
@@ -716,12 +718,12 @@ msgstr "Réduction bruit"
 #: ../imgWindow.c:744
 msgctxt "settings"
 msgid "Image depth"
-msgstr "bpp image"
+msgstr "Profondeur image"
 
 #: ../imgWindow.c:749
 msgctxt "settings"
 msgid "Color mode"
-msgstr "Modo colore"
+msgstr "Mode couleur"
 
 #: ../imgWindow.c:771
 msgctxt "cooling"
@@ -731,7 +733,7 @@ msgstr "Temp. actuelle"
 #: ../imgWindow.c:772
 msgctxt "cooling"
 msgid "Temperature / Time"
-msgstr "Graphe température"
+msgstr "Température / Temps"
 
 #: ../imgWindow.c:773
 msgctxt "cooling"
@@ -746,12 +748,12 @@ msgstr "Filtre: "
 #: ../imgWindow.c:830
 msgctxt "timelapse"
 msgid "Start"
-msgstr "Inizio"
+msgstr "Démarrage"
 
 #: ../imgWindow.c:851
 msgctxt "timelapse"
 msgid "End "
-msgstr "Fine "
+msgstr "Fin"
 
 #: ../imgWindow.c:945
 msgctxt "main"
@@ -766,7 +768,7 @@ msgstr "Refroidissement"
 #: ../imgWindow.c:947
 msgctxt "main"
 msgid "Filename"
-msgstr "Nome file"
+msgstr "Nom de fichier"
 
 #: ../imgWindow.c:948
 msgctxt "main"
@@ -791,7 +793,7 @@ msgstr "CFW"
 #: ../imgWindow.c:952
 msgctxt "main"
 msgid "FOW Calc"
-msgstr "Calcolo FOW"
+msgstr "Calcul FOW"
 
 #: ../imgWindow.c:986
 msgctxt "main"
@@ -801,73 +803,73 @@ msgstr "Exposition (s)"
 #: ../imgWindow.c:988
 msgctxt "main"
 msgid "Total shots"
-msgstr "Scatti totali"
+msgstr "Total clichés"
 
 #: ../imgWindow.c:990
 msgctxt "main"
 msgid "Saved shots"
-msgstr "Scatti salvati"
+msgstr "Clichés enregistrés"
 
 #: ../libusbio.c:94
 msgctxt "usbio"
 msgid "Error: Camera found, but did not open!"
-msgstr "Errore: Camera trovata, ma connessione fallita!"
+msgstr "Erreur: Caméra trouvée, mais l'ouverture a échoué!"
 
 #: ../libusbio.c:103
 msgctxt "usbio"
 msgid "Error: Camera NOT found!"
-msgstr "Errore: Camera NON trovata!"
+msgstr "Erreur: Cémera NON trouvée!"
 
 #. / Combo box values list, keep N-<desc> format. Just translate <desc>
 #: ../qhy11.c:81 ../qhy2old.c:86 ../qhy5ii.c:94 ../qhy6.c:81 ../qhy6old.c:86
 #: ../qhy7.c:82 ../qhy8l.c:81 ../qhy8old.c:86 ../qhy9.c:81
 msgctxt "camio"
 msgid "0-Slow|1-Fast:0"
-msgstr "0-Lento|1-Veloce:0"
+msgstr "0-Lent|1-Rapide:0"
 
 #: ../qhy11.c:82 ../qhy2old.c:87 ../qhy6.c:82 ../qhy6old.c:87 ../qhy7.c:83
 #: ../qhy8l.c:82 ../qhy8old.c:87 ../qhy9.c:82
 msgctxt "camio"
 msgid "0-AmpOff|1-AmpOn|2-Auto:2"
-msgstr "0-Spento|1-Acceso|2-Automatico:2"
+msgstr "0-Ampli Off|1-Ampli On|2-Automatique:2"
 
 #: ../qhy11.c:115 ../qhy2old.c:121 ../qhy5.c:130 ../qhy5ii.c:129 ../qhy6.c:115
 #: ../qhy6old.c:121 ../qhy7.c:116 ../qhy8l.c:115 ../qhy8old.c:120
 #: ../qhy9.c:115
 msgctxt "camio"
 msgid "Camera still not found after reset"
-msgstr "Camera non trovata anche dopo il reset"
+msgstr "Camera non trouvée après réinitialisation"
 
 #: ../qhy11.c:118 ../qhy2old.c:124 ../qhy5.c:133 ../qhy5ii.c:132 ../qhy6.c:118
 #: ../qhy6old.c:124 ../qhy7.c:119 ../qhy8l.c:118 ../qhy8old.c:123
 #: ../qhy9.c:118
 msgctxt "camio"
 msgid "Neither raw device nor programmed camera found."
-msgstr "Dispositivo e/o camera programmata non trovati"
+msgstr "Aucun périphérique brut ou caméra programmable n'a été trouvé"
 
 #: ../qhy11.c:121 ../qhy2old.c:127 ../qhy5.c:136 ../qhy5ii.c:135 ../qhy6.c:121
 #: ../qhy6old.c:127 ../qhy7.c:122 ../qhy8l.c:121 ../qhy8old.c:126
 #: ../qhy9.c:121
 msgctxt "camio"
 msgid "This camera also needs a loader that was not found"
-msgstr "Questo modello necessita di 'loader' che non è stato trovato"
+msgstr "Cette caméra nécessite en plus un chargeur qui n'a pas été trouvé"
 
 #: ../qhy2old.c:88
 msgctxt "camio"
 msgid "1-Single|2-Double:0"
-msgstr "1-Singola|2-Doppia:0"
+msgstr "1-Single|2-Double:0"
 
 #. / Descriptiopn for "mode" combo box
 #: ../qhy2old.c:90 ../qhy6old.c:90
 msgctxt "camio"
 msgid "Mode S/D Image"
-msgstr "Modo acquisizione"
+msgstr "Mode S/D image"
 
 #. / Combo box values list, keep N-<desc> format. Just translate <desc>
 #: ../qhy5.c:100
 msgctxt "camio"
 msgid "0-Off|1-0n:0"
-msgstr "0-Spenta|1-Accesa:0"
+msgstr "0-Off|1-On:0"
 
 #. / Descriptiopn for "mode" combo box
 #: ../qhy5ii.c:98
@@ -878,43 +880,43 @@ msgstr "Vitesse bus USB"
 #: ../qhy6old.c:88
 msgctxt "camio"
 msgid "1-Single|2-Double|3-Vbe Sampling|4-Vbe Timing:0"
-msgstr "1-Singola|2-Doppia|3-Campioni|4-Tempo:0"
+msgstr "1-Single|2-Double|3-Vbe Sampling|4-Vbe Timing:0"
 
 #: ../qhycore.c:178
 #, c-format
 msgctxt "qhycore"
 msgid "cameraIO failed, error %d"
-msgstr "Errore in cameraIO (%d)"
+msgstr "Erreur cameraIO (%d)"
 
 #: ../qhycore.c:197
 #, c-format
 msgctxt "qhycore"
 msgid "cameraiIO failed, error %d"
-msgstr "Errore in cameraiIO (%d)"
+msgstr "Erreur cameraiIO (%d)"
 
 #: ../qhycore.c:226
 msgctxt "qhycore"
 msgid "Error: Could not claim interface."
-msgstr "Errore: richiesta interfaccia fallita"
+msgstr "Erreur: ne peut pas accéder à l'interface."
 
 #: ../qhycore.c:232
 msgctxt "qhycore"
 msgid "Error: Could not set device configuration."
-msgstr "Errore: impossible settare la configurazione"
+msgstr "Erreur: impossible de configurer le périphérique."
 
 #: ../qhycore.c:243
 msgctxt "qhycore"
 msgid "Error: Could not initialise libusb."
-msgstr "Errore: impossibile inizializzare libusb"
+msgstr "Erreur: n'a pas pu initialiser libusb"
 
 #: ../qhycore.c:552
 #, c-format
 msgctxt "qhycore"
 msgid "EepromRead failed, error %d"
-msgstr "Errore in EepromRead (%d)"
+msgstr "Erreur sur EepromRead (%d)"
 
 #: ../qhycore.c:567
 #, c-format
 msgctxt "qhycore"
 msgid "I2CTwoWrite failed, error %d"
-msgstr "Errore in I2CTwoWrite (%d)"
+msgstr "Erreur sur I2CTwoWrite (%d)"
