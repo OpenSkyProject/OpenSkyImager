@@ -583,7 +583,7 @@ void cmd_tecauto_build()
 
 void spn_tectgt_build()
 {
-	spn_tectgt = gtk_spin_button_new_with_range(-40.0, +20.0, 1.0);
+	spn_tectgt = gtk_spin_button_new_with_range(-50.0, +30.0, 1.0);
 	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(spn_tectgt), 1);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tectgt), +5.0);
 	gtk_widget_set_size_request(spn_tectgt, 60, 25);	
@@ -595,12 +595,13 @@ void spn_tectgt_build()
 
 void vsc_tectemp_build()
 {
-	vsc_tectemp = gtk_vscale_new_with_range(-40.0, +20.0, 1.0);
+	vsc_tectemp = gtk_vscale_new_with_range(-50.0, +30.0, 1.0);
 	gtk_widget_set_name(GTK_WIDGET(vsc_tectemp), "tecpwr");
 	gtk_scale_set_digits(GTK_SCALE(vsc_tectemp), 1);
 	gtk_range_set_inverted(GTK_RANGE(vsc_tectemp), TRUE);
 	gtk_scale_set_value_pos(GTK_SCALE(vsc_tectemp), GTK_POS_LEFT);
 	gtk_widget_set_size_request(vsc_tectemp, 70, 120);
+	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), -50.0, GTK_POS_RIGHT, NULL);
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), -40.0, GTK_POS_RIGHT, NULL);
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), -30.0, GTK_POS_RIGHT, NULL);
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), -20.0, GTK_POS_RIGHT, NULL);
@@ -608,6 +609,7 @@ void vsc_tectemp_build()
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), 0.0, GTK_POS_RIGHT, NULL);
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), +10.0, GTK_POS_RIGHT, NULL);
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), +20.0, GTK_POS_RIGHT, NULL);
+	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), +30.0, GTK_POS_RIGHT, NULL);
 	gtk_widget_set_sensitive(vsc_tectemp, 0);
 	
 	//g_signal_connect(G_OBJECT(vsc_tectemp), "change-value", G_CALLBACK(vsc_tectempr_changed),  NULL);
@@ -623,7 +625,7 @@ void frm_tecgraph_build()
 	gtk_widget_set_size_request(frm_tecgraph, 360, 240);
 	gtk_container_add(GTK_CONTAINER(frm_tecgraph), tecgraph);
 	// Pixel buffer init
-	tecpixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, 120, 60);
+	tecpixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, 120, 80);
 	tec_init_graph();
 	
 	// Callback
