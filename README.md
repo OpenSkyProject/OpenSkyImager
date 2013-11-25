@@ -116,6 +116,6 @@ The program can be run from any other location, proven that the above
 
 
 Sincerely
-The OpenSkyProject team
+*The OpenSkyProject team*
 
 
