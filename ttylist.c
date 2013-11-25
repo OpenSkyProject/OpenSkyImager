@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <libgen.h>
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
@@ -52,7 +53,7 @@ void get_driver(char *ttydir, char *ttydrv)
 	if (lstat(devicedir, &st)==0 && S_ISLNK(st.st_mode))
 	{
 		//memset(buffer, 0, sizeof(buffer));
-		buffer[0] = '\0'
+		buffer[0] = '\0';
 		// Append '/driver' and return basename of the target
 		strcat(devicedir, "/driver");
 
@@ -62,8 +63,12 @@ void get_driver(char *ttydir, char *ttydrv)
 		}
 		else
 		{
-			ttydrv[0] = '\0'
+			ttydrv[0] = '\0';
 		}
+	}
+	else
+	{
+		ttydrv[0] = '\0';
 	}
 }
 
@@ -96,7 +101,7 @@ int getComList(char *ttylist)
 					// Non empty drivers might be ok
 					sprintf(devfile, "/dev/%s", namelist[n]->d_name);
 
-					if (strcmp(driver, "serial8250") == 0)
+					if (strstr(driver, "8250") != NULL)
 					{
 						// Check serial8250-devices separeately
 						if ((fd = open(devfile, O_RDWR | O_NONBLOCK | O_NOCTTY)) >= 0) 

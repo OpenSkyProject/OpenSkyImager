@@ -927,6 +927,25 @@ void box_timelapse_build()
 	gtk_table_attach(GTK_TABLE(box_timelapse), gtk_hseparator_new(), 0, 10,  13,  14, GTK_FILL, GTK_FILL, 0, 0);
 }
 
+void box_cfw_build()
+{
+	char ttylist[2048];
+	box_cfw = gtk_table_new(15, 14, FALSE);
+	gtk_table_set_row_spacings(GTK_TABLE(box_cfw), 4);
+	gtk_table_set_col_spacings(GTK_TABLE(box_cfw), 4);
+	gtk_container_set_border_width(GTK_CONTAINER(box_cfw), 4);
+	
+	cmb_cfwtty = gtk_combo_box_text_new();
+	gtk_widget_set_size_request(cmb_cfwtty, 70, 30);
+	
+	//g_signal_connect(G_OBJECT(cmb_cfwtty), "changed", G_CALLBACK(cmb_cfwtty_changed),  NULL);
+	// Also set initial value for the char variable ;-)
+	getComList(ttylist);
+	combo_setlist(cmb_cfwtty, ttylist);
+
+	gtk_table_attach(GTK_TABLE(box_cfw), cmb_cfwtty,  0, 6,  0,  1, GTK_FILL, GTK_FILL, 0, 0);	
+}
+
 void tab_settings_build()
 {
 	// Notebook (tab) for settings...
@@ -940,7 +959,7 @@ void tab_settings_build()
 	box_timelapse_build();
 	box_scripting = gtk_vbox_new(FALSE, 4);
 	box_header    = gtk_vbox_new(FALSE, 4);
-	box_cfw       = gtk_vbox_new(FALSE, 4);
+	box_cfw_build();
 	box_calc      = gtk_vbox_new(FALSE, 4);
 	
 	// Pack into tab_settings
