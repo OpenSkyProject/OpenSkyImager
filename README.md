@@ -114,7 +114,8 @@ file, where most appropriate for your distro.
 The program can be run from any other location, proven that the above 
 "compoments" are all in the same folder.
 
-=====================
+
+Sincerely
 The OpenSkyProject team
-=====================
+
 
