@@ -266,7 +266,7 @@ void tec_print_graph()
 	cols      = gdk_pixbuf_get_width(tecpixbuf);
 
 	// Shift pixels left one col
-	for (row = 0; row < rows; row--)
+	for (row = 0; row < rows; row++)
 	{
 		for (col = 0; col < cols; col++)
 		{
@@ -276,9 +276,9 @@ void tec_print_graph()
 			p[2] = p[5];
 		}
 	}
-	for (row = 0; row < rows; row--)
+	for (row = 0; row < rows; row++)
 	{
-		p = pixels + row * rowstride + cols * 3;
+		p = pixels + row * rowstride + (cols - 1) * 3;
 		p[0] = (imgcam_get_tecp()->tectemp <= (-row + 30)) ? 200 : 130;
 		p[1] = (imgcam_get_tecp()->tectemp <= (-row + 30)) ? 200 : 160;
 		p[2] = 200;

@@ -45,6 +45,7 @@ void get_driver(char *ttydir, char *ttydrv)
 	struct stat st;
 	char devicedir[1024];
 	char buffer[1024];
+	int len = 0;
 	
 	// Append '/device' to the tty-path
 	sprintf(devicedir, "%s/device", ttydir);
@@ -57,8 +58,9 @@ void get_driver(char *ttydir, char *ttydrv)
 		// Append '/driver' and return basename of the target
 		strcat(devicedir, "/driver");
 
-		if (readlink(devicedir, buffer, sizeof(buffer)) > 0)
+		if ((len = readlink(devicedir, buffer, sizeof(buffer))) > 0)
 		{
+			buffer[len] = '\0';
 			strcpy(ttydrv, basename(buffer));
 		}
 		else
@@ -81,12 +83,12 @@ int getComList(char *ttylist)
 	char devicedir[1024];
 	char devfile[256];
 	char driver[64];
-	int n, fd;
+	int n = 0, nn, fd;
 
 	ttylist[0] = '\0';
-	if ((n = scandir(SYSDIR, &namelist, NULL, NULL)) > 0)
+	if ((nn = scandir(SYSDIR, &namelist, NULL, NULL)) > 0)
 	{
-		while (n--) 
+		while (n < nn) 
 		{
 			if (strcmp(namelist[n]->d_name,"..") && strcmp(namelist[n]->d_name,".")) 
 			{
@@ -99,7 +101,8 @@ int getComList(char *ttylist)
 				if (strlen(driver) > 0)
 				{
 					// Non empty drivers might be ok
-					sprintf(devfile, "/dev/%s", namelist[n]->d_name);
+					//printf("Device: /dev/%s, Driver: %s\n", namelist[n]->d_name, driver);
+					sprintf(devfile, "/dev/%s", namelist[n]->d_name);					
 
 					if (strstr(driver, "8250") != NULL)
 					{
@@ -113,6 +116,7 @@ int getComList(char *ttylist)
 								if (serinfo.type != PORT_UNKNOWN)
 								{
 									// If device type is no PORT_UNKNOWN we accept the port
+									//printf("Device 8250 has port, accepted\n");
 									strcat(ttylist, "|");
 									strcat(ttylist, devfile);
 								}
@@ -129,6 +133,7 @@ int getComList(char *ttylist)
 				}
 			}
 			free(namelist[n]);
+			n++;
 		}
 		free(namelist);	
 	}
