@@ -762,8 +762,8 @@ msgstr "滤镜轮"
 
 #: ../imgWindow.c:952
 msgctxt "main"
-msgid "FOW Calc"
-msgstr "FOW计算"
+msgid "FOV Calc"
+msgstr "FOV计算"
 
 #: ../imgWindow.c:986
 msgctxt "main"

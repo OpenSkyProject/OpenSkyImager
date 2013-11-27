@@ -962,7 +962,7 @@ void tab_settings_build()
 	gtk_notebook_append_page(GTK_NOTEBOOK(tab_settings), box_timelapse, gtk_label_new(C_("main","Timelapse")));
 	gtk_notebook_append_page(GTK_NOTEBOOK(tab_settings), box_header, gtk_label_new(C_("main","Fits")));
 	gtk_notebook_append_page(GTK_NOTEBOOK(tab_settings), box_cfw, gtk_label_new(C_("main","CFW")));
-	gtk_notebook_append_page(GTK_NOTEBOOK(tab_settings), box_calc, gtk_label_new(C_("main","FOW Calc")));
+	gtk_notebook_append_page(GTK_NOTEBOOK(tab_settings), box_calc, gtk_label_new(C_("main","FOV Calc")));
 
 	// Callback
 	//g_signal_connect(G_OBJECT(tab_settings), "size-allocate", G_CALLBACK(tab_settings_allocate), NULL);	

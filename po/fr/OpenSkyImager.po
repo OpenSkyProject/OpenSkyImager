@@ -792,8 +792,8 @@ msgstr "CFW"
 
 #: ../imgWindow.c:952
 msgctxt "main"
-msgid "FOW Calc"
-msgstr "Calcul FOW"
+msgid "FOV Calc"
+msgstr "Calcul FOV"
 
 #: ../imgWindow.c:986
 msgctxt "main"
