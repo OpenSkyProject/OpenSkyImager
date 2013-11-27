@@ -299,9 +299,10 @@ void frm_histogram_build()
 
 	#if GTK_MAJOR_VERSION == 3
 	frm_histogram = gtk_scrolled_window_new(NULL, NULL);
-	gtk_widget_set_size_request(frm_histogram, 180, 70);
+	gtk_widget_set_size_request(frm_histogram, 180, 75);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(frm_histogram), GTK_WIDGET(histogram));
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(frm_histogram), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(frm_histogram), GTK_SHADOW_ETCHED_IN);
 	#else
 	frm_histogram = gtk_frame_new(NULL);
 	gtk_widget_set_size_request(frm_histogram, 180, 70);
@@ -617,11 +618,23 @@ void frm_tecgraph_build()
 {
 	tecgraph = gtk_image_new();	
 	gtk_widget_set_size_request(tecgraph, 180, 120);
+	#if GTK_MAJOR_VERSION == 3
+	gtk_widget_set_hexpand(histogram, TRUE);
+	gtk_widget_set_vexpand(histogram, TRUE);
+	#endif
 	
 	// Image init
+	#if GTK_MAJOR_VERSION == 3
+	frm_tecgraph = gtk_scrolled_window_new(NULL, NULL);
+	gtk_widget_set_size_request(frm_tecgraph, 180, 125);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(frm_tecgraph), GTK_WIDGET(tecgraph));
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(frm_tecgraph), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(frm_tecgraph), GTK_SHADOW_ETCHED_IN);
+	#else
 	frm_tecgraph = gtk_frame_new(NULL);
 	gtk_widget_set_size_request(frm_tecgraph, 180, 120);
 	gtk_container_add(GTK_CONTAINER(frm_tecgraph), tecgraph);
+	#endif
 	// Pixel buffer init
 	tecpixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, 120, 60);
 	tec_init_graph();
