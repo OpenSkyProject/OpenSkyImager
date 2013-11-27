@@ -76,7 +76,7 @@
 	GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	GtkWidget *cmd_tlenable;
 	GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
-	GtkWidget *cmb_cfwtty;
+	GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg;
 	GtkWidget *hsc_offset, *hsc_gain;
 	GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps;
 	GdkCursor* watchCursor;
@@ -129,6 +129,8 @@
 	char imgfbk[16];
 	char tecfbk[16];
 	char fpsfbk[16];
+	int cfwmode = 0;
+	char cfwtty [256];
 	int tecrun = 0;
 	struct tm tlstart, tlend;
 #else
@@ -163,7 +165,7 @@
 	extern GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	extern GtkWidget *cmd_tlenable;
 	extern GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
-	extern GtkWidget *cmb_cfwtty;
+	extern GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg;
 	extern GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps;
 	extern GdkCursor* watchCursor;
 	extern GdkPixbuf *tecpixbuf;
@@ -215,6 +217,8 @@
 	extern char imgfbk[16];
 	extern char tecfbk[16];
 	extern char fpsfbk[16];
+	extern int cfwmode;
+	extern char cfwtty [256];
 	extern int tecrun;
 	extern struct tm tlstart, tlend;
 #endif

@@ -394,6 +394,9 @@ void cmb_bin_build()
 {
 	cmb_bin = gtk_combo_box_text_new();
 	gtk_widget_set_size_request(cmb_bin, 50, 30);
+	#if GTK_MAJOR_VERSION == 3
+	gtk_combo_wakeup(cmb_bin);
+	#endif
 	
 	g_signal_connect(G_OBJECT(cmb_bin), "changed", G_CALLBACK(cmb_bin_changed),  NULL);
 }
@@ -426,6 +429,9 @@ void cmb_csize_build()
 {
 	cmb_csize = gtk_combo_box_text_new();
 	gtk_widget_set_size_request(cmb_csize, 50, 30);
+	#if GTK_MAJOR_VERSION == 3
+	gtk_combo_wakeup(cmb_csize);
+	#endif
 		
 	g_signal_connect(G_OBJECT(cmb_csize), "changed", G_CALLBACK(cmb_csize_changed),  NULL);
 }
@@ -434,6 +440,10 @@ void cmb_dspeed_build()
 {
 	cmb_dspeed = gtk_combo_box_text_new();
 	gtk_widget_set_size_request(cmb_dspeed, 50, 30);
+	#if GTK_MAJOR_VERSION == 3
+	gtk_combo_wakeup(cmb_dspeed);
+	#endif
+
 
 	g_signal_connect(G_OBJECT(cmb_dspeed), "changed", G_CALLBACK(cmb_dspeed_changed),  NULL);
 }
@@ -442,6 +452,9 @@ void cmb_mode_build()
 {
 	cmb_mode = gtk_combo_box_text_new();
 	gtk_widget_set_size_request(cmb_mode, 50, 30);
+	#if GTK_MAJOR_VERSION == 3
+	gtk_combo_wakeup(cmb_mode);
+	#endif
 		
 	g_signal_connect(G_OBJECT(cmb_mode), "changed", G_CALLBACK(cmb_mode_changed),  NULL);
 }
@@ -450,6 +463,9 @@ void cmb_amp_build()
 {
 	cmb_amp = gtk_combo_box_text_new();
 	gtk_widget_set_size_request(cmb_amp, 50, 30);
+	#if GTK_MAJOR_VERSION == 3
+	gtk_combo_wakeup(cmb_amp);
+	#endif
 		
 	g_signal_connect(G_OBJECT(cmb_amp), "changed", G_CALLBACK(cmb_amp_changed),  NULL);
 }
@@ -458,6 +474,9 @@ void cmb_denoise_build()
 {
 	cmb_denoise = gtk_combo_box_text_new();
 	gtk_widget_set_size_request(cmb_denoise, 50, 30);
+	#if GTK_MAJOR_VERSION == 3
+	gtk_combo_wakeup(cmb_denoise);
+	#endif
 		
 	g_signal_connect(G_OBJECT(cmb_denoise), "changed", G_CALLBACK(cmb_denoise_changed),  NULL);
 }
@@ -466,6 +485,9 @@ void cmb_depth_build()
 {
 	cmb_depth = gtk_combo_box_text_new();
 	gtk_widget_set_size_request(cmb_depth, 50, 30);
+	#if GTK_MAJOR_VERSION == 3
+	gtk_combo_wakeup(cmb_depth);
+	#endif
 	
 	g_signal_connect(G_OBJECT(cmb_depth), "changed", G_CALLBACK(cmb_depth_changed),  NULL);
 }
@@ -606,7 +628,7 @@ void vsc_tectemp_build()
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), -30.0, GTK_POS_RIGHT, NULL);
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), -20.0, GTK_POS_RIGHT, NULL);
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), -10.0, GTK_POS_RIGHT, NULL);
-	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), 0.0, GTK_POS_RIGHT, NULL);
+	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp),   0.0, GTK_POS_RIGHT, NULL);
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), +10.0, GTK_POS_RIGHT, NULL);
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), +20.0, GTK_POS_RIGHT, NULL);
 	gtk_scale_add_mark(GTK_SCALE(vsc_tectemp), +30.0, GTK_POS_RIGHT, NULL);
@@ -677,6 +699,62 @@ void hsc_tlperiod_build()
 	// Callback
 	g_signal_connect(G_OBJECT(hsc_tlperiod), "change-value", G_CALLBACK(hsc_tlperiod_changed),  NULL);
 	gtk_range_set_value(GTK_RANGE(hsc_tlperiod), 1.0);
+}
+
+void cmb_cfw_build()
+{
+	cmb_cfw = gtk_combo_box_text_new();
+	gtk_widget_set_size_request(cmb_cfw, 140, 30);
+	/// Value "No CFW" of the cfw combo, please preserve the n-xxxxx format
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_cfw), C_("cfw","0-None"));
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_cfw), C_("cfw","1-QHY Serial"));
+	gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), 0);
+	
+	g_signal_connect(G_OBJECT(cmb_cfw), "changed", G_CALLBACK(cmb_cfw_changed),  NULL);	
+}
+
+void cmb_cfwtty_build()
+{
+	cmb_cfwtty = gtk_combo_box_text_new();
+	gtk_widget_set_size_request(cmb_cfwtty, 140, 30);
+	#if GTK_MAJOR_VERSION == 3
+	gtk_combo_wakeup(cmb_cfwtty);
+	#endif
+	gtk_widget_set_sensitive(cmb_cfwtty, 0);
+	
+	g_signal_connect(G_OBJECT(cmb_cfwtty), "changed", G_CALLBACK(cmb_cfwtty_changed),  NULL);	
+}
+
+void cmd_cfwtty_build()
+{
+	cmd_cfwtty = gtk_button_new_with_label(C_("cfw","Refresh"));
+	gtk_widget_set_size_request(cmd_cfwtty, 140, 30);
+	gtk_widget_set_sensitive(cmd_cfwtty, 0);
+	
+	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_cfwtty), "clicked", G_CALLBACK(cmd_cfwtty_click), NULL);
+}
+
+void cmd_cfw_build()
+{
+	cmd_cfw = gtk_button_new_with_label(C_("cfw","Connect"));
+	gtk_widget_set_size_request(cmd_cfw, 140, 30);
+	gtk_widget_set_sensitive(cmd_cfw, 0);
+	
+	// Callbacks
+	//g_signal_connect(G_OBJECT(cmd_cfwtty), "clicked", G_CALLBACK(cmd_cfwtty_click), NULL);
+}
+
+void cmb_cfwcfg_build()
+{
+	cmb_cfwcfg = gtk_combo_box_text_new();
+	gtk_widget_set_size_request(cmb_cfwcfg, 140, 30);
+	#if GTK_MAJOR_VERSION == 3
+	gtk_combo_wakeup(cmb_cfwcfg);
+	#endif
+	gtk_widget_set_sensitive(cmb_cfwcfg, 0);
+	
+	//g_signal_connect(G_OBJECT(cmb_cfwcfg), "changed", G_CALLBACK(cmb_cfwcfg_changed),  NULL);	
 }
 
 void box_ccd_build()
@@ -778,7 +856,6 @@ void box_cooling_build()
 	gtk_table_attach(GTK_TABLE(box_cooling),        frm_tecgraph,  2, 12,  4,  7, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_cooling),          vsc_tecpwr, 12, 14,  4,  7, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_cooling),gtk_hseparator_new(),  0, 14,  7,  8, GTK_FILL, GTK_FILL, 0, 0);	
-	
 }
 
 void box_filename_build()
@@ -929,21 +1006,25 @@ void box_timelapse_build()
 
 void box_cfw_build()
 {
-	char ttylist[2048];
-	box_cfw = gtk_table_new(15, 14, FALSE);
+	box_cfw = gtk_table_new(15, 12, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(box_cfw), 4);
-	gtk_table_set_col_spacings(GTK_TABLE(box_cfw), 4);
+	gtk_table_set_col_spacings(GTK_TABLE(box_cfw), 8);
 	gtk_container_set_border_width(GTK_CONTAINER(box_cfw), 4);
 	
-	cmb_cfwtty = gtk_combo_box_text_new();
-	gtk_widget_set_size_request(cmb_cfwtty, 70, 30);
-	
-	//g_signal_connect(G_OBJECT(cmb_cfwtty), "changed", G_CALLBACK(cmb_cfwtty_changed),  NULL);
-	// Also set initial value for the char variable ;-)
-	getComList(ttylist);
-	combo_setlist(cmb_cfwtty, ttylist);
+	cmb_cfw_build();
+	cmb_cfwtty_build();
+	cmd_cfwtty_build();
+	cmd_cfw_build();
+	cmb_cfwcfg_build();
 
-	gtk_table_attach(GTK_TABLE(box_cfw), cmb_cfwtty,  0, 6,  0,  1, GTK_FILL, GTK_FILL, 0, 0);	
+	gtk_table_attach(GTK_TABLE(box_cfw), gtk_label_new_with_align(C_("cfw","Wheel connection"), 0.0, 0.5, 140, 30), 0, 2, 0, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cfw), cmb_cfw   ,  2,  5,  0,  1, GTK_FILL, GTK_FILL, 0, 0);	
+	gtk_table_attach(GTK_TABLE(box_cfw), cmb_cfwtty,  5,  8,  0,  1, GTK_FILL, GTK_FILL, 0, 0);	
+	gtk_table_attach(GTK_TABLE(box_cfw), cmd_cfw   ,  2,  5,  1,  2, GTK_FILL, GTK_FILL, 0, 0);	
+	gtk_table_attach(GTK_TABLE(box_cfw), cmd_cfwtty,  5,  8,  1,  2, GTK_FILL, GTK_FILL, 0, 0);	
+	gtk_table_attach(GTK_TABLE(box_cfw), gtk_hseparator_new(),  0, 12,  2,  3, GTK_FILL, GTK_FILL, 0, 0);	
+	gtk_table_attach(GTK_TABLE(box_cfw), gtk_label_new_with_align(C_("cfw","Wheel configuration"), 0.0, 0.5, 140, 30), 0, 2, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cfw), cmb_cfwcfg,  2,  5,  3,  4, GTK_FILL, GTK_FILL, 0, 0);	
 }
 
 void tab_settings_build()

@@ -29,6 +29,7 @@ void       gtk_color_get_alert (GdkColor *color);
 void       gtk_widget_modify_bkg(GtkWidget *widget, GtkStateType state, GdkColor* color);
 #else
 GtkWidget *gtk_toggle_button_new_with_label_color(const gchar *label, gint width, gint height, GdkRGBA *clrSel);
+void       gtk_combo_wakeup(GtkWidget *widget);
 GtkWidget *gtk_paned_new_with_handle(GtkOrientation orientation);
 void       gtk_color_get_lighter (GdkRGBA *color);
 void       gtk_color_get_alert (GdkRGBA *color);

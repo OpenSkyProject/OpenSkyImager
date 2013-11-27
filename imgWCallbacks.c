@@ -863,8 +863,7 @@ gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 }
 
 void cmb_debayer_changed (GtkComboBox *widget, gpointer user_data)
-{
-	
+{	
 	load_image_from_data();
 	if (!hst)
 	{
@@ -919,8 +918,21 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 			//Disconnect
 			if ((imgcam_get_tecp()->istec == 1))
 			{
+				// Terminates the tec thread and disable choice
 				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
 				gtk_widget_set_sensitive(cmd_tecenable, 0);
+			}
+			if (strlen(imgcam_get_camui()->whlstr) > 0)
+			{
+				// Delete In-camera Wheel choice is there's one
+				if (cfwmode == 99)
+				{
+					// Set connection to none (and reset cfwmode)
+					int pre = gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_cfw));
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), 0);
+					// Delete the 99-In Camera mode row
+					gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(cmb_cfw), pre);
+				}
 			}
 			if (imgcam_disconnect() == 1)
 			{
@@ -1007,6 +1019,13 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 				{
 					gtk_widget_set_sensitive(cmd_tecenable, 1);
 					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+				}
+				// In-camera Wheel?
+				if (strlen(imgcam_get_camui()->whlstr) > 0)
+				{
+					int pre = gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_cfw));
+					gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_cfw), C_("cfw","99-In camera"));
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), pre);
 				}
 			}
 			else
@@ -1120,7 +1139,7 @@ void cmb_csize_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int tmp;
-	char str[16];
+	char str[32];
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1144,7 +1163,7 @@ void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_mode_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int tmp;
-	char str[16];
+	char str[32];
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1176,7 +1195,7 @@ void cmb_mode_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_amp_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int tmp;
-	char str[16];
+	char str[32];
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1200,7 +1219,7 @@ void cmb_amp_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_denoise_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int tmp;
-	char str[16];
+	char str[32];
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1224,7 +1243,7 @@ void cmb_denoise_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_depth_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int tmp;
-	char str[16];
+	char str[32];
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1744,6 +1763,61 @@ gboolean vsc_tecpwr_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 	}
 	tmrhstrefresh = g_timeout_add(500, (GSourceFunc) tmr_tecpwr, NULL);
 	return FALSE;
+}
+
+void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
+{
+	char str[32];
+	
+	sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%d-%s", &cfwmode, str);
+	switch (cfwmode)
+	{
+		case 1:
+			// QHY Serial
+			gtk_widget_set_sensitive(cmb_cfwtty, 1);
+			combo_ttylist(cmb_cfwtty);
+			gtk_widget_set_sensitive(cmd_cfwtty, 1);
+			gtk_widget_set_sensitive(cmd_cfw, 1);
+			// This will read the configuration from the wheel itself
+			break;
+			
+		case 99:
+			// This is manufacturer specific so we load the list of choices 
+			// from the camera UI.
+			combo_setlist(cmb_cfwcfg, imgcam_get_camui()->whlstr);
+		
+		default:
+			gtk_widget_set_sensitive(cmb_cfwtty, 0);
+			gtk_widget_set_sensitive(cmd_cfwtty, 0);
+			gtk_widget_set_sensitive(cmd_cfw, 0);
+			break;
+				
+	}
+	
+	sprintf(imgmsg, C_("cfw","Filter wheel mode set: %s"), str);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	
+}
+
+void cmb_cfwtty_changed (GtkComboBox *widget, gpointer user_data)
+{
+	if (gtk_combo_box_get_active(widget) != -1)
+	{
+		strcpy(cfwtty, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+	}
+	else
+	{
+		cfwtty[0] = '\0';
+	}	
+	sprintf(imgmsg, C_("cfw","Filter wheel serial port: %s"), cfwtty);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}
+
+void cmd_cfwtty_click(GtkWidget *widget, gpointer data)
+{
+	combo_ttylist(cmb_cfwtty);
+	sprintf(imgmsg, C_("cfw","Serial port list reloaded"));
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
 

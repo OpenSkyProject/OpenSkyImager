@@ -356,6 +356,14 @@ void combo_setlist(GtkWidget *cmb, char *str)
 	}
 }
 
+void combo_ttylist(GtkWidget *cmb)
+{
+	char ttylist[2048];
+
+	getComList(ttylist);
+	combo_setlist(cmb, ttylist);
+}
+
 gpointer thd_capture_run(gpointer thd_data)
 {
 	int thdrun = 1, thderror = 0, thdhold = 0, thdmode = 0, thdshoot = 0;
