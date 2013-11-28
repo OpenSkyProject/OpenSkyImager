@@ -3,7 +3,7 @@ CFLAGS = -Wall
 
 LIBS = `pkg-config --libs glib-2.0 gtk+-2.0` -lcfitsio -lusb-1.0 -lrt
 
-OBJS = tools.o gtkTools.o imgFitsio.o imgPixbuf.o imgWindow.o imgWFuncs.o imgWCallbacks.o imgCamio.o qhy2old.o qhy5.o qhy5ii.o qhy6.o qhy6old.o qhy7.o qhy8old.o qhy8l.o qhy9.o qhy11.o qhycore.o libusbio.o ttylist.o imgMain.o 
+OBJS = tools.o gtkTools.o imgFitsio.o imgPixbuf.o imgWindow.o imgWFuncs.o imgWCallbacks.o imgCamio.o qhy2old.o qhy5.o qhy5ii.o qhy6.o qhy6old.o qhy7.o qhy8old.o qhy8l.o qhy9.o qhy11.o qhycore.o libusbio.o imgCFWio.o ttylist.o ttycom.o imgMain.o 
 
 all: gtkImager
 

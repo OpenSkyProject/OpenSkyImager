@@ -503,7 +503,7 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 		printf("bytepix : %d\n", imgcam_get_shpar()->bytepix);
 		printf("bitpix  : %d\n", imgcam_get_shpar()->bitpix);
 		printf("tsize   : %d\n", imgcam_get_shpar()->tsize);*/
-		if (connected)
+		if (imgcam_connected())
 		{
 			g_rw_lock_reader_lock(&thd_caplock);
 			brun = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)? 1: 0;
@@ -845,7 +845,7 @@ gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 	switch (result)
 	{
 		case GTK_RESPONSE_OK:
-			if (connected)
+			if (imgcam_connected())
 			{
 				//Press on disconnect
 				gtk_widget_activate(cmd_camera);
@@ -913,7 +913,7 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 	
 	if (error == 0)
 	{
-		if (connected)
+		if (imgcam_connected())
 		{
 			//Disconnect
 			if ((imgcam_get_tecp()->istec == 1))
@@ -925,7 +925,7 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 			if (strlen(imgcam_get_camui()->whlstr) > 0)
 			{
 				// Delete In-camera Wheel choice is there's one
-				if (cfwmode == 99)
+				if (imgcfw_get_mode() == 99)
 				{
 					// Set connection to none (and reset cfwmode)
 					int pre = gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_cfw));
@@ -936,7 +936,6 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 			}
 			if (imgcam_disconnect() == 1)
 			{
-				connected = 0;
 				// Disable camera model/type related UI 
 				combo_setlist(cmb_bin, "");
 				combo_setlist(cmb_csize, "");
@@ -973,7 +972,6 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 			//Connect
 			if (imgcam_connect() == 1)
 			{
-				connected = 1;
 				// Update camera model/type related UI 
 				// some choices can only be made after connection
 				int tmp = 0;
@@ -1634,7 +1632,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 	status = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE);
 	if (error == 0)
 	{
-		if (connected)
+		if (imgcam_connected())
 		{
 			if (imgcam_get_tecp()->istec == 1)
 			{
@@ -1768,35 +1766,42 @@ gboolean vsc_tecpwr_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 {
 	char str[32];
+	int  tmp = 0;
 	
-	sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%d-%s", &cfwmode, str);
-	switch (cfwmode)
+	sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%d-%s", &tmp, str);
+	if (imgcfw_set_mode(tmp) == 1)
 	{
-		case 1:
-			// QHY Serial
-			gtk_widget_set_sensitive(cmb_cfwtty, 1);
-			combo_ttylist(cmb_cfwtty);
-			gtk_widget_set_sensitive(cmd_cfwtty, 1);
-			gtk_widget_set_sensitive(cmd_cfw, 1);
-			// This will read the configuration from the wheel itself
-			break;
+		switch (tmp)
+		{
+			case 1:
+				// QHY Serial
+				gtk_widget_set_sensitive(cmb_cfwtty, 1);
+				combo_ttylist(cmb_cfwtty);
+				gtk_widget_set_sensitive(cmd_cfwtty, 1);
+				gtk_widget_set_sensitive(cmd_cfw, 1);
+				// This will read the configuration from the wheel itself
+				break;
 			
-		case 99:
-			// This is manufacturer specific so we load the list of choices 
-			// from the camera UI.
-			combo_setlist(cmb_cfwcfg, imgcam_get_camui()->whlstr);
+			case 99:
+				// This is manufacturer specific so we load the list of choices 
+				// from the camera UI.
+				combo_setlist(cmb_cfwcfg, imgcam_get_camui()->whlstr);
 		
-		default:
-			gtk_widget_set_sensitive(cmb_cfwtty, 0);
-			gtk_widget_set_sensitive(cmd_cfwtty, 0);
-			gtk_widget_set_sensitive(cmd_cfw, 0);
-			break;
-				
-	}
-	
-	sprintf(imgmsg, C_("cfw","Filter wheel mode set: %s"), str);
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
-	
+			default:
+				gtk_widget_set_sensitive(cmb_cfwtty, 0);
+				gtk_widget_set_sensitive(cmd_cfwtty, 0);
+				gtk_widget_set_sensitive(cmd_cfw, 0);
+				break;				
+		}
+		sprintf(imgmsg, C_("cfw","Filter wheel mode set: %s"), str);
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}	
+	else
+	{
+		sprintf(imgmsg, C_("cfw","Could not set cfw mode"));
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+		gtk_combo_box_set_active(widget, 0);
+	}	
 }
 
 void cmb_cfwtty_changed (GtkComboBox *widget, gpointer user_data)
