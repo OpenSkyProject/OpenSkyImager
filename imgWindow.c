@@ -1235,6 +1235,7 @@ void imgwin_build()
 	
 	// Code Init
 	imgfit_init();
+	imgcfw_init();
 	/// Value "No cam" of the models combo
 	imgcam_set_model(C_("camio","None"));
 

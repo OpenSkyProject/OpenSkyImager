@@ -30,6 +30,7 @@
 #include "imgPixbuf.h"
 #include "imgFitsio.h"
 #include "imgCamio.h"
+#include "imgCFWio.h"
 #include "gtkversions.h"
 
 #define TAB_IMAGE    0
@@ -103,7 +104,6 @@
 	int expnum = 0, shots = 0;
 	double shotfract = 0., expfract = 0.;
 	int fullcamlist = 0;	
-	int connected = 0;	
 	int uibytepix = 1;
 	int scrmaxadu = 255;
 	int scrminadu = 0;
@@ -129,7 +129,6 @@
 	char imgfbk[16];
 	char tecfbk[16];
 	char fpsfbk[16];
-	int cfwmode = 0;
 	char cfwtty [256];
 	int tecrun = 0;
 	struct tm tlstart, tlend;
@@ -191,7 +190,6 @@
 	extern int expnum, shots;
 	extern double shotfract, expfract;
 	extern int fullcamlist;	
-	extern int connected;	
 	extern int uibytepix;
 	extern int scrmaxadu;
 	extern int scrminadu;
@@ -217,7 +215,6 @@
 	extern char imgfbk[16];
 	extern char tecfbk[16];
 	extern char fpsfbk[16];
-	extern int cfwmode;
 	extern char cfwtty [256];
 	extern int tecrun;
 	extern struct tm tlstart, tlend;

@@ -30,8 +30,13 @@
 #ifndef TTYCOM_H
 	#define TTYCOM_H
 
+	#include <termios.h>
 	#include <time.h>
 
+	#define PARITY_NONE    0
+	#define PARITY_EVEN    1
+	#define PARITY_ODD     2
+	#define MAXRBUF        2048
 	#define TTY_ERRMSG_SIZE 1024
 
 	/* TTY Error Codes */

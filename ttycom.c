@@ -35,12 +35,8 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <sys/param.h>
-#include <termios.h>
+#include <glib/gi18n.h>
 #include "ttycom.h"
-#define PARITY_NONE    0
-#define PARITY_EVEN    1
-#define PARITY_ODD     2
-#define MAXRBUF        2048
 
 int tty_timeout(int fd, int timeout)
 {
@@ -704,50 +700,49 @@ void tty_error_msg(int err_code, char *err_msg, int err_msg_len)
 	switch (err_code)
 	{
 		case TTY_OK:
-			strncpy(err_msg, "No Error\n", err_msg_len);
+			strncpy(err_msg, C_("tty","No Error"), err_msg_len);
 			break;
 
 		case TTY_READ_ERROR:
-			snprintf(error_string, 512, "Read Error: %s\n", strerror(errno));
+			snprintf(error_string, 512, C_("tty","Read Error: %s"), strerror(errno));
 			strncpy(err_msg, error_string, err_msg_len);
 			break;
 
 		   case TTY_WRITE_ERROR:
-			snprintf(error_string, 512, "Write Error: %s\n", strerror(errno));
+			snprintf(error_string, 512, C_("tty","Write Error: %s"), strerror(errno));
 			strncpy(err_msg, error_string, err_msg_len);
 			break;
 
 		case TTY_SELECT_ERROR:
-			snprintf(error_string, 512, "Select Error: %s\n", strerror(errno));
+			snprintf(error_string, 512, C_("tty","Select Error: %s"), strerror(errno));
 			strncpy(err_msg, error_string, err_msg_len);
 			break;
 
 		case TTY_TIME_OUT:
-			strncpy(err_msg, "Timeout error\n", err_msg_len);
+			strncpy(err_msg, C_("tty","Timeout error"), err_msg_len);
 			break;
 
 		case TTY_PORT_FAILURE:
 			if (errno == EACCES)
-				snprintf(error_string, 512, "Port failure Error: %s.\nTry adding your user to the dialout group and restart (sudo adduser $username dialout)\n", strerror(errno));
+				snprintf(error_string, 512, C_("tty","Port failure Error: %s. Try adding your user to the dialout group and restart (sudo adduser $username dialout)"), strerror(errno));
 			else
-				snprintf(error_string, 512, "Port failure Error: %s.\nCheck if device is connected to this port.\n", strerror(errno));
+				snprintf(error_string, 512, C_("tty","Port failure Error: %s.Check if device is connected to this port."), strerror(errno));
 
 			strncpy(err_msg, error_string, err_msg_len);
 			break;
 
 		case TTY_PARAM_ERROR:
-			strncpy(err_msg, "Parameter error\n", err_msg_len);
+			strncpy(err_msg, C_("tty","Parameter error"), err_msg_len);
 			break;
 
 		case TTY_ERRNO:
-			snprintf(error_string, 512, "%s\n", strerror(errno));
+			snprintf(error_string, 512, "%s", strerror(errno));
 			strncpy(err_msg, error_string, err_msg_len);
 			break;
 
 		default:
-			strncpy(err_msg, "Error: unrecognized error code\n", err_msg_len);
+			strncpy(err_msg, C_("tty","Error: unrecognized error code"), err_msg_len);
 			break;
-
 
 	}	
 }
