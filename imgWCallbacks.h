@@ -92,4 +92,6 @@ gboolean vsc_tecpwr_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data);
 void cmb_cfwtty_changed (GtkComboBox *widget, gpointer user_data);
 void cmd_cfwtty_click(GtkWidget *widget, gpointer data);
+void cmd_cfw_click(GtkWidget *widget, gpointer data);
+void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data);
 

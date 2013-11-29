@@ -29,13 +29,16 @@
  */
 
 void  imgcfw_init();
+char  *imgcfw_get_msg();
 int   imgcfw_set_mode(int mode);
 int   imgcfw_get_mode();
 int   imgcfw_set_tty(char *tty);
-char *imgcfw_get_tty();
+const char *imgcfw_get_tty();
 int   imgcfw_connect();
 int   imgcfw_disconnect();
+int   imgcfw_read_all();
+int   imgcfw_set_model(char *model);
 char *imgcfw_get_model();
+char *imgcfw_get_models();
 int   imgcfw_get_slotcount();
-int   imgcfw_set_slot(int slot);
-
+int imgcfw_set_slot(int slot, gpointer (*postProcess)(int));

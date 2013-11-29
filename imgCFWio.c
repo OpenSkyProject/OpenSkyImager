@@ -32,6 +32,7 @@
 #include "ttylist.h"
 #include "imgBase.h"
 #include <sys/stat.h>
+#include <glib.h>
 #include <glib/gi18n.h>
 #include "imgCamio.h"
 #include "imgCFWio.h"
@@ -43,10 +44,44 @@ static int  cfwmode;
 static char cfwtty[256];
 static int  cfwttyfd;
 static char cfwmodel[256];
+static char cfwmodels[256];
 static int  cfwmodid;
 static int  cfwslotc;
 static int  cfwslots[16];
 static int  cfwpos;
+
+// Tty-Read thread
+static GThread *thd_read = NULL;
+// Pointer to function for the "callback" we want thread to execute upon finish
+// Function takes a int param to report exit status
+// Found no way to pass this reference to thread func directly, so used a module
+// variable.
+// This is not going to be thread safe. Hopefully this module won't ever be 
+// used from more than one thread at the time
+static gpointer (*postReadProcess)(int);
+
+gpointer thd_read_run(gpointer thd_data)
+{	
+	int ttyret;
+	char buf[1];
+	int nbrw = 0;
+	int i = 0;
+	
+	// Attempts 5 reads of 5 seconds each, to allow enough time for to the CFW
+	// to settle.
+	while ((ttyret = tty_read(cfwttyfd, buf, sizeof(buf), READ_TIME, &nbrw)) == TTY_TIME_OUT)
+	{
+		if (++i > 4)
+		{
+			break;
+		}
+	}
+	// Executes the post process to inform the user (and rest of application)
+	// About the result got
+	postReadProcess(((ttyret == TTY_OK) && (buf[0] == 0x2D)));
+	postReadProcess = NULL;
+	return 0;
+}
 
 void imgcfw_init()
 {
@@ -59,6 +94,11 @@ void imgcfw_init()
 	cfwslotc = 0;
 	memset(cfwslots, 0, 16);
 	cfwpos = -1;
+}
+
+char *imgcfw_get_msg()
+{
+	return cfwmsg;
 }
 
 int imgcfw_set_mode(int mode)
@@ -105,20 +145,36 @@ int imgcfw_set_tty(char *tty)
 	struct stat st;
 	
 	cfwmsg[0] = '\0';
-	if (lstat(tty, &st) == 0 && S_ISLNK(st.st_mode))
+	if (strlen(tty) > 0)
 	{
-		strcpy(cfwtty, tty);
-		retval = 1;
+		if (lstat(tty, &st) == 0 || S_ISLNK(st.st_mode))
+		{
+			strcpy(cfwtty, tty);
+			retval = 1;
+		}
+		if (retval == 0)
+		{
+			sprintf(cfwmsg, C_("cfw","Serial port does not exist"));	
+		}
 	}
-	if (retval == 0)
+	else
 	{
-		sprintf(cfwmsg, C_("cfw","Serial port does not exist"));	
+		retval = 1;
 	}
 	return (retval);
 }
 
-char *imgcfw_get_tty()
+const char *imgcfw_get_tty()
 {
+	switch (cfwmode)
+	{
+		case 0:
+		case 1:
+			return cfwtty;	
+		case 99:
+			/// This will complete: "Filter wheel connected to %s"
+			return C_("cfw", "camera");
+	}
 	return cfwtty;
 }
 
@@ -137,7 +193,7 @@ int imgcfw_connect()
 			// QHY-Serial
 			if ((ttyresult = tty_connect(cfwtty, 9600, 8, PARITY_NONE, 1, &cfwttyfd)) == TTY_OK)
 			{
-				retval = (imgcfw_get_slotcount() > 0);
+				retval = imgcfw_read_all();
 			}
 			else
 			{
@@ -151,6 +207,8 @@ int imgcfw_connect()
 			// Qhy-through-camera
 			if ((imgcam_connected() == 1) && (strlen(imgcam_get_camui()->whlstr) > 0))
 			{
+				// Models name (can't autodetect model when in camera-through mode)
+				strcpy(cfwmodels, imgcam_get_camui()->whlstr);
 				retval = 1;
 			}
 			else if (imgcam_connected() == 0)
@@ -202,7 +260,7 @@ int imgcfw_disconnect()
 	return (retval);
 }
 
-char *imgcfw_get_model()
+int imgcfw_read_all()
 {
 	// This is real time function so it will make the entire program wait
 	// for answer. It's supposed to be immediate answer.
@@ -230,7 +288,8 @@ char *imgcfw_get_model()
 					case 0:
 						// QHY 2" 5 positions
 						/// Model name
-						sprintf(cfwmodel, C_("cfw","QHY 5 positions 2\""));
+						sprintf(cfwmodel, C_("cfw","5-QHY 5 slots 2\""));
+						sprintf(cfwmodels, C_("cfw","|5-QHY 5 slots 2\""));
 						cfwslotc = 5;
 						cfwslots[0] = buf[1] * 256 + buf[2];
 						cfwslots[1] = buf[3] * 256 + buf[4];
@@ -241,7 +300,9 @@ char *imgcfw_get_model()
 						
 					default:
 						/// Model name
-						sprintf(cfwmodel, C_("cfw","Unknown model using QHY serial protocol"));
+						sprintf(cfwmodel, C_("cfw","8-QHY serial"));
+						sprintf(cfwmodels, C_("cfw","|8-QHY serial"));
+						cfwslotc = 8;
 						// Load them all just in case
 						cfwslots[0] = buf[1] * 256 + buf[2];
 						cfwslots[1] = buf[3] * 256 + buf[4];
@@ -269,21 +330,31 @@ char *imgcfw_get_model()
 			sprintf(cfwmsg, C_("cfw","Could not write to CFW on serial port %s, error: %s"), cfwtty, ttyerr);
 		}
 	}
+	return (ttyresult == TTY_OK);
+}
+
+int imgcfw_set_model(char *model)
+{
+	sscanf(model, "%d-%s", &cfwslotc, cfwmodel);	
+	return cfwslotc;
+}
+
+char *imgcfw_get_model()
+{
 	return cfwmodel;
+}
+
+char *imgcfw_get_models()
+{
+	return cfwmodels;
 }
 
 int imgcfw_get_slotcount()
 {
-	int retval = 0;
-	
-	if (strlen(imgcfw_get_model()) > 0)
-	{
-		retval = cfwslotc;
-	}
-	return retval;
+	return cfwslotc;
 }
 
-int imgcfw_set_slot(int slot)
+int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 {
 	int retval = 0;
 	int ttyresult = 0;
@@ -304,6 +375,16 @@ int imgcfw_set_slot(int slot)
 				{
 					retval = 1;
 					sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
+
+					// Starting tty-read thread
+					GError* thd_err = NULL;
+					postReadProcess = postProcess;
+					thd_read = g_thread_try_new("CFW-Change-Slot", thd_read_run, NULL, &thd_err);
+					if (thd_read == NULL)
+					{
+						strcat(cfwmsg, C_("cfw"," Could not start notification thread, btw slot selection command was sent ok."));
+						postReadProcess = NULL;
+					}
 				}		
 				else
 				{

@@ -737,12 +737,11 @@ void cmd_cfwtty_build()
 
 void cmd_cfw_build()
 {
-	cmd_cfw = gtk_button_new_with_label(C_("cfw","Connect"));
-	gtk_widget_set_size_request(cmd_cfw, 140, 30);
+	cmd_cfw = gtk_toggle_button_new_with_label_color(C_("cfw","Connect"), 140, 30, &clrSelected);
 	gtk_widget_set_sensitive(cmd_cfw, 0);
 	
 	// Callbacks
-	//g_signal_connect(G_OBJECT(cmd_cfwtty), "clicked", G_CALLBACK(cmd_cfwtty_click), NULL);
+	g_signal_connect(G_OBJECT(cmd_cfw), "clicked", G_CALLBACK(cmd_cfw_click), NULL);
 }
 
 void cmb_cfwcfg_build()
@@ -754,7 +753,7 @@ void cmb_cfwcfg_build()
 	#endif
 	gtk_widget_set_sensitive(cmb_cfwcfg, 0);
 	
-	//g_signal_connect(G_OBJECT(cmb_cfwcfg), "changed", G_CALLBACK(cmb_cfwcfg_changed),  NULL);	
+	g_signal_connect(G_OBJECT(cmb_cfwcfg), "changed", G_CALLBACK(cmb_cfwcfg_changed),  NULL);	
 }
 
 void box_ccd_build()

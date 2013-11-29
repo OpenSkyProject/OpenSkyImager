@@ -1808,13 +1808,13 @@ void cmb_cfwtty_changed (GtkComboBox *widget, gpointer user_data)
 {
 	if (gtk_combo_box_get_active(widget) != -1)
 	{
-		strcpy(cfwtty, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		imgcfw_set_tty(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
 	}
 	else
 	{
-		cfwtty[0] = '\0';
+		imgcfw_set_tty("");
 	}	
-	sprintf(imgmsg, C_("cfw","Filter wheel serial port: %s"), cfwtty);
+	sprintf(imgmsg, C_("cfw","Filter wheel serial port: %s"), imgcfw_get_tty());
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
@@ -1823,6 +1823,63 @@ void cmd_cfwtty_click(GtkWidget *widget, gpointer data)
 	combo_ttylist(cmb_cfwtty);
 	sprintf(imgmsg, C_("cfw","Serial port list reloaded"));
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}
+
+void cmd_cfw_click(GtkWidget *widget, gpointer data)
+{
+	static int error = 0;
+	
+	if (error == 0)
+	{
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)
+		{
+			// Not connected
+			if (imgcfw_connect())
+			{
+				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
+				combo_setlist(cmb_cfwcfg, imgcfw_get_models());
+				gtk_button_set_label(GTK_BUTTON(widget), C_("cfw","Disconnect"));
+				sprintf(imgmsg, C_("cfw","Filter wheel connected to %s"), imgcfw_get_tty());
+			}
+			else
+			{
+				error = 1;
+				sprintf(imgmsg, "%s", imgcfw_get_msg());
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
+			}
+		}
+		else
+		{
+			// Connected
+			if (imgcfw_disconnect())
+			{
+				gtk_widget_set_sensitive(cmb_cfwcfg, 0);
+				gtk_button_set_label(GTK_BUTTON(widget), C_("cfw","Connect"));
+				sprintf(imgmsg, C_("cfw","Filter wheel disconnected"));
+			}
+			else
+			{
+				error = 1;
+				sprintf(imgmsg, "%s", imgcfw_get_msg());
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
+			}
+		}
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
+	else
+	{
+		error = 0;
+	}
+}
+
+void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
+{
+	if (gtk_combo_box_get_active(widget) != -1)
+	{
+		imgcfw_set_model(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		sprintf(imgmsg, C_("cfw","Filter wheel configuration: %d slots, %s model"), imgcfw_get_slotcount(), imgcfw_get_model());
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
 }
 
 

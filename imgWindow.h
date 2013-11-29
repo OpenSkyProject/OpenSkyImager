@@ -129,7 +129,6 @@
 	char imgfbk[16];
 	char tecfbk[16];
 	char fpsfbk[16];
-	char cfwtty [256];
 	int tecrun = 0;
 	struct tm tlstart, tlend;
 #else
@@ -215,7 +214,6 @@
 	extern char imgfbk[16];
 	extern char tecfbk[16];
 	extern char fpsfbk[16];
-	extern char cfwtty [256];
 	extern int tecrun;
 	extern struct tm tlstart, tlend;
 #endif
