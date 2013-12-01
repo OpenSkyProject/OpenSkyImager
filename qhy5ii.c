@@ -998,12 +998,17 @@ double qhy5lii_GetTemp()
 	double T0;
 	uint16_t sensed, calib1, calib2;
 
+	// start measuring
 	qhy_I2CTwoWrite(0x30B4, 0x0011);
-	sensed = qhy_I2CTwoRead(0x30B2);
+
+	// reading the calibration params gives just enough time	
 	calib1 = qhy_I2CTwoRead(0x30C6);
 	calib2 = qhy_I2CTwoRead(0x30C8);
+	
+	// stop measuring
 	qhy_I2CTwoWrite(0x30B4, 0x0000);
-
+	sensed = qhy_I2CTwoRead(0x30B2);
+	
 	slope = (70.0 - 55.0)/(calib1 - calib2);
 	T0 = (slope*calib1 - 70.0);
 	return slope * sensed - T0;
