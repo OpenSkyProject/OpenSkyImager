@@ -45,6 +45,8 @@
 #define TAB_CFW       6
 #define TAB_CALC      7
 
+#define CFW_SLOTS     8
+
 #ifdef DECLARE_WINDOW
 
 	// Decorations
@@ -77,7 +79,7 @@
 	GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	GtkWidget *cmd_tlenable;
 	GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
-	GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg;
+	GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS];
 	GtkWidget *hsc_offset, *hsc_gain;
 	GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps;
 	GdkCursor* watchCursor;
@@ -163,7 +165,7 @@
 	extern GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	extern GtkWidget *cmd_tlenable;
 	extern GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
-	extern GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg;
+	extern GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS];
 	extern GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps;
 	extern GdkCursor* watchCursor;
 	extern GdkPixbuf *tecpixbuf;

@@ -1779,6 +1779,7 @@ void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 				combo_ttylist(cmb_cfwtty);
 				gtk_widget_set_sensitive(cmd_cfwtty, 1);
 				gtk_widget_set_sensitive(cmd_cfw, 1);
+				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
 				// This will read the configuration from the wheel itself
 				break;
 			
@@ -1786,8 +1787,13 @@ void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 				// This is manufacturer specific so we load the list of choices 
 				// from the camera UI.
 				combo_setlist(cmb_cfwcfg, imgcam_get_camui()->whlstr);
+				// Then only connect button and list of models are active
+				gtk_widget_set_sensitive(cmd_cfw, 1);
+				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
 		
 			default:
+				// Deactivate all
+				gtk_widget_set_sensitive(cmb_cfwcfg, 0);
 				gtk_widget_set_sensitive(cmb_cfwtty, 0);
 				gtk_widget_set_sensitive(cmd_cfwtty, 0);
 				gtk_widget_set_sensitive(cmd_cfw, 0);
@@ -1874,13 +1880,32 @@ void cmd_cfw_click(GtkWidget *widget, gpointer data)
 
 void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
 {
+	int i = 0;
+	
 	if (gtk_combo_box_get_active(widget) != -1)
 	{
 		imgcfw_set_model(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		for (i = 0; i < CFW_SLOTS; i++)
+		{
+			gtk_widget_set_sensitive(cmb_cfwwhl[i], (i < imgcfw_get_slotcount()));
+		}
 		sprintf(imgmsg, C_("cfw","Filter wheel configuration: %d slots, %s model"), imgcfw_get_slotcount(), imgcfw_get_model());
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 }
 
+/*void cmb_cfwwhl_changed (GtkComboBox *widget, gpointer user_data)
+{
+	printf("Got value: %d", (int)user_data);
+}*/
 
+void cmd_cfwwhl_changed (GtkComboBox *widget, gpointer user_data)
+{
+	printf("Got value: %d\n", (int)user_data);
+
+	imgcfw_set_slot((int)user_data, NULL);	
+
+	sprintf(imgmsg, "%s", imgcfw_get_msg());
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}
 

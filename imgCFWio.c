@@ -78,8 +78,11 @@ gpointer thd_read_run(gpointer thd_data)
 	}
 	// Executes the post process to inform the user (and rest of application)
 	// About the result got
-	postReadProcess(((ttyret == TTY_OK) && (buf[0] == 0x2D)));
-	postReadProcess = NULL;
+	if (postReadProcess != NULL)
+	{
+		postReadProcess(((ttyret == TTY_OK) && (buf[0] == 0x2D)));
+		postReadProcess = NULL;
+	}
 	return 0;
 }
 
@@ -94,6 +97,7 @@ void imgcfw_init()
 	cfwslotc = 0;
 	memset(cfwslots, 0, 16);
 	cfwpos = -1;
+	postReadProcess = NULL;
 }
 
 char *imgcfw_get_msg()
