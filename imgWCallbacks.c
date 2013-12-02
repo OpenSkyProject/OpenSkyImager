@@ -839,7 +839,8 @@ void mainw_destroy( GtkWidget *widget, gpointer   data )
 gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	int retval = TRUE;
-	GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, C_("quit-message","Do you really want to quit?"));
+	GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, C_("quit-message","Confirm exit"));
+	gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog), C_("quit-message","Do you really want to quit?"));
 	gint result =  gtk_dialog_run (GTK_DIALOG (dialog));
 	
 	switch (result)
@@ -1828,7 +1829,7 @@ void cmd_cfwtty_click(GtkWidget *widget, gpointer data)
 {
 	combo_ttylist(cmb_cfwtty);
 	sprintf(imgmsg, C_("cfw","Serial port list reloaded"));
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);	
 }
 
 void cmd_cfw_click(GtkWidget *widget, gpointer data)
@@ -1900,12 +1901,16 @@ void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
 	printf("Got value: %d", (int)user_data);
 }*/
 
-void cmd_cfwwhl_changed (GtkComboBox *widget, gpointer user_data)
+void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
 {
-	printf("Got value: %d\n", (int)user_data);
-
-	imgcfw_set_slot((int)user_data, NULL);	
-
+	//printf("Got value: %d\n", (int)user_data);
+	if (imgcfw_set_slot((int)user_data, (gpointer) cfwmsgdestroy))
+	{	
+		// Show the change slot message
+		cfwmsg = gtk_message_dialog_new ((GtkWindow *) window, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_NONE, C_("cfw","Please wait for the filter to reach position..."));	
+		gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(cfwmsg), C_("cfw","Dialog will disappear when done"));
+		gtk_widget_show_all(cfwmsg);
+	}
 	sprintf(imgmsg, "%s", imgcfw_get_msg());
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }

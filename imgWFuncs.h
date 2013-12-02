@@ -32,6 +32,7 @@ void tec_show_graph();
 void tec_print_graph();
 void combo_setlist(GtkWidget *cmb, char *str);
 void combo_ttylist(GtkWidget *cmb);
+void cfwmsgdestroy(int response);
 gpointer thd_capture_run(gpointer thd_data);
 gpointer thd_pixbuf_run(gpointer thd_data);
 gpointer thd_fitsav_run(gpointer thd_data);

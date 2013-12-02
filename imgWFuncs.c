@@ -364,6 +364,18 @@ void combo_ttylist(GtkWidget *cmb)
 	combo_setlist(cmb, ttylist);
 }
 
+void cfwmsgdestroy(int response)
+{
+	gtk_dialog_response(GTK_DIALOG(cfwmsg), GTK_RESPONSE_NONE);
+	gtk_widget_destroy(cfwmsg);
+	
+	if (response != 1)
+	{
+		sprintf(imgmsg, C_("cfw","Filter wheel reported error"));
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
+}
+
 gpointer thd_capture_run(gpointer thd_data)
 {
 	int thdrun = 1, thderror = 0, thdhold = 0, thdmode = 0, thdshoot = 0;
@@ -925,3 +937,4 @@ gpointer thd_temp_run(gpointer thd_data)
 	}
 	return 0;
 }
+

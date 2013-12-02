@@ -86,6 +86,21 @@ gpointer thd_read_run(gpointer thd_data)
 	return 0;
 }
 
+gboolean tmr_run(gpointer data)
+{
+	
+	// Executes the post process to inform the user (and rest of application)
+	// About the result got
+	if (postReadProcess != NULL)
+	{
+		postReadProcess((int)data);
+		postReadProcess = NULL;
+	}
+	return FALSE;
+}
+
+
+
 void imgcfw_init()
 {
 	cfwmsg[0] = '\0'; 
@@ -365,7 +380,7 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 	int nbrw = 0;
 	char wbuf[1];
 	
-	switch (cfwmodid)
+	switch (cfwmode)
 	{
 		case 1:
 			// Qhy Serial
@@ -405,7 +420,13 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 		
 		case 99:
 			// Qky-through-camera
-			if ((retval = imgcam_wheel(slot)) == 0)
+			postReadProcess = postProcess;
+			if ((retval = imgcam_wheel(slot)) == 1)
+			{
+				sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
+				g_timeout_add(READ_TIME * 1000, tmr_run, (gpointer)1);
+			}
+			else
 			{
 				sprintf(cfwmsg, "%s", imgcam_get_msg());
 			}
