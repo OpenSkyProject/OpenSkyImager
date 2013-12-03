@@ -80,11 +80,11 @@ gpointer thd_read_run(gpointer thd_data)
 	int nbrw = 0;
 	int i = 0;
 	
-	// Attempts 5 reads of 5 seconds each, to allow enough time for to the CFW
+	// Attempts 3 reads of 5 seconds each, to allow enough time for to the CFW
 	// to settle.
 	while ((ttyret = tty_read(cfwttyfd, buf, sizeof(buf), READ_TIME, &nbrw)) == TTY_TIME_OUT)
 	{
-		if (++i > 4)
+		if (++i > 3)
 		{
 			break;
 		}
@@ -93,6 +93,7 @@ gpointer thd_read_run(gpointer thd_data)
 	// About the result got
 	// The post process will work on the GUI, hence to be thread safe must be 
 	// Executed from the main loop -> timer.
+	cfwpos = ((ttyret == TTY_OK) && (buf[0] == 0x2D))? cfwpos : -1;
 	g_timeout_add(1, tmr_run, (gpointer)((ttyret == TTY_OK) && (buf[0] == 0x2D)));
 	return 0;
 }
@@ -118,7 +119,7 @@ char *imgcfw_get_msg()
 
 int imgcfw_set_mode(int mode)
 {
-	int retval = 1;
+	int retval = 0;
 
 	cfwmsg[0] = '\0';
 	switch (mode)
@@ -369,6 +370,11 @@ int imgcfw_get_slotcount()
 	return cfwslotc;
 }
 
+int imgcfw_get_slot()
+{
+	return cfwpos;
+}
+
 int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 {
 	int retval = 0;
@@ -390,6 +396,7 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 				{
 					retval = 1;
 					sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
+					cfwpos = slot;
 
 					// Starting tty-read thread
 					GError* thd_err = NULL;
@@ -419,8 +426,9 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 			postReadProcess = postProcess;
 			if ((retval = imgcam_wheel(slot)) == 1)
 			{
+				cfwpos = slot;
 				sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
-				g_timeout_add_seconds(READ_TIME, tmr_run, (gpointer)1);
+				g_timeout_add_seconds((READ_TIME * 2), tmr_run, (gpointer)1);
 			}
 			else
 			{

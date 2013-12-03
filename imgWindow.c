@@ -518,28 +518,28 @@ void cmd_saveas_build()
 
 void cmd_audela_build()
 {
-	cmd_audela = gtk_toggle_button_new_with_label_color(C_("filename","Audela naming"), 90, 30, &clrSelected);
+	cmd_audela = gtk_toggle_button_new_with_label_color(C_("filename","Audela naming"), 80, 30, &clrSelected);
 	// Callbacks
 	g_signal_connect(G_OBJECT(cmd_audela), "clicked", G_CALLBACK(cmd_audela_click), NULL);
 }
 
 void cmd_iris_build()
 {
-	cmd_iris = gtk_toggle_button_new_with_label_color(C_("filename","Iris naming"), 90, 30, &clrSelected);	
+	cmd_iris = gtk_toggle_button_new_with_label_color(C_("filename","Iris naming"), 80, 30, &clrSelected);	
 	// Callbacks
 	g_signal_connect(G_OBJECT(cmd_iris), "clicked", G_CALLBACK(cmd_iris_click), NULL);
 }
 
 void cmd_zerofc_build()
 {
-	cmd_zerofc = gtk_toggle_button_new_with_label_color(C_("filename","Zero counter"), 90, 30, &clrSelected);
+	cmd_zerofc = gtk_toggle_button_new_with_label_color(C_("filename","Zero counter"), 80, 30, &clrSelected);
 	// Callbacks
 	g_signal_connect(G_OBJECT(cmd_zerofc), "clicked", G_CALLBACK(cmd_zerofc_click), NULL);
 }
 
 void cmd_tlenable_build()
 {
-	cmd_tlenable = gtk_toggle_button_new_with_label_color(C_("filename","Time Lapse"), 90, 30, &clrSelected);
+	cmd_tlenable = gtk_toggle_button_new_with_label_color(C_("filename","Time Lapse"), 80, 30, &clrSelected);
 	// Callbacks
 	g_signal_connect(G_OBJECT(cmd_tlenable), "clicked", G_CALLBACK(cmd_tlenable_click), NULL);
 }
@@ -547,7 +547,7 @@ void cmd_tlenable_build()
 void txt_fitfolder_build()
 {
 	txt_fitfolder = gtk_entry_new();
-	gtk_widget_set_size_request(txt_fitfolder, 540, 30);
+	gtk_widget_set_size_request(txt_fitfolder, 560, 30);
 	//Callbacks
 	g_signal_connect(G_OBJECT(txt_fitfolder), "changed", G_CALLBACK(txt_fitfolder_changed),  NULL);
 }
@@ -555,7 +555,7 @@ void txt_fitfolder_build()
 void txt_fitbase_build()
 {
 	txt_fitbase = gtk_entry_new();
-	gtk_widget_set_size_request(txt_fitbase, 540, 30);
+	gtk_widget_set_size_request(txt_fitbase, 560, 30);
 	
 	//Callbacks
 	g_signal_connect(G_OBJECT(txt_fitbase), "changed", G_CALLBACK(txt_fitbase_changed),  NULL);
@@ -563,22 +563,30 @@ void txt_fitbase_build()
 
 void cmd_dateadd_build()
 {
-	cmd_dateadd = gtk_toggle_button_new_with_label_color(C_("filename","Add date"), 90, 30, &clrSelected);
+	cmd_dateadd = gtk_toggle_button_new_with_label_color(C_("filename","Add date"), 80, 30, &clrSelected);
 	// Callbacks
 	g_signal_connect(G_OBJECT(cmd_dateadd), "clicked", G_CALLBACK(cmd_dateadd_click), NULL);
 }
 
 void cmd_timeadd_build()
 {
-	cmd_timeadd = gtk_toggle_button_new_with_label_color(C_("filename","Add time"), 90, 30, &clrSelected);
+	cmd_timeadd = gtk_toggle_button_new_with_label_color(C_("filename","Add time"), 80, 30, &clrSelected);
 	// Callbacks
 	g_signal_connect(G_OBJECT(cmd_timeadd), "clicked", G_CALLBACK(cmd_timeadd_click), NULL);
+}
+
+void cmd_fltadd_build()
+{
+	cmd_fltadd = gtk_toggle_button_new_with_label_color(C_("filename","Add filter"), 80, 30, &clrSelected);
+	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_fltadd), "clicked", G_CALLBACK(cmd_fltadd_click), NULL);
 }
 
 void cmb_flt_build()
 {
 	cmb_flt = gtk_combo_box_text_new();
-	gtk_widget_set_size_request(cmb_flt, 40, 30);
+	gtk_widget_set_size_request(cmb_flt, 80, 30);
+	gtk_widget_set_sensitive(cmb_flt, 0);
 	
 	g_signal_connect(G_OBJECT(cmb_flt), "changed", G_CALLBACK(cmb_flt_changed),  NULL);
 	// Also set initial value for the char variable ;-)
@@ -708,9 +716,9 @@ void cmb_cfw_build()
 	/// Value "No CFW" of the cfw combo, please preserve the n-xxxxx format
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_cfw), C_("cfw","0-None"));
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_cfw), C_("cfw","1-QHY Serial"));
-	gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), 0);
 	
 	g_signal_connect(G_OBJECT(cmb_cfw), "changed", G_CALLBACK(cmb_cfw_changed),  NULL);	
+	gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), 0);
 }
 
 void cmb_cfwtty_build()
@@ -769,8 +777,10 @@ void cmb_cfwwhl_build()
 		#endif
 		gtk_widget_set_sensitive(cmb_cfwwhl[i], 0);
 		combo_setlist(cmb_cfwwhl[i], fltstr);		
-	
-		//g_signal_connect(G_OBJECT(cmb_cfwwhl[i]), "changed", G_CALLBACK(cmb_cfwwhl_changed),  (gpointer)i);	
+	}
+	for (i = 0; i < CFW_SLOTS; i++)
+	{
+		g_signal_connect(G_OBJECT(cmb_cfwwhl[i]), "changed", G_CALLBACK(cmb_cfwwhl_changed), cmb_cfwwhl);	
 	}
 }
 
@@ -903,6 +913,7 @@ void box_filename_build()
 	cmd_saveas_build();
 	cmd_dateadd_build();
 	cmd_timeadd_build();
+	cmd_fltadd_build();
 	cmb_flt_build();
 	txt_fitfolder_build();
 	txt_fitbase_build();
@@ -912,17 +923,17 @@ void box_filename_build()
 	cmd_tlenable_build();
 	
 	//gtk_table_attach(GTK_TABLE(box_filename), gtk_label_new_with_align("", 0.5, 0.5), 0, 1, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_saveas,  0,  1,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),   cmd_dateadd,  1,  2,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),   cmd_timeadd,  2,  3,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),gtk_label_new_with_align(C_("filename","Filter: "), 1.0, 0.5, 40, 30),  3,  4,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),       cmb_flt,  4,  6,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename), txt_fitfolder,  0,  6,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),   txt_fitbase,  0,  6,  3,  4, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_audela,  0,  1,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),      cmd_iris,  1,  2,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_zerofc,  2,  3,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),  cmd_tlenable,  0,  1,  5,  6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_saveas,  0,  2,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),   cmd_dateadd,  2,  4,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),   cmd_timeadd,  4,  6,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_fltadd,  6,  8,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename), txt_fitfolder,  0,  8,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),   txt_fitbase,  0,  8,  3,  4, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_audela,  0,  2,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),      cmd_iris,  2,  4,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_zerofc,  4,  6,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),       cmb_flt,  6,  8,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),  cmd_tlenable,  0,  2,  5,  6, GTK_FILL, GTK_FILL, 0, 0);
 }
 
 void box_timelapse_build()

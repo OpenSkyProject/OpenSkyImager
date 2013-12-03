@@ -1611,19 +1611,46 @@ void cmd_timeadd_click(GtkWidget *widget, gpointer data)
 	}
 }   	
 
-void cmb_flt_changed (GtkComboBox *widget, gpointer user_data)
-{
-	if (gtk_combo_box_get_active(widget) > 0)
+void cmd_fltadd_click(GtkWidget *widget, gpointer data)
+{	
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)
 	{
-		strcpy(fitflt, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
-		sprintf(imgmsg, C_("main","Filter name: %s add to naming convention"), gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		gtk_widget_set_sensitive(cmb_flt, 1);
+		if (gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_flt)) != -1)
+		{
+			strcpy(fitflt, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cmb_flt)));
+		}
+		else
+		{
+			fitflt[0] = '\0';
+		}
+		sprintf(imgmsg, C_("main","Add filter to naming convention selected"));
 	}
 	else
 	{
-		fitflt[0] = '\0';	
-		sprintf(imgmsg, C_("main","Filter name removed from naming convention"));
+		gtk_widget_set_sensitive(cmb_flt, 0);
+		fitflt[0] = '\0';
+		sprintf(imgmsg, C_("main","Add filter to naming convention removed"));
 	}
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}   	
+
+void cmb_flt_changed (GtkComboBox *widget, gpointer user_data)
+{
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_fltadd)) == TRUE)
+	{
+		strcpy(fitflt, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		if (strlen(fitflt) > 0)
+		{
+			sprintf(imgmsg, C_("main","Filter name: %s add to naming convention"), fitflt);
+		}
+		else
+		{
+			fitflt[0] = '\0';	
+			sprintf(imgmsg, C_("main","Filter name removed from naming convention"));
+		}
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
 }
 
 void cmd_tecenable_click(GtkWidget *widget, gpointer data)
@@ -1774,6 +1801,11 @@ void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 	{
 		switch (tmp)
 		{
+			case 0:
+				// GFW not in use, reset default filter list
+				combo_setlist(cmb_flt, fltstr);
+				break;
+				
 			case 1:
 				// QHY Serial
 				gtk_widget_set_sensitive(cmb_cfwtty, 1);
@@ -1813,16 +1845,19 @@ void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_cfwtty_changed (GtkComboBox *widget, gpointer user_data)
 {
-	if (gtk_combo_box_get_active(widget) != -1)
+	if (gtk_widget_get_sensitive(GTK_WIDGET(widget)))
 	{
-		imgcfw_set_tty(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		if (gtk_combo_box_get_active(widget) != -1)
+		{
+			imgcfw_set_tty(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		}
+		else
+		{
+			imgcfw_set_tty("");
+		}	
+		sprintf(imgmsg, C_("cfw","Filter wheel serial port: %s"), imgcfw_get_tty());
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
-	else
-	{
-		imgcfw_set_tty("");
-	}	
-	sprintf(imgmsg, C_("cfw","Filter wheel serial port: %s"), imgcfw_get_tty());
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
 void cmd_cfwtty_click(GtkWidget *widget, gpointer data)
@@ -1883,7 +1918,7 @@ void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int i = 0;
 	
-	if (gtk_combo_box_get_active(widget) != -1)
+	if ((gtk_combo_box_get_active(widget) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(widget))))
 	{
 		imgcfw_set_model(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
 		for (i = 0; i < CFW_SLOTS; i++)
@@ -1896,10 +1931,27 @@ void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
 	}
 }
 
-/*void cmb_cfwwhl_changed (GtkComboBox *widget, gpointer user_data)
+void cmb_cfwwhl_changed (GtkComboBox *widget, GtkWidget **awidget)
 {
-	printf("Got value: %d", (int)user_data);
-}*/
+	char cfwfltstr[256];
+	int  i;
+
+	if ((gtk_combo_box_get_active(widget) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(widget))))
+	{
+		// If current combo has a meaningful value, recalc cmb_flt content
+		cfwfltstr[0] = '\0';
+		for (i = 0; i < imgcfw_get_slotcount(); i++)
+		{
+			if ((gtk_combo_box_get_active(GTK_COMBO_BOX(awidget[i])) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(awidget[i]))))
+			{
+				strcat(cfwfltstr, "|");
+				strcat(cfwfltstr, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(awidget[i])));
+			}
+		}
+		combo_setlist(cmb_flt, cfwfltstr);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), imgcfw_get_slot());
+	}
+}
 
 void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
 {

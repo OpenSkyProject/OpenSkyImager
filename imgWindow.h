@@ -74,7 +74,7 @@
 	GtkWidget *cmb_camera, *cmb_bin, *cmb_csize, *cmb_dspeed, *cmb_mode, *lbl_mode, *cmb_amp, *cmb_denoise, *cmb_depth, *cmb_debayer;
 	GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
 	GtkWidget *cmd_tecenable, *cmd_tecauto, *spn_tectgt, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
-	GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt;
+	GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd;
 	GtkWidget *txt_fitfolder, *txt_fitbase;
 	GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	GtkWidget *cmd_tlenable;
@@ -160,7 +160,7 @@
 	extern GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
 	extern GtkWidget *cmd_tecenable, *cmd_tecauto, *spn_tectgt, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
 	extern GtkWidget *hsc_offset, *hsc_gain;
-	extern GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt;
+	extern GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd;
 	extern GtkWidget *txt_fitfolder, *txt_fitbase;
 	extern GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	extern GtkWidget *cmd_tlenable;

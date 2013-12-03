@@ -310,8 +310,8 @@ void combo_setlist(GtkWidget *cmb, char *str)
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(cmb)) != -1)
 	{
 		gtk_combo_box_set_active(GTK_COMBO_BOX(cmb), 0);
-		gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb))));
 	}
+	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb))));
 	
 	if (strchr(str, '|') != NULL)
 	{
@@ -369,7 +369,12 @@ void cfwmsgdestroy(int response)
 	gtk_dialog_response(GTK_DIALOG(cfwmsg), GTK_RESPONSE_NONE);
 	gtk_widget_destroy(cfwmsg);
 	
-	if (response != 1)
+	if (response == 1)
+	{
+		// All ok, select the filter name for the naming convention
+		gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), imgcfw_get_slot());
+	}
+	else
 	{
 		sprintf(imgmsg, C_("cfw","Filter wheel reported error"));
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
