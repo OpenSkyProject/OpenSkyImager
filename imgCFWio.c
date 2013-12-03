@@ -60,6 +60,19 @@ static GThread *thd_read = NULL;
 // used from more than one thread at the time
 static gpointer (*postReadProcess)(int);
 
+gboolean tmr_run(gpointer data)
+{
+	
+	// Executes the post process to inform the user (and rest of application)
+	// About the result got
+	if (postReadProcess != NULL)
+	{
+		postReadProcess((int)data);
+		postReadProcess = NULL;
+	}
+	return FALSE;
+}
+
 gpointer thd_read_run(gpointer thd_data)
 {	
 	int ttyret;
@@ -78,28 +91,11 @@ gpointer thd_read_run(gpointer thd_data)
 	}
 	// Executes the post process to inform the user (and rest of application)
 	// About the result got
-	if (postReadProcess != NULL)
-	{
-		postReadProcess(((ttyret == TTY_OK) && (buf[0] == 0x2D)));
-		postReadProcess = NULL;
-	}
+	// The post process will work on the GUI, hence to be thread safe must be 
+	// Executed from the main loop -> timer.
+	g_timeout_add(1, tmr_run, (gpointer)((ttyret == TTY_OK) && (buf[0] == 0x2D)));
 	return 0;
 }
-
-gboolean tmr_run(gpointer data)
-{
-	
-	// Executes the post process to inform the user (and rest of application)
-	// About the result got
-	if (postReadProcess != NULL)
-	{
-		postReadProcess((int)data);
-		postReadProcess = NULL;
-	}
-	return FALSE;
-}
-
-
 
 void imgcfw_init()
 {
@@ -383,8 +379,8 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 	switch (cfwmode)
 	{
 		case 1:
-			// Qhy Serial
-			wbuf[0] = slot;
+			// Qhy Serial, chars "0", "1"... thus 0x30 (decimal 48) onward
+			wbuf[0] = slot + 48;
 			cfwmsg[0] = '\0';
 			if (slot < cfwslotc)
 			{
@@ -424,7 +420,7 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 			if ((retval = imgcam_wheel(slot)) == 1)
 			{
 				sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
-				g_timeout_add(READ_TIME * 1000, tmr_run, (gpointer)1);
+				g_timeout_add_seconds(READ_TIME, tmr_run, (gpointer)1);
 			}
 			else
 			{

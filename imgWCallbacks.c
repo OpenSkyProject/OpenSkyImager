@@ -1904,11 +1904,15 @@ void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
 void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
 {
 	//printf("Got value: %d\n", (int)user_data);
+	//imgcfw_set_slot((int)user_data, NULL);
 	if (imgcfw_set_slot((int)user_data, (gpointer) cfwmsgdestroy))
 	{	
 		// Show the change slot message
 		cfwmsg = gtk_message_dialog_new ((GtkWindow *) window, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_NONE, C_("cfw","Please wait for the filter to reach position..."));	
 		gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(cfwmsg), C_("cfw","Dialog will disappear when done"));
+		//gtk_window_set_decorated(GTK_WINDOW(cfwmsg), FALSE);
+		gtk_window_set_deletable(GTK_WINDOW(cfwmsg), FALSE);
+		gtk_window_set_keep_above(GTK_WINDOW(cfwmsg), TRUE);
 		gtk_widget_show_all(cfwmsg);
 	}
 	sprintf(imgmsg, "%s", imgcfw_get_msg());
