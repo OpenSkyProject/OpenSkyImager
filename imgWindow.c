@@ -764,6 +764,16 @@ void cmb_cfwcfg_build()
 	g_signal_connect(G_OBJECT(cmb_cfwcfg), "changed", G_CALLBACK(cmb_cfwcfg_changed),  NULL);	
 }
 
+void cmd_cfwrst_build()
+{
+	cmd_cfwrst = gtk_button_new_with_label(C_("cfw","Factory Reset"));
+	gtk_widget_set_size_request(cmd_cfwrst, 140, 30);
+	gtk_widget_set_sensitive(cmd_cfwrst, 0);
+	
+	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_cfwrst), "clicked", G_CALLBACK(cmd_cfwrst_click), NULL);
+}
+
 void cmb_cfwwhl_build()
 {
 	int i = 0;
@@ -1054,7 +1064,7 @@ void box_cfw_build()
 {
 	int i = 0;
 	
-	box_cfw = gtk_table_new(15, 12, FALSE);
+	box_cfw = gtk_table_new(20, 12, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(box_cfw), 4);
 	gtk_table_set_col_spacings(GTK_TABLE(box_cfw), 8);
 	gtk_container_set_border_width(GTK_CONTAINER(box_cfw), 4);
@@ -1064,17 +1074,19 @@ void box_cfw_build()
 	cmd_cfwtty_build();
 	cmd_cfw_build();
 	cmb_cfwcfg_build();
+	cmd_cfwrst_build();
 	cmb_cfwwhl_build();
 	cmd_cfwwhl_build();
 
-	gtk_table_attach(GTK_TABLE(box_cfw), gtk_label_new_with_align(C_("cfw","Wheel connection"), 0.0, 0.5, 140, 30), 0, 2, 0, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cfw), gtk_label_new_with_align(C_("cfw","Connection"), 0.0, 0.5, 140, 30), 0, 2, 0, 2, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_cfw), cmb_cfw   ,  2,  5,  0,  1, GTK_FILL, GTK_FILL, 0, 0);	
 	gtk_table_attach(GTK_TABLE(box_cfw), cmb_cfwtty,  5,  8,  0,  1, GTK_FILL, GTK_FILL, 0, 0);	
 	gtk_table_attach(GTK_TABLE(box_cfw), cmd_cfw   ,  2,  5,  1,  2, GTK_FILL, GTK_FILL, 0, 0);	
 	gtk_table_attach(GTK_TABLE(box_cfw), cmd_cfwtty,  5,  8,  1,  2, GTK_FILL, GTK_FILL, 0, 0);	
 	gtk_table_attach(GTK_TABLE(box_cfw), gtk_hseparator_new(),  0, 12,  2,  3, GTK_FILL, GTK_FILL, 0, 0);	
-	gtk_table_attach(GTK_TABLE(box_cfw), gtk_label_new_with_align(C_("cfw","Wheel configuration"), 0.0, 0.5, 140, 30), 0, 2, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cfw), gtk_label_new_with_align(C_("cfw","Configuration"), 0.0, 0.5, 140, 30), 0, 2, 3, 14, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_cfw), cmb_cfwcfg,  2,  5,  3,  4, GTK_FILL, GTK_FILL, 0, 0);	
+	gtk_table_attach(GTK_TABLE(box_cfw), cmd_cfwrst,  5,  8,  3,  4, GTK_FILL, GTK_FILL, 0, 0);	
 	for (i = 0; i < CFW_SLOTS; i++)
 	{
 		gtk_table_attach(GTK_TABLE(box_cfw), cmb_cfwwhl[i],  2,  5,  (4 + i),  (5 + i), GTK_FILL, GTK_FILL, 0, 0);	
@@ -1083,6 +1095,7 @@ void box_cfw_build()
 	{
 		gtk_table_attach(GTK_TABLE(box_cfw), cmd_cfwwhl[i],  5,  8,  (4 + i),  (5 + i), GTK_FILL, GTK_FILL, 0, 0);	
 	}
+	gtk_table_attach(GTK_TABLE(box_cfw), gtk_hseparator_new(),  0, 12, 14, 15, GTK_FILL, GTK_FILL, 0, 0);	
 }
 
 void tab_settings_build()

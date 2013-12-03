@@ -1879,6 +1879,7 @@ void cmd_cfw_click(GtkWidget *widget, gpointer data)
 			if (imgcfw_connect())
 			{
 				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
+				gtk_widget_set_sensitive(cmd_cfwrst, (imgcfw_get_mode() == 1));
 				combo_setlist(cmb_cfwcfg, imgcfw_get_models());
 				gtk_button_set_label(GTK_BUTTON(widget), C_("cfw","Disconnect"));
 				sprintf(imgmsg, C_("cfw","Filter wheel connected to %s"), imgcfw_get_tty());
@@ -1896,6 +1897,7 @@ void cmd_cfw_click(GtkWidget *widget, gpointer data)
 			if (imgcfw_disconnect())
 			{
 				gtk_widget_set_sensitive(cmb_cfwcfg, 0);
+				gtk_widget_set_sensitive(cmd_cfwrst, 0);
 				gtk_button_set_label(GTK_BUTTON(widget), C_("cfw","Connect"));
 				sprintf(imgmsg, C_("cfw","Filter wheel disconnected"));
 			}
@@ -1929,6 +1931,19 @@ void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
 		sprintf(imgmsg, C_("cfw","Filter wheel configuration: %d slots, %s model"), imgcfw_get_slotcount(), imgcfw_get_model());
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
+}
+
+void cmd_cfwrst_click(GtkWidget *widget, gpointer data)
+{
+	if (imgcfw_reset())
+	{
+		sprintf(imgmsg, C_("cfw","Filter wheel controller factory reset done"));
+	}
+	else
+	{
+		sprintf(imgmsg, "%s", imgcfw_get_msg());
+	}
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);	
 }
 
 void cmb_cfwwhl_changed (GtkComboBox *widget, GtkWidget **awidget)

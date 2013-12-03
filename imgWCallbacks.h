@@ -95,5 +95,6 @@ void cmb_cfwtty_changed (GtkComboBox *widget, gpointer user_data);
 void cmd_cfwtty_click(GtkWidget *widget, gpointer data);
 void cmd_cfw_click(GtkWidget *widget, gpointer data);
 void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data);
+void cmd_cfwrst_click(GtkWidget *widget, gpointer data);
 void cmb_cfwwhl_changed (GtkComboBox *widget, GtkWidget **awidget);
 void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data);

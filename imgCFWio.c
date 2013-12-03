@@ -349,6 +349,32 @@ int imgcfw_read_all()
 	return (ttyresult == TTY_OK);
 }
 
+int imgcfw_reset()
+{
+	int nbrw = 0;
+	char wbuf[3] = {0x53, 0x45, 0x46};
+	int ttyresult = 0;
+	
+	cfwmsg[0] = '\0';
+	if (cfwttyfd > -1)
+	{
+		/* Flush the input buffer */
+		tcflush(cfwttyfd,TCIOFLUSH);
+		// Sending "SEF"
+		if ((ttyresult = tty_write(cfwttyfd, wbuf, sizeof(wbuf), &nbrw)) == TTY_OK)
+		{
+			// Since there's no answer for this command we must assume all is good
+		}
+		else
+		{
+			char ttyerr[512];
+			tty_error_msg(ttyresult, ttyerr, 512);
+			sprintf(cfwmsg, C_("cfw","Could not write to CFW on serial port %s, error: %s"), cfwtty, ttyerr);
+		}
+	}
+	return (ttyresult == TTY_OK);
+}
+
 int imgcfw_set_model(char *model)
 {
 	sscanf(model, "%d-%s", &cfwslotc, cfwmodel);	
