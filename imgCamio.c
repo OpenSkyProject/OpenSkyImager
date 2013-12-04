@@ -40,8 +40,9 @@
 static char *cammsg;
 static unsigned char* databuffer[2] = {NULL, NULL};
 static char *cammodel;
-static int   camid = 0;
-static int   loaded = 0;
+static int      camid = 0;
+static int     loaded = 0;
+static int  connected = 0;
 static int curdataptr = 0;
 //static int vendorid, productid;
 static qhy_exposure expar;
@@ -219,6 +220,11 @@ int imgcam_loaded()
 	return (loaded);
 }
 
+int imgcam_connected()
+{
+	return connected;
+}
+
 char *imgcam_get_msg()
 {
 	return cammsg;
@@ -270,6 +276,7 @@ void imgcam_init()
 	imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
 
 	loaded = 0;
+	connected = 0;
 }
 
 char *imgcam_init_list(int all)
@@ -371,6 +378,7 @@ int imgcam_connect()
 		{
 			strcpy(cammsg, qhy_core_msg());
 		}
+		connected = retval;
 	}
 	return (retval);
 }
@@ -397,6 +405,7 @@ int imgcam_disconnect()
 			}
 			break;
 	}
+	connected = (retval == 1) ? 0 : connected;
 	return (retval);
 }
 
@@ -731,6 +740,7 @@ int imgcam_shutter(int cmd)
 {
 	int retval = 1;
 	
+	cammsg[0] = '\0';
 	switch (camid)
 	{
 		case 20:
@@ -754,6 +764,35 @@ int imgcam_shutter(int cmd)
 			retval = qhy_Shutter(cmd);
 			break;
 		case 11:
+			break;
+	}
+	if ((retval == 0) && (strlen(cammsg) == 0))
+	{
+		strcpy(cammsg, qhy_core_msg());
+	}
+	return (retval);
+} 
+
+int imgcam_wheel(int pos)
+{
+	int retval = 1;
+	
+	cammsg[0] = '\0';
+	switch (camid)
+	{
+		case 20:
+		case 5:
+		case 52:
+		case 6:
+		case 60:
+		case 80:
+		case 81:
+			break;
+		case 7:
+		case 9:
+		case 11:
+			cammsg[0] = '\0';
+			retval = qhy_setColorWheel(pos);
 			break;
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))

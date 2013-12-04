@@ -79,6 +79,7 @@ char           *imgcam_get_model();
 void            imgcam_set_model(const char *val);
 unsigned char *imgcam_get_data();
 int             imgcam_loaded();
+int             imgcam_connected();
 char           *imgcam_get_msg();
 void            imgcam_init();
 char           *imgcam_init_list(int all);
@@ -91,5 +92,6 @@ int             imgcam_abort();
 int             imgcam_settec(int pwm);
 int             imgcam_gettec(double *tC, double *mV);
 int             imgcam_shutter(int cmd);
+int             imgcam_wheel(int pos);
 
 

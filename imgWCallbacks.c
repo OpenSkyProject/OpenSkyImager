@@ -503,7 +503,7 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 		printf("bytepix : %d\n", imgcam_get_shpar()->bytepix);
 		printf("bitpix  : %d\n", imgcam_get_shpar()->bitpix);
 		printf("tsize   : %d\n", imgcam_get_shpar()->tsize);*/
-		if (connected)
+		if (imgcam_connected())
 		{
 			g_rw_lock_reader_lock(&thd_caplock);
 			brun = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)? 1: 0;
@@ -839,13 +839,14 @@ void mainw_destroy( GtkWidget *widget, gpointer   data )
 gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	int retval = TRUE;
-	GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, C_("quit-message","Do you really want to quit?"));
+	GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, C_("quit-message","Confirm exit"));
+	gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog), C_("quit-message","Do you really want to quit?"));
 	gint result =  gtk_dialog_run (GTK_DIALOG (dialog));
 	
 	switch (result)
 	{
 		case GTK_RESPONSE_OK:
-			if (connected)
+			if (imgcam_connected())
 			{
 				//Press on disconnect
 				gtk_widget_activate(cmd_camera);
@@ -863,8 +864,7 @@ gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 }
 
 void cmb_debayer_changed (GtkComboBox *widget, gpointer user_data)
-{
-	
+{	
 	load_image_from_data();
 	if (!hst)
 	{
@@ -914,17 +914,29 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 	
 	if (error == 0)
 	{
-		if (connected)
+		if (imgcam_connected())
 		{
 			//Disconnect
 			if ((imgcam_get_tecp()->istec == 1))
 			{
+				// Terminates the tec thread and disable choice
 				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
 				gtk_widget_set_sensitive(cmd_tecenable, 0);
 			}
+			if (strlen(imgcam_get_camui()->whlstr) > 0)
+			{
+				// Delete In-camera Wheel choice is there's one
+				if (imgcfw_get_mode() == 99)
+				{
+					// Set connection to none (and reset cfwmode)
+					int pre = gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_cfw));
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), 0);
+					// Delete the 99-In Camera mode row
+					gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(cmb_cfw), pre);
+				}
+			}
 			if (imgcam_disconnect() == 1)
 			{
-				connected = 0;
 				// Disable camera model/type related UI 
 				combo_setlist(cmb_bin, "");
 				combo_setlist(cmb_csize, "");
@@ -961,7 +973,6 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 			//Connect
 			if (imgcam_connect() == 1)
 			{
-				connected = 1;
 				// Update camera model/type related UI 
 				// some choices can only be made after connection
 				int tmp = 0;
@@ -1007,6 +1018,13 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 				{
 					gtk_widget_set_sensitive(cmd_tecenable, 1);
 					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+				}
+				// In-camera Wheel?
+				if (strlen(imgcam_get_camui()->whlstr) > 0)
+				{
+					int pre = gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_cfw));
+					gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_cfw), C_("cfw","99-In camera"));
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), pre);
 				}
 			}
 			else
@@ -1120,7 +1138,7 @@ void cmb_csize_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int tmp;
-	char str[16];
+	char str[32];
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1144,7 +1162,7 @@ void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_mode_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int tmp;
-	char str[16];
+	char str[32];
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1176,7 +1194,7 @@ void cmb_mode_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_amp_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int tmp;
-	char str[16];
+	char str[32];
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1200,7 +1218,7 @@ void cmb_amp_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_denoise_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int tmp;
-	char str[16];
+	char str[32];
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1224,7 +1242,7 @@ void cmb_denoise_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_depth_changed (GtkComboBox *widget, gpointer user_data)
 {
 	int tmp;
-	char str[16];
+	char str[32];
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1593,19 +1611,46 @@ void cmd_timeadd_click(GtkWidget *widget, gpointer data)
 	}
 }   	
 
-void cmb_flt_changed (GtkComboBox *widget, gpointer user_data)
-{
-	if (gtk_combo_box_get_active(widget) > 0)
+void cmd_fltadd_click(GtkWidget *widget, gpointer data)
+{	
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)
 	{
-		strcpy(fitflt, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
-		sprintf(imgmsg, C_("main","Filter name: %s add to naming convention"), gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		gtk_widget_set_sensitive(cmb_flt, 1);
+		if (gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_flt)) != -1)
+		{
+			strcpy(fitflt, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cmb_flt)));
+		}
+		else
+		{
+			fitflt[0] = '\0';
+		}
+		sprintf(imgmsg, C_("main","Add filter to naming convention selected"));
 	}
 	else
 	{
-		fitflt[0] = '\0';	
-		sprintf(imgmsg, C_("main","Filter name removed from naming convention"));
+		gtk_widget_set_sensitive(cmb_flt, 0);
+		fitflt[0] = '\0';
+		sprintf(imgmsg, C_("main","Add filter to naming convention removed"));
 	}
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}   	
+
+void cmb_flt_changed (GtkComboBox *widget, gpointer user_data)
+{
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_fltadd)) == TRUE)
+	{
+		strcpy(fitflt, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		if (strlen(fitflt) > 0)
+		{
+			sprintf(imgmsg, C_("main","Filter name: %s add to naming convention"), fitflt);
+		}
+		else
+		{
+			fitflt[0] = '\0';	
+			sprintf(imgmsg, C_("main","Filter name removed from naming convention"));
+		}
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
 }
 
 void cmd_tecenable_click(GtkWidget *widget, gpointer data)
@@ -1615,7 +1660,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 	status = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE);
 	if (error == 0)
 	{
-		if (connected)
+		if (imgcam_connected())
 		{
 			if (imgcam_get_tecp()->istec == 1)
 			{
@@ -1746,5 +1791,198 @@ gboolean vsc_tecpwr_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 	return FALSE;
 }
 
+void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
+{
+	char str[32];
+	int  tmp = 0;
+	
+	sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%d-%s", &tmp, str);
+	if (imgcfw_set_mode(tmp) == 1)
+	{
+		switch (tmp)
+		{
+			case 0:
+				// GFW not in use, reset default filter list
+				combo_setlist(cmb_flt, fltstr);
+				break;
+				
+			case 1:
+				// QHY Serial
+				gtk_widget_set_sensitive(cmb_cfwtty, 1);
+				combo_ttylist(cmb_cfwtty);
+				gtk_widget_set_sensitive(cmd_cfwtty, 1);
+				gtk_widget_set_sensitive(cmd_cfw, 1);
+				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
+				// This will read the configuration from the wheel itself
+				break;
+			
+			case 99:
+				// This is manufacturer specific so we load the list of choices 
+				// from the camera UI.
+				combo_setlist(cmb_cfwcfg, imgcam_get_camui()->whlstr);
+				// Then only connect button and list of models are active
+				gtk_widget_set_sensitive(cmd_cfw, 1);
+				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
+		
+			default:
+				// Deactivate all
+				gtk_widget_set_sensitive(cmb_cfwcfg, 0);
+				gtk_widget_set_sensitive(cmb_cfwtty, 0);
+				gtk_widget_set_sensitive(cmd_cfwtty, 0);
+				gtk_widget_set_sensitive(cmd_cfw, 0);
+				break;				
+		}
+		sprintf(imgmsg, C_("cfw","Filter wheel mode set: %s"), str);
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}	
+	else
+	{
+		sprintf(imgmsg, C_("cfw","Could not set cfw mode"));
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+		gtk_combo_box_set_active(widget, 0);
+	}	
+}
 
+void cmb_cfwtty_changed (GtkComboBox *widget, gpointer user_data)
+{
+	if (gtk_widget_get_sensitive(GTK_WIDGET(widget)))
+	{
+		if (gtk_combo_box_get_active(widget) != -1)
+		{
+			imgcfw_set_tty(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		}
+		else
+		{
+			imgcfw_set_tty("");
+		}	
+		sprintf(imgmsg, C_("cfw","Filter wheel serial port: %s"), imgcfw_get_tty());
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
+}
+
+void cmd_cfwtty_click(GtkWidget *widget, gpointer data)
+{
+	combo_ttylist(cmb_cfwtty);
+	sprintf(imgmsg, C_("cfw","Serial port list reloaded"));
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);	
+}
+
+void cmd_cfw_click(GtkWidget *widget, gpointer data)
+{
+	static int error = 0;
+	
+	if (error == 0)
+	{
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)
+		{
+			// Not connected
+			if (imgcfw_connect())
+			{
+				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
+				gtk_widget_set_sensitive(cmd_cfwrst, (imgcfw_get_mode() == 1));
+				combo_setlist(cmb_cfwcfg, imgcfw_get_models());
+				gtk_button_set_label(GTK_BUTTON(widget), C_("cfw","Disconnect"));
+				sprintf(imgmsg, C_("cfw","Filter wheel connected to %s"), imgcfw_get_tty());
+			}
+			else
+			{
+				error = 1;
+				sprintf(imgmsg, "%s", imgcfw_get_msg());
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
+			}
+		}
+		else
+		{
+			// Connected
+			if (imgcfw_disconnect())
+			{
+				gtk_widget_set_sensitive(cmb_cfwcfg, 0);
+				gtk_widget_set_sensitive(cmd_cfwrst, 0);
+				gtk_button_set_label(GTK_BUTTON(widget), C_("cfw","Connect"));
+				sprintf(imgmsg, C_("cfw","Filter wheel disconnected"));
+			}
+			else
+			{
+				error = 1;
+				sprintf(imgmsg, "%s", imgcfw_get_msg());
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
+			}
+		}
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
+	else
+	{
+		error = 0;
+	}
+}
+
+void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
+{
+	int i = 0;
+	
+	if ((gtk_combo_box_get_active(widget) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(widget))))
+	{
+		imgcfw_set_model(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+		for (i = 0; i < CFW_SLOTS; i++)
+		{
+			gtk_widget_set_sensitive(cmb_cfwwhl[i], (i < imgcfw_get_slotcount()));
+			gtk_widget_set_sensitive(cmd_cfwwhl[i], (i < imgcfw_get_slotcount()));
+		}
+		sprintf(imgmsg, C_("cfw","Filter wheel configuration: %d slots, %s model"), imgcfw_get_slotcount(), imgcfw_get_model());
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
+}
+
+void cmd_cfwrst_click(GtkWidget *widget, gpointer data)
+{
+	if (imgcfw_reset())
+	{
+		sprintf(imgmsg, C_("cfw","Filter wheel controller factory reset done"));
+	}
+	else
+	{
+		sprintf(imgmsg, "%s", imgcfw_get_msg());
+	}
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);	
+}
+
+void cmb_cfwwhl_changed (GtkComboBox *widget, GtkWidget **awidget)
+{
+	char cfwfltstr[256];
+	int  i;
+
+	if ((gtk_combo_box_get_active(widget) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(widget))))
+	{
+		// If current combo has a meaningful value, recalc cmb_flt content
+		cfwfltstr[0] = '\0';
+		for (i = 0; i < imgcfw_get_slotcount(); i++)
+		{
+			if ((gtk_combo_box_get_active(GTK_COMBO_BOX(awidget[i])) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(awidget[i]))))
+			{
+				strcat(cfwfltstr, "|");
+				strcat(cfwfltstr, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(awidget[i])));
+			}
+		}
+		combo_setlist(cmb_flt, cfwfltstr);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), imgcfw_get_slot());
+	}
+}
+
+void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
+{
+	//printf("Got value: %d\n", (int)user_data);
+	//imgcfw_set_slot((int)user_data, NULL);
+	if (imgcfw_set_slot((int)user_data, (gpointer) cfwmsgdestroy))
+	{	
+		// Show the change slot message
+		cfwmsg = gtk_message_dialog_new ((GtkWindow *) window, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_NONE, C_("cfw","Please wait for the filter to reach position..."));	
+		gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(cfwmsg), C_("cfw","Dialog will disappear when done"));
+		//gtk_window_set_decorated(GTK_WINDOW(cfwmsg), FALSE);
+		gtk_window_set_deletable(GTK_WINDOW(cfwmsg), FALSE);
+		gtk_window_set_keep_above(GTK_WINDOW(cfwmsg), TRUE);
+		gtk_widget_show_all(cfwmsg);
+	}
+	sprintf(imgmsg, "%s", imgcfw_get_msg());
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}
 

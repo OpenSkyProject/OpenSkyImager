@@ -1,11 +1,11 @@
-../imgWindow.c
-../imgWFuncs.c
-../imgWCallbacks.c
-../imgPixbuf.c
-../imgFitsio.c
 ../imgCamio.c
+../imgCFWio.c
+../imgFitsio.c
+../imgPixbuf.c
+../imgWCallbacks.c
+../imgWFuncs.c
+../imgWindow.c
 ../libusbio.c
-../qhycore.c
 ../qhy2old.c
 ../qhy5.c
 ../qhy5ii.c
@@ -16,4 +16,5 @@
 ../qhy8old.c
 ../qhy9.c
 ../qhy11.c
-
+../qhycore.c
+../ttycom.c

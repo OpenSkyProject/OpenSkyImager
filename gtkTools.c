@@ -103,6 +103,15 @@ GtkWidget *gtk_toggle_button_new_with_label_color(const gchar *label, gint width
 	return cmd;
 }
 
+void gtk_combo_wakeup(GtkWidget *widget)
+{
+	// Nth workaround on GT3 bug. 
+	// Auto sensitivity needs to be triggered by one fake element add and delete
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "");
+	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(widget))));
+	gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(widget), GTK_SENSITIVITY_AUTO);
+}
+
 GtkWidget *gtk_paned_new_with_handle(GtkOrientation orientation)
 {
 	GtkWidget *pnd = gtk_paned_new(orientation);

@@ -233,15 +233,17 @@ void load_histogram_from_null()
 void tec_init_graph()
 {
 	int rowstride;
-	int row, col;
+	int row, col, rows, cols;
 	guchar *pixels, *p;
 	
 	rowstride = gdk_pixbuf_get_rowstride (tecpixbuf);
 	pixels    = gdk_pixbuf_get_pixels (tecpixbuf);
+	rows      = gdk_pixbuf_get_height(tecpixbuf);
+	cols      = gdk_pixbuf_get_width(tecpixbuf);
 	
-	for (row = 59; row >= 0; row--)
+	for (row = 0; row < rows; row++)
 	{
-		for (col = 0; col < 120; col++)
+		for (col = 0; col < cols; col++)
 		{
 			p = pixels + row * rowstride + col * 3;
 			p[0] = 200;
@@ -255,16 +257,18 @@ void tec_init_graph()
 void tec_print_graph()
 {
 	int rowstride;
-	int row, col;
+	int row, col, rows, cols;
 	guchar *pixels, *p;
 	
 	rowstride = gdk_pixbuf_get_rowstride (tecpixbuf);
 	pixels    = gdk_pixbuf_get_pixels (tecpixbuf);
+	rows      = gdk_pixbuf_get_height(tecpixbuf);
+	cols      = gdk_pixbuf_get_width(tecpixbuf);
 
 	// Shift pixels left one col
-	for (row = 59; row >= 0; row--)
+	for (row = 0; row < rows; row++)
 	{
-		for (col = 0; col < 119; col++)
+		for (col = 0; col < cols; col++)
 		{
 			p = pixels + row * rowstride + col * 3;
 			p[0] = p[3];
@@ -272,11 +276,11 @@ void tec_print_graph()
 			p[2] = p[5];
 		}
 	}
-	for (row = 59; row >= 0; row--)
+	for (row = 0; row < rows; row++)
 	{
-		p = pixels + row * rowstride + 119 * 3;
-		p[0] = (imgcam_get_tecp()->tectemp < (((row + 1)*-1) + 20)) ? 200 : 130;
-		p[1] = (imgcam_get_tecp()->tectemp < (((row + 1)*-1) + 20)) ? 200 : 160;
+		p = pixels + row * rowstride + (cols - 1) * 3;
+		p[0] = (imgcam_get_tecp()->tectemp <= (-row + 30)) ? 200 : 130;
+		p[1] = (imgcam_get_tecp()->tectemp <= (-row + 30)) ? 200 : 160;
 		p[2] = 200;
 	}	
 	tec_show_graph();
@@ -306,8 +310,8 @@ void combo_setlist(GtkWidget *cmb, char *str)
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(cmb)) != -1)
 	{
 		gtk_combo_box_set_active(GTK_COMBO_BOX(cmb), 0);
-		gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb))));
 	}
+	gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb))));
 	
 	if (strchr(str, '|') != NULL)
 	{
@@ -349,6 +353,31 @@ void combo_setlist(GtkWidget *cmb, char *str)
 			gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb), tmp);
 		}
 		gtk_combo_box_set_active(GTK_COMBO_BOX(cmb), val4);
+	}
+}
+
+void combo_ttylist(GtkWidget *cmb)
+{
+	char ttylist[2048];
+
+	getComList(ttylist);
+	combo_setlist(cmb, ttylist);
+}
+
+void cfwmsgdestroy(int response)
+{
+	gtk_dialog_response(GTK_DIALOG(cfwmsg), GTK_RESPONSE_NONE);
+	gtk_widget_destroy(cfwmsg);
+	
+	if (response == 1)
+	{
+		// All ok, select the filter name for the naming convention
+		gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), imgcfw_get_slot());
+	}
+	else
+	{
+		sprintf(imgmsg, C_("cfw","Filter wheel reported error"));
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 }
 
@@ -913,3 +942,4 @@ gpointer thd_temp_run(gpointer thd_data)
 	}
 	return 0;
 }
+

@@ -25,10 +25,12 @@
 #include <glib/gi18n.h>
 #include <locale.h>
 #include "imgBase.h"
+#include "ttylist.h"
 #include "gtkTools.h"
 #include "imgPixbuf.h"
 #include "imgFitsio.h"
 #include "imgCamio.h"
+#include "imgCFWio.h"
 #include "gtkversions.h"
 
 #define TAB_IMAGE    0
@@ -42,6 +44,8 @@
 #define TAB_HEADER    5
 #define TAB_CFW       6
 #define TAB_CALC      7
+
+#define CFW_SLOTS     8
 
 #ifdef DECLARE_WINDOW
 
@@ -70,11 +74,12 @@
 	GtkWidget *cmb_camera, *cmb_bin, *cmb_csize, *cmb_dspeed, *cmb_mode, *lbl_mode, *cmb_amp, *cmb_denoise, *cmb_depth, *cmb_debayer;
 	GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
 	GtkWidget *cmd_tecenable, *cmd_tecauto, *spn_tectgt, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
-	GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt;
+	GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd;
 	GtkWidget *txt_fitfolder, *txt_fitbase;
 	GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	GtkWidget *cmd_tlenable;
 	GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
+	GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmd_cfwrst, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS], *cfwmsg;
 	GtkWidget *hsc_offset, *hsc_gain;
 	GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps;
 	GdkCursor* watchCursor;
@@ -101,7 +106,6 @@
 	int expnum = 0, shots = 0;
 	double shotfract = 0., expfract = 0.;
 	int fullcamlist = 0;	
-	int connected = 0;	
 	int uibytepix = 1;
 	int scrmaxadu = 255;
 	int scrminadu = 0;
@@ -156,11 +160,12 @@
 	extern GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
 	extern GtkWidget *cmd_tecenable, *cmd_tecauto, *spn_tectgt, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
 	extern GtkWidget *hsc_offset, *hsc_gain;
-	extern GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt;
+	extern GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd;
 	extern GtkWidget *txt_fitfolder, *txt_fitbase;
 	extern GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	extern GtkWidget *cmd_tlenable;
 	extern GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
+	extern GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmd_cfwrst, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS], *cfwmsg;
 	extern GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps;
 	extern GdkCursor* watchCursor;
 	extern GdkPixbuf *tecpixbuf;
@@ -186,7 +191,6 @@
 	extern int expnum, shots;
 	extern double shotfract, expfract;
 	extern int fullcamlist;	
-	extern int connected;	
 	extern int uibytepix;
 	extern int scrmaxadu;
 	extern int scrminadu;

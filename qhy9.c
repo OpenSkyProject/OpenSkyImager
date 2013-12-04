@@ -86,7 +86,7 @@ void qhy9_init()
 	strcpy(imgcam_get_camui()->bppstr, "2-16Bit|:0");
 	strcpy(imgcam_get_camui()->byrstr, "0");
 	strcpy(imgcam_get_camui()->tecstr, "0:255:1:2");
-	strcpy(imgcam_get_camui()->whlstr, "0|1|2|3|4:0");
+	strcpy(imgcam_get_camui()->whlstr, C_("camio","5-Positions|6-Positions|7-Positions|8-Positions:0"));
 	
 	imgcam_get_expar()->bitpix  = 16;	
 	imgcam_get_expar()->bytepix = 2;	

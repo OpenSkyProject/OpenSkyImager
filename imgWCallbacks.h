@@ -84,9 +84,17 @@ void txt_fitfolder_changed(GtkEditable *editable, gpointer user_data);
 void txt_fitbase_changed(GtkEditable *editable, gpointer user_data);
 void cmd_dateadd_click(GtkWidget *widget, gpointer data);
 void cmd_timeadd_click(GtkWidget *widget, gpointer data);
+void cmd_fltadd_click(GtkWidget *widget, gpointer data);
 void cmb_flt_changed (GtkComboBox *widget, gpointer user_data);
 void cmd_tecenable_click(GtkWidget *widget, gpointer data);
 void cmd_tecauto_click(GtkWidget *widget, gpointer data);
 gboolean spn_tectgt_changed(GtkSpinButton *spinbutton, gpointer user_data);
 gboolean vsc_tecpwr_changed (GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
-
+void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data);
+void cmb_cfwtty_changed (GtkComboBox *widget, gpointer user_data);
+void cmd_cfwtty_click(GtkWidget *widget, gpointer data);
+void cmd_cfw_click(GtkWidget *widget, gpointer data);
+void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data);
+void cmd_cfwrst_click(GtkWidget *widget, gpointer data);
+void cmb_cfwwhl_changed (GtkComboBox *widget, GtkWidget **awidget);
+void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data);
