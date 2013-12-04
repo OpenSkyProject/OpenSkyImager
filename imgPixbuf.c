@@ -287,7 +287,7 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 					// From next row
 					for (pix = 0; pix < 2; pix++)
 					{
-						pix8 = (databuffer + (row + 1) * width * 2 + col * 2) + pix;
+						pix8 = (databuffer + ((row * width * 2) + width) + col * 2) + pix;
 						pixH += *pix8;
 						if (mask[pix + 2] == 0)
 						{
@@ -367,7 +367,7 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 					// From next row
 					for (pix = 0; pix < 2; pix++)
 					{
-						pix8 = databuffer + (row + 1) * width * 4 + col * 4 + pix * 2;
+						pix8 = databuffer + ((row * width * 4) + (width * 2)) + col * 4 + pix * 2;
 						pix16 = pix8 + 1;
 						pixH += (*pix8 + *pix16 * 256);
 						if (mask[pix + 2] == 0)
