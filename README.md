@@ -26,7 +26,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Supported camera list
 ==================
-As of version 0.5.1 several QHY camera are actively developed against:
+As of version 0.6.0 several QHY camera are actively developed against:
 QHY2 (old color model),5,5II series,6 (both firmware),7,8 (Old model),8L,9,11.
 
 Models that have been 100% tested are: QHY5,5II series,6 (both firmware),7,9,11.
@@ -48,10 +48,15 @@ but your assistence will be needed for testing.
 
 If not a request can be submitted on the QHY forum http://www.qhyccd.com/ccdbbs
 
+Color filter wheel support
+=======================
+As of version 0.6.0 QHY 5 positions 2" is supported, both with serial and 
+through camera connection.
+Models that are known to suppor cfw-through connection are QHY7/9/11.
 
 Internationalization
 ==================
-As of version 0.5.1 only embedded Us English, Italian, French and Chinese are 
+As of version 0.6.0 only embedded Us English, Italian, French and Chinese are 
 available.
 There is an ongoing effort for German and Spanish, going on already.
 Please feel free to volunteer for additional languages.
@@ -91,7 +96,7 @@ command line issue:
 	make -f gtkImager.mak  -> GTK2 version
 	make -f gtk3Imager.mak -> GTK3 version
 	
-As of version 0.5.1 features of the two versions are *exactly* the same, while
+As of version 0.6.0 features of the two versions are *exactly* the same, while
 appearance may differ a bit, also depending on your "theme" settings.
 
 You're not expected to see error messages or warnings while compiline. If so, 
