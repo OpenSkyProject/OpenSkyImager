@@ -22,8 +22,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libusbio.h"
+#include <stdlib.h>
+#include <stdio.h>
 #include <glib/gi18n.h>
+#include "libusbio.h"
 
 int find_camera(int vendorid, int productid) 
 {

@@ -20,9 +20,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fitsio.h>
-#include "imgBase.h"
-
 // imgFitsio "class" methods
 int             imgfit_get_width();
 void            imgfit_set_width(int val);

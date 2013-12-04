@@ -32,8 +32,6 @@
 #include "ttylist.h"
 #include "imgBase.h"
 #include <sys/stat.h>
-#include <glib.h>
-#include <glib/gi18n.h>
 #include "imgCamio.h"
 #include "imgCFWio.h"
 
@@ -209,7 +207,12 @@ int imgcfw_connect()
 			// QHY-Serial
 			if ((ttyresult = tty_connect(cfwtty, 9600, 8, PARITY_NONE, 1, &cfwttyfd)) == TTY_OK)
 			{
-				retval = imgcfw_read_all();
+				if ((retval = imgcfw_read_all()) == 0)
+				{
+					// If read failed, give up and close port
+					tty_disconnect(cfwttyfd);
+					cfwttyfd = -1;
+				}
 			}
 			else
 			{
@@ -358,17 +361,20 @@ int imgcfw_reset()
 	cfwmsg[0] = '\0';
 	if (cfwttyfd > -1)
 	{
+		printf("Reset request with valid / open ttyport\n");
 		/* Flush the input buffer */
 		tcflush(cfwttyfd,TCIOFLUSH);
 		// Sending "SEF"
 		if ((ttyresult = tty_write(cfwttyfd, wbuf, sizeof(wbuf), &nbrw)) == TTY_OK)
 		{
+			printf("Reset request ok, successfully sent %d bytes, sent %c%c%c\n", nbrw, wbuf[0], wbuf[1], wbuf[2]);
 			// Since there's no answer for this command we must assume all is good
 		}
 		else
 		{
 			char ttyerr[512];
 			tty_error_msg(ttyresult, ttyerr, 512);
+			printf(C_("cfw","Could not write to CFW on serial port %s, error: %s"), cfwtty, ttyerr);
 			sprintf(cfwmsg, C_("cfw","Could not write to CFW on serial port %s, error: %s"), cfwtty, ttyerr);
 		}
 	}

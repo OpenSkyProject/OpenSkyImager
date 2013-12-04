@@ -29,7 +29,6 @@
 #define FWFILE      "qhy6.hex"
 
 #include "imgBase.h"
-#include <glib/gi18n.h>
 #include "libusbio.h"
 #include "qhycore.h"
 #include "imgCamio.h"

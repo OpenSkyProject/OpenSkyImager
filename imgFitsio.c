@@ -23,8 +23,9 @@
  */
 
 // imgFitsio "class" code
+#include <fitsio.h>
+#include "imgBase.h"
 #include "imgFitsio.h"
-#include <glib/gi18n.h>
 
 static unsigned char *databuffer = NULL;
 static int status = 0;

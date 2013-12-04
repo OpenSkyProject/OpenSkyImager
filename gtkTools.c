@@ -21,7 +21,6 @@
  */
 
 #include <gtk/gtk.h>
-#include <glib.h>
 #include "imgBase.h"
 #include "gtkversions.h"
 #include "gtkTools.h"

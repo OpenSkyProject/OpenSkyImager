@@ -23,7 +23,6 @@
 // imgcamio "class" code
 #include "imgCamio.h"
 #include "imgBase.h"
-#include <glib/gi18n.h>
 #include "libusbio.h"
 #include "qhycore.h"
 #include "qhy2old.h"

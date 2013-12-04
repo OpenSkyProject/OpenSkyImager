@@ -1823,6 +1823,7 @@ void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 				// Then only connect button and list of models are active
 				gtk_widget_set_sensitive(cmd_cfw, 1);
 				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
+				break;
 		
 			default:
 				// Deactivate all

@@ -22,8 +22,6 @@
 
 // imgPixbuf "class" code
 #include <gtk/gtk.h>
-#include <glib.h>
-#include <glib/gi18n.h>
 #include "imgBase.h"
 #include "imgPixbuf.h"
 

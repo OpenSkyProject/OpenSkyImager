@@ -20,8 +20,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <libusb-1.0/libusb.h>
 
 int find_camera(int vendorid, int productid);

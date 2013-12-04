@@ -34,7 +34,6 @@
 #define BUFWORD(b,p,W)  b[p] = ((unsigned char)(W>>8)) ; b[p+1] = ((unsigned char)(W&0xFF))
 
 #include "imgBase.h"
-#include <glib/gi18n.h>
 #include "libusbio.h"
 #include "qhycore.h"
 #include "imgCamio.h"

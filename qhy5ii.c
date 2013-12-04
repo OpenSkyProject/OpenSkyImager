@@ -33,7 +33,6 @@
 #define USBTRAFFIC  30 // The higher the slower, max 255. (30, suggested)
 
 #include "imgBase.h"
-#include <glib/gi18n.h>
 #include "libusbio.h"
 #include "qhycore.h"
 #include "imgCamio.h"

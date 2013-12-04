@@ -28,6 +28,8 @@
 #include <time.h>
 #include <math.h>
 #include <wait.h>
+#include <glib.h>
+#include <glib/gi18n.h>
 #include "tools.h"
 
 #define APPICO "./ico.png"
