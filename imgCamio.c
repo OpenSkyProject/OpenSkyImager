@@ -788,8 +788,11 @@ int imgcam_wheel(int pos)
 		case 80:
 		case 81:
 			break;
-		case 7:
 		case 9:
+			cammsg[0] = '\0';
+			retval = qhy9_setColorWheel(pos);
+			break;
+		case 7:
 		case 11:
 			cammsg[0] = '\0';
 			retval = qhy_setColorWheel(pos);
