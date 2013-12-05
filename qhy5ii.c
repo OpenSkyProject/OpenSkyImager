@@ -140,36 +140,70 @@ int  qhy5ii_reset()
 int qhy5ii_setregisters(qhy_exposure *expar)
 {
 	int retval = 1;
+	int ch, cw, cu, ce, cg, cs, cB; 
+	static int bpp = 1;
 	
 	expar->wtime = expar->time;
-	// Set "class" properties
-	width   = expar->width;
-	height  = expar->height;
-	usbspd  = expar->mode;
-	exptime = expar->time;
-	gain    = expar->gain;
-	bin     = expar->bin;
-	speed   = expar->speed;
-	bytepix = (expar->bytepix > 1) ? 2 : 1;
-	hdr     = (expar->bytepix > 2) ? 1 : 0;
-	//printf ("Bpp: %d, Hdr: %d\n", bytepix, hdr);
 	if (expar->edit)
 	{
+		// Set switches
+		cw = (width   != expar->width);
+		ch = (height  != expar->height);
+		cu = (usbspd  != expar->mode);
+		ce = (exptime != expar->time);
+		cg = (gain    != expar->gain);
+		cs = (speed   != expar->speed);
+		cB = (bpp     != expar->bytepix);
+		// Set "class" properties
+		width   = expar->width;
+		height  = expar->height;
+		usbspd  = expar->mode;
+		exptime = expar->time;
+		gain    = expar->gain;
+		bin     = expar->bin;
+		speed   = expar->speed;
+		bytepix = (expar->bytepix > 1) ? 2 : 1;
+		hdr     = (expar->bytepix > 2) ? 1 : 0;
+		bpp     = expar->bytepix;
+		//printf ("Bpp: %d, Hdr: %d\n", bytepix, hdr);
 		// Camera set
-		if (camvariant == 1)
-		{
-			//QHY5L-II
-			retval = (retval == 1) ? qhy5lii_SetDepth(bytepix) : 0;
-			retval = (retval == 1) ? qhy5lii_SetHDR(hdr) : 0; 
+		if (cw || ch || cB)
+		{ 
+			if (camvariant == 1)
+			{
+				//QHY5L-II
+				retval = (retval == 1) ? qhy5lii_SetDepth(bytepix) : 0;
+				retval = (retval == 1) ? qhy5lii_SetHDR(hdr) : 0; 
+			}
+			// If change size the whole shebang must be reset
+			retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
+			retval = (retval == 1) ? qhy5ii_SetSpeed(speed) : 0;
+			retval = (retval == 1) ? qhy5ii_set_imgsize(width, height) : 0;
+			retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime) : 0;
+			retval = (retval == 1) ? qhy5ii_SetGain(gain) : 0;
+			retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
+			retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime): 0;
 		}
-		retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
-		retval = (retval == 1) ? qhy5ii_SetSpeed(speed) : 0;
-		retval = (retval == 1) ? qhy5ii_set_imgsize(width, height) : 0;
-		retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime) : 0;
-		retval = (retval == 1) ? qhy5ii_SetGain(gain) : 0;
-		retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
-		retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime): 0;
-
+		else
+		{
+			// If not change size each parameters can be set
+			if (cu)
+			{ 
+				retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
+			}
+			if (cs)
+			{ 
+				retval = (retval == 1) ? qhy5ii_SetSpeed(speed) : 0;
+			}
+			if (ce)
+			{ 
+				retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime) : 0;
+			}
+			if (cg)
+			{ 
+				retval = (retval == 1) ? qhy5ii_SetGain(gain) : 0;
+			}
+		}
 		// Reg set
 		totalsize      = width * height * bytepix;
 		transfer_size  = totalsize + (IMGOFFSET * bytepix);
@@ -643,7 +677,8 @@ void qhy5lii_SetGainMono(double gain)
 	double Gain_Min, Gain_Max;
 
 	Gain_Min = 0.;
-	Gain_Max = 39.8;
+	//Gain_Max = 39.8;
+	Gain_Max = 79.6;
 	
 	gain = (Gain_Max - Gain_Min) * gain / 100;
 	gain = MAX(1, gain);

@@ -489,7 +489,7 @@ int imgcam_shoot()
 			}
 			break;
 		case 52:
-			if ((retval = ((1 == 1) ? qhy5ii_setregisters(&shpar) : 1)) == 1)
+			if ((retval = qhy5ii_setregisters(&shpar)) == 1)
 			{
 				retval = qhy_ccdStartExposure(shpar.time);
 			}
