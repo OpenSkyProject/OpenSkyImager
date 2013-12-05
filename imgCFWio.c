@@ -248,7 +248,6 @@ int imgcfw_disconnect()
 	int retval = 0;
 	
 	cfwmsg[0] = '\0';
-	printf("CFW disconnect request, mode %d\n", cfwmode);
 	switch (cfwmode)
 	{
 		case 0:
@@ -258,7 +257,6 @@ int imgcfw_disconnect()
 			// QHY-Serial
 			if ((retval = tty_disconnect(cfwttyfd)) == TTY_OK)
 			{
-				printf("CFW disconnect ok\n");
 				cfwttyfd = -1;
 				cfwmodel[0] = '\0';
 				cfwslotc = 0;
@@ -269,17 +267,16 @@ int imgcfw_disconnect()
 			{
 				char ttyerr[512];
 				tty_error_msg(retval, ttyerr, 512);
-				printf(C_("cfw","Could not disconnect from CFW on serial port %s, error: %s"), cfwtty, ttyerr);
 				sprintf(cfwmsg, C_("cfw","Could not disconnect from CFW on serial port %s, error: %s"), cfwtty, ttyerr);
 			}
 			break;
 			
 		case 99:
 			// Qhy-through-camera
-			retval = 1;
+			retval = TTY_OK;
 			break;
 	}
-	return (retval);
+	return (retval == TTY_OK);
 }
 
 int imgcfw_read_all()
