@@ -1,106 +1,108 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR 2013 JP & C Software
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# FIRST AUTHOR fabrice@phung.fr, 2013
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSkyImager 0.5.0\n"
 "Report-Msgid-Bugs-To: gspezzano@gmail.com\n"
-"POT-Creation-Date: 2013-12-05 12:13+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"POT-Creation-Date: 2013-12-05 11:01+0100\n"
+"PO-Revision-Date: 2013-12-05 14:16+0100\n"
+"Last-Translator: fphg <fabrice@phung.fr>\n"
+"Language: fr_FR\n"
+"Language-Team: fr_FR <fabrice@phung.fr>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: ../imgCFWio.c:141 ../imgCFWio.c:235
 msgctxt "cfw"
 msgid "Camera is not connected"
-msgstr ""
+msgstr "La caméra n'est pas connectée"
 
 #: ../imgCFWio.c:145 ../imgCFWio.c:239
 msgctxt "cfw"
 msgid "Camera does not support direct CFW connection"
-msgstr ""
+msgstr "La caméra ne supporte pas la connection directe roue"
 
 #: ../imgCFWio.c:171
 msgctxt "cfw"
 msgid "Serial port does not exist"
-msgstr ""
+msgstr "Le port série n'existe pas"
 
 #. / This will complete: "Filter wheel connected to %s"
 #: ../imgCFWio.c:190
 msgctxt "cfw"
 msgid "camera"
-msgstr ""
+msgstr "caméra"
 
 #: ../imgCFWio.c:221
 #, c-format
 msgctxt "cfw"
 msgid "Could not connect to CFW on serial port %s, error: %s"
-msgstr ""
+msgstr "Connexion roue échouée sur le port série %s, erreur: %s"
 
 #: ../imgCFWio.c:272 ../imgCFWio.c:273
 #, c-format
 msgctxt "cfw"
 msgid "Could not disconnect from CFW on serial port %s, error: %s"
-msgstr ""
+msgstr "Déconnexion roue échouée sur le port série %s, erreur: %s"
 
 #. / Model name
 #: ../imgCFWio.c:313
 msgctxt "cfw"
 msgid "5-QHY 5 slots 2\""
-msgstr ""
+msgstr "5-QHY 5 slots 2\""
 
 #: ../imgCFWio.c:314
 msgctxt "cfw"
 msgid "|5-QHY 5 slots 2\""
-msgstr ""
+msgstr "|5-QHY 5 slots 2\""
 
 #. / Model name
 #: ../imgCFWio.c:325
 msgctxt "cfw"
 msgid "8-QHY serial"
-msgstr ""
+msgstr "8-QHY série"
 
 #: ../imgCFWio.c:326
 msgctxt "cfw"
 msgid "|8-QHY serial"
-msgstr ""
+msgstr "|8-QHY série"
 
 #: ../imgCFWio.c:345
 #, c-format
 msgctxt "cfw"
 msgid "Could not read from CFW on serial port %s, error: %s"
-msgstr ""
+msgstr "ne peut lire depuis la roue sur le port série %s, erreur %s"
 
 #: ../imgCFWio.c:352 ../imgCFWio.c:380 ../imgCFWio.c:381 ../imgCFWio.c:450
 #, c-format
 msgctxt "cfw"
 msgid "Could not write to CFW on serial port %s, error: %s"
-msgstr ""
+msgstr "ne peut écrire vers la roue sur le port série %s, erreur %s"
 
 #: ../imgCFWio.c:433 ../imgCFWio.c:465
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel moving to slot: %d"
-msgstr ""
+msgstr "Déplacement roue à filtre sur slot: %d"
 
 #: ../imgCFWio.c:442
 msgctxt "cfw"
 msgid ""
 "Could not start notification thread, btw slot selection command was sent ok."
 msgstr ""
+"N'a pas pu démarrer la notification, mais la commande de sélection slot a "
+"bien été envoyée."
 
 #: ../imgCFWio.c:455
 #, c-format
 msgctxt "cfw"
 msgid "Requested slot (%d) does not exist. Slots = %d"
-msgstr ""
+msgstr "le slot demandé (%d) n'existe pas. Slots = %d"
 
 #. / Value "No cam" of the models combo
 #: ../imgCamio.c:154 ../imgCamio.c:278 ../imgCamio.c:284 ../imgWindow.c:1137
@@ -406,7 +408,7 @@ msgstr "Afficher prévisualisation"
 #: ../imgWCallbacks.c:842
 msgctxt "quit-message"
 msgid "Confirm exit"
-msgstr ""
+msgstr "Confirmer sortie"
 
 #: ../imgWCallbacks.c:842 ../imgWCallbacks.c:843
 msgctxt "quit-message"
@@ -457,7 +459,7 @@ msgstr "Caméra %s connectée"
 #: ../imgWCallbacks.c:1026
 msgctxt "cfw"
 msgid "99-In camera"
-msgstr ""
+msgstr "99-Dans caméra"
 
 #: ../imgWCallbacks.c:1034 ../imgWCallbacks.c:1052
 msgctxt "main"
@@ -642,12 +644,12 @@ msgstr "Nom du filtre supprimé de la convention de nommage"
 #: ../imgWCallbacks.c:1627
 msgctxt "main"
 msgid "Add filter to naming convention selected"
-msgstr ""
+msgstr "Ajouter filter à convention de nommage sélectionné"
 
 #: ../imgWCallbacks.c:1633
 msgctxt "main"
 msgid "Add filter to naming convention removed"
-msgstr ""
+msgstr "Ajouter filtre à convention de nommage supprimé"
 
 #: ../imgWCallbacks.c:1637 ../imgWCallbacks.c:1682
 #, c-format
@@ -660,8 +662,8 @@ msgctxt "cooling"
 msgid "Reading tec"
 msgstr "Lecture temp."
 
-#: ../imgWCallbacks.c:1669 ../imgWCallbacks.c:1714 ../imgWCallbacks.c:1730
-#: ../imgWindow.c:568 ../imgWindow.c:599
+#: ../imgWCallbacks.c:1669 ../imgWCallbacks.c:1685 ../imgWCallbacks.c:1714
+#: ../imgWCallbacks.c:1730 ../imgWindow.c:568 ../imgWindow.c:599
 msgctxt "cooling"
 msgid "Enable tec read"
 msgstr "Activer lecture temp."
@@ -699,65 +701,65 @@ msgstr "Temp. sur manuel"
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel mode set: %s"
-msgstr ""
+msgstr "Mode roue à filtre sur: %s"
 
 #: ../imgWCallbacks.c:1841
 msgctxt "cfw"
 msgid "Could not set cfw mode"
-msgstr ""
+msgstr "N'a pas pu régler mode roue à filtre"
 
 #: ../imgWCallbacks.c:1859
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel serial port: %s"
-msgstr ""
+msgstr "Port série roue à filtre: %s"
 
 #: ../imgWCallbacks.c:1867
 msgctxt "cfw"
 msgid "Serial port list reloaded"
-msgstr ""
+msgstr "Liste ports série rechargée"
 
 #: ../imgWCallbacks.c:1885
 msgctxt "cfw"
 msgid "Disconnect"
-msgstr ""
+msgstr "Déconnecter"
 
 #: ../imgWCallbacks.c:1886
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel connected to %s"
-msgstr ""
+msgstr "Roue à filtre connectée à %s"
 
 #: ../imgWCallbacks.c:1902 ../imgWindow.c:761
 msgctxt "cfw"
 msgid "Connect"
-msgstr ""
+msgstr "Connecter"
 
 #: ../imgWCallbacks.c:1903
 msgctxt "cfw"
 msgid "Filter wheel disconnected"
-msgstr ""
+msgstr "Roue à filtre déconnectée"
 
 #: ../imgWCallbacks.c:1932
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel configuration: %d slots, %s model"
-msgstr ""
+msgstr "Configuration roue à filtre: %d slots, modèle %s"
 
 #: ../imgWCallbacks.c:1941
 msgctxt "cfw"
 msgid "Filter wheel controller factory reset done"
-msgstr ""
+msgstr "Reset usine roue à filtre effectué"
 
 #: ../imgWCallbacks.c:1979
 msgctxt "cfw"
 msgid "Please wait for the filter to reach position..."
-msgstr ""
+msgstr "Attendre que le filtre atteigne sa position..."
 
 #: ../imgWCallbacks.c:1980
 msgctxt "cfw"
 msgid "Dialog will disappear when done"
-msgstr ""
+msgstr "La dialogue disparaîtra lorsque terminé"
 
 #: ../imgWFuncs.c:30
 msgctxt "dialog-open"
@@ -767,7 +769,7 @@ msgstr "Ouvrir fichier"
 #: ../imgWFuncs.c:379
 msgctxt "cfw"
 msgid "Filter wheel reported error"
-msgstr ""
+msgstr "La roue à filtre à rapporté l'erreur"
 
 #: ../imgWindow.c:183
 msgctxt "main"
@@ -833,7 +835,7 @@ msgstr "Ajouter heure"
 #: ../imgWindow.c:581
 msgctxt "filename"
 msgid "Add filter"
-msgstr ""
+msgstr "Ajouter filtre"
 
 #: ../imgWindow.c:653 ../imgWindow.c:698
 msgctxt "timelapse"
@@ -879,12 +881,12 @@ msgstr "Taille capture"
 #: ../imgWindow.c:730
 msgctxt "cfw"
 msgid "0-None"
-msgstr ""
+msgstr "0-Aucun"
 
 #: ../imgWindow.c:731
 msgctxt "cfw"
 msgid "1-QHY Serial"
-msgstr ""
+msgstr "1-QHY Série"
 
 #: ../imgWindow.c:732 ../imgWindow.c:880
 msgctxt "settings"
@@ -914,7 +916,7 @@ msgstr "Mode couleur"
 #: ../imgWindow.c:751
 msgctxt "cfw"
 msgid "Refresh"
-msgstr ""
+msgstr "Rafraîchir"
 
 #: ../imgWindow.c:771 ../imgWindow.c:919
 msgctxt "cooling"
@@ -934,7 +936,7 @@ msgstr "Puissance %"
 #: ../imgWindow.c:782
 msgctxt "cfw"
 msgid "Factory Reset"
-msgstr ""
+msgstr "Reset usine"
 
 #: ../imgWindow.c:804
 msgctxt "filename"
@@ -946,7 +948,7 @@ msgstr "Filtre: "
 #, c-format
 msgctxt "cfw"
 msgid "Slot %d"
-msgstr ""
+msgstr "Slot %d"
 
 #: ../imgWindow.c:830 ../imgWindow.c:978
 msgctxt "timelapse"
@@ -993,9 +995,9 @@ msgctxt "main"
 msgid "CFW"
 msgstr "CFW"
 
-#: ../imgWindow.c:952 ../imgWindow.c:1138
+#: ../imgWindow.c:952
 msgctxt "main"
-msgid "FOV Calc"
+msgid "FOW Calc"
 msgstr "Calcul FOV"
 
 #: ../imgWindow.c:986 ../imgWindow.c:1172
@@ -1016,12 +1018,17 @@ msgstr "Captures enregistrées"
 #: ../imgWindow.c:1094
 msgctxt "cfw"
 msgid "Connection"
-msgstr ""
+msgstr "Connexion"
 
 #: ../imgWindow.c:1100
 msgctxt "cfw"
 msgid "Configuration"
-msgstr ""
+msgstr "Configuration"
+
+#: ../imgWindow.c:1138
+msgctxt "main"
+msgid "FOV Calc"
+msgstr "Calcul FOV"
 
 #: ../libusbio.c:94 ../libusbio.c:96
 msgctxt "usbio"
@@ -1053,7 +1060,7 @@ msgstr "0-Ampli Off|1-Ampli On|2-Automatique:2"
 #: ../qhy11.c:88 ../qhy7.c:89 ../qhy9.c:88
 msgctxt "camio"
 msgid "5-Positions|6-Positions|7-Positions|8-Positions:0"
-msgstr ""
+msgstr "5-Positions|6-Positions|7-Positions|8-Positions:0"
 
 #: ../qhy11.c:114 ../qhy11.c:115 ../qhy2old.c:120 ../qhy2old.c:121
 #: ../qhy5.c:129 ../qhy5.c:130 ../qhy5ii.c:128 ../qhy5ii.c:129 ../qhy6.c:114
@@ -1106,10 +1113,10 @@ msgid "Usb bus speed"
 msgstr "Vitesse du bus USB"
 
 #. / Combo box values list, keep N-<desc> format. Just translate <desc>
-#: ../qhy5ii.c:297
+#: ../qhy5ii.c:297 ../qhy5ii.c:298
 msgctxt "camio"
 msgid "0-Off|1-On:0"
-msgstr ""
+msgstr "0-Eteint|1-Allumé:0"
 
 #: ../qhy6old.c:87 ../qhy6old.c:88
 msgctxt "camio"
@@ -1158,30 +1165,30 @@ msgstr "Erreur sur I2CTwoWrite (%d)"
 #: ../ttycom.c:703
 msgctxt "tty"
 msgid "No Error"
-msgstr ""
+msgstr "Pas d'erreur"
 
 #: ../ttycom.c:707
 #, c-format
 msgctxt "tty"
 msgid "Read Error: %s"
-msgstr ""
+msgstr "Erreur lecture: %s"
 
 #: ../ttycom.c:712
 #, c-format
 msgctxt "tty"
 msgid "Write Error: %s"
-msgstr ""
+msgstr "Erreur écriture: %s"
 
 #: ../ttycom.c:717
 #, c-format
 msgctxt "tty"
 msgid "Select Error: %s"
-msgstr ""
+msgstr "Erreur sélection: %s"
 
 #: ../ttycom.c:722
 msgctxt "tty"
 msgid "Timeout error"
-msgstr ""
+msgstr "Erreur timeout"
 
 #: ../ttycom.c:727
 #, c-format
@@ -1190,19 +1197,21 @@ msgid ""
 "Port failure Error: %s. Try adding your user to the dialout group and "
 "restart (sudo adduser $username dialout)"
 msgstr ""
+"Erreur port: %s. Ajouter utilisateur au groupe dialout et redémarrer (sudo "
+"adduser $username dialout)"
 
 #: ../ttycom.c:729
 #, c-format
 msgctxt "tty"
 msgid "Port failure Error: %s.Check if device is connected to this port."
-msgstr ""
+msgstr "Erreur port: %s. Vérifier que le périphérique est connecté à ce port."
 
 #: ../ttycom.c:735
 msgctxt "tty"
 msgid "Parameter error"
-msgstr ""
+msgstr "Erreur paramètre"
 
 #: ../ttycom.c:744
 msgctxt "tty"
 msgid "Error: unrecognized error code"
-msgstr ""
+msgstr "Erreur: code erreur non reconnu"
