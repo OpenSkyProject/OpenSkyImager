@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: OpenSkyImager 0.5.0\n"
 "Report-Msgid-Bugs-To: gspezzano@gmail.com\n"
 "POT-Creation-Date: 2013-12-05 11:01+0100\n"
-"PO-Revision-Date: 2013-12-05 14:16+0100\n"
+"PO-Revision-Date: 2013-12-05 14:21+0100\n"
 "Last-Translator: fphg <fabrice@phung.fr>\n"
 "Language: fr_FR\n"
 "Language-Team: fr_FR <fabrice@phung.fr>\n"
@@ -993,7 +993,7 @@ msgstr "Fits"
 #: ../imgWindow.c:951 ../imgWindow.c:1137
 msgctxt "main"
 msgid "CFW"
-msgstr "CFW"
+msgstr "Filtres"
 
 #: ../imgWindow.c:952
 msgctxt "main"
