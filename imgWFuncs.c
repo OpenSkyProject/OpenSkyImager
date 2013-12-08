@@ -191,8 +191,8 @@ void load_histogram_from_data()
 
 		// Actual resize
 		#if GTK_MAJOR_VERSION == 3
-		tgtw -= 15;
-		tgth -= 15;
+		//tgtw -= 15;
+		//tgth -= 15;
 		#endif
 		GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_histogram(gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_histogram)) * 10), tgtw, tgth, GDK_INTERP_HYPER);
 		gtk_image_set_from_pixbuf((GtkImage *) histogram, tmpbuf);
@@ -220,8 +220,8 @@ void load_histogram_from_null()
 		// Actual resize
 		imgpix_init_histogram();
 		#if GTK_MAJOR_VERSION == 3
-		tgtw -= 15;
-		tgth -= 15;
+		//tgtw -= 15;
+		//tgth -= 15;
 		#endif
 		GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_data(), tgtw, tgth, GDK_INTERP_HYPER);
 		gtk_image_set_from_pixbuf((GtkImage *) histogram, tmpbuf);
@@ -294,7 +294,7 @@ void tec_show_graph()
 	GtkAllocation *alloc = g_new0 (GtkAllocation, 1);
 	gtk_widget_get_allocation(GTK_WIDGET(frm_tecgraph), alloc);
 	tgtw = (alloc->width > 5) ? alloc->width - 5 : alloc->width;
-	tgth = (alloc->height >5) ? alloc->height - 5 : alloc->height;
+	tgth = (alloc->height > 5) ? alloc->height - 5 : alloc->height;
 	// Cleanup
 	g_free(alloc);
 
