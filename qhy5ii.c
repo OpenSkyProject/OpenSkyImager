@@ -313,6 +313,8 @@ int qhy5ii_bonjour()
 			{
 				// QHY5L-II
 				camvariant = 1;
+				// Positively no tec (temp read only, no thread)
+				imgcam_get_tecp()->istec = 2;
 				strcpy(imgcam_get_camui()->roistr, "1280x960|1024x768|800x600|640x480|320x240:0");
 				strcpy(imgcam_get_camui()->snrstr, "");
 				strcpy(imgcam_get_camui()->bppstr, "1-8Bit|2-12Bit|3-Hdr:0");
@@ -326,6 +328,8 @@ int qhy5ii_bonjour()
 			{
 				// QHY5-II
 				camvariant = 0;
+				// Positively no tec
+				imgcam_get_tecp()->istec = 0;
 				strcpy(imgcam_get_camui()->roistr, "1280x1024|1280x720|1024x768|960x720|800x800|800x600|640x480|400x400|320x240:0");
 				/// Combo box values list, keep N-<desc> format. Just translate <desc>
 				strcpy(imgcam_get_camui()->snrstr, C_("camio","0-Off|1-On:0"));

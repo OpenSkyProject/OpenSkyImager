@@ -264,32 +264,47 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 	int pct = 0;
 	
 	g_rw_lock_reader_lock(&thd_teclock);
-	if (imgcam_get_tecp()->tecerr == 0)
-	{
-		pct = (int)(((double)imgcam_get_tecp()->tecpwr / (double)imgcam_get_tecp()->tecmax) * 100.);
-		if (imgcam_get_tecp()->tecauto)
+	if (imgcam_get_tecp()->istec == 1)
+	{	
+		if (imgcam_get_tecp()->tecerr == 0)
 		{
-			/// Statusbar feedback message about cooling status in automatic mode
-			sprintf(imgmsg, C_("main","Tec: %+06.2FC, Target: %+06.2FC, Power: %d%%"), imgcam_get_tecp()->tectemp, imgcam_get_tecp()->settemp, pct);
+			pct = (int)(((double)imgcam_get_tecp()->tecpwr / (double)imgcam_get_tecp()->tecmax) * 100.);
+			if (imgcam_get_tecp()->tecauto)
+			{
+				/// Statusbar feedback message about cooling status in automatic mode
+				sprintf(imgmsg, C_("main","Tec: %+06.2FC, Target: %+06.2FC, Power: %d%%"), imgcam_get_tecp()->tectemp, imgcam_get_tecp()->settemp, pct);
+			}
+			else
+			{
+				/// Satusbar feedback message about cooling in manual mode
+				sprintf(imgmsg, C_("main","Tec: %+06.2fC, Power: %d%%"), imgcam_get_tecp()->tectemp, pct);
+			}
+			// Main image update
+			sprintf(tecfbk, "%+06.2fC", imgcam_get_tecp()->tectemp);
+			gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
+			// Graph update
+			tec_print_graph();
+			// Slider update
+			gtk_range_set_value(GTK_RANGE(vsc_tecpwr), pct);
+			gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
 		}
 		else
 		{
-			/// Satusbar feedback message about cooling in manual mode
-			sprintf(imgmsg, C_("main","Tec: %+06.2fC, Power: %d%%"), imgcam_get_tecp()->tectemp, pct);
+			imgcam_get_tecp()->tecerr = 0;
+			sprintf(imgmsg, C_("main","Error communicating with tec"));
 		}
+	}
+	else if (imgcam_get_tecp()->istec == 2)
+	{
+		/// Satusbar feedback message about temperature only
+		sprintf(imgmsg, C_("main","Temp: %+06.2fC"), imgcam_get_tecp()->tectemp);
 		// Main image update
 		sprintf(tecfbk, "%+06.2fC", imgcam_get_tecp()->tectemp);
 		gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
 		// Graph update
 		tec_print_graph();
 		// Slider update
-		gtk_range_set_value(GTK_RANGE(vsc_tecpwr), pct);
 		gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
-	}
-	else
-	{
-		imgcam_get_tecp()->tecerr = 0;
-		sprintf(imgmsg, C_("main","Error communicating with tec"));
 	}
 	g_rw_lock_reader_unlock(&thd_teclock);
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 1, imgmsg);
@@ -917,7 +932,7 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 		if (imgcam_connected())
 		{
 			//Disconnect
-			if ((imgcam_get_tecp()->istec == 1))
+			if ((imgcam_get_tecp()->istec != 0))
 			{
 				// Terminates the tec thread and disable choice
 				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
@@ -1014,7 +1029,7 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 				sprintf(imgmsg, C_("main","Camera %s connected"), gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cmb_camera)));
 				gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 				// Tec?
-				if ((imgcam_get_tecp()->istec == 1))
+				if ((imgcam_get_tecp()->istec != 0))
 				{
 					gtk_widget_set_sensitive(cmd_tecenable, 1);
 					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
@@ -1716,6 +1731,28 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 						tecfbk[0] = '\0';
 						gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
 					}
+				}
+			}
+			else if (imgcam_get_tecp()->istec == 2)
+			{
+				// Temp read only, no thread read allowed, in between frame capture
+				tec_init_graph();
+				gtk_widget_set_sensitive(vsc_tecpwr, 0);
+				gtk_widget_set_sensitive(cmd_tecauto, 0);
+				if (status == 1)
+				{
+					tecrun = 1;
+					imgcam_get_tecp()->tecerr = 0;
+					gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
+				}
+				else
+				{
+					tecrun = 0;
+					imgcam_get_tecp()->tecerr = 0;
+					// Main image update
+					tecfbk[0] = '\0';
+					gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
+					gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Enable tec read"));
 				}
 			}
 			else

@@ -703,11 +703,14 @@ int imgcam_gettec(double *tC, double *mV)
 	{
 		case 20:
 		case 5:
-		case 52:
 		case 6:
 		case 60:
 		case 80:
 			break;
+		case 52:
+			imgtC = qhy5lii_GetTemp();
+			retval = 1;
+			break;			
 		case 7:
 		case 81:
 		case 9:

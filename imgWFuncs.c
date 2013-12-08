@@ -293,8 +293,8 @@ void tec_show_graph()
 	// Get allocated size
 	GtkAllocation *alloc = g_new0 (GtkAllocation, 1);
 	gtk_widget_get_allocation(GTK_WIDGET(frm_tecgraph), alloc);
-	tgtw = alloc->width;
-	tgth = alloc->height;
+	tgtw = (alloc->width > 5) ? alloc->width - 5 : alloc->width;
+	tgth = (alloc->height >5) ? alloc->height - 5 : alloc->height;
 	// Cleanup
 	g_free(alloc);
 
@@ -390,6 +390,7 @@ gpointer thd_capture_run(gpointer thd_data)
 	char thdsuffix[32];
 	struct tm now;
 	time_t localt;
+	time_t ref, last;
 	struct timeval clks, clke;
 	GThread *thd_pixbuf = NULL;
 	GThread *thd_fitsav = NULL;
@@ -438,10 +439,40 @@ gpointer thd_capture_run(gpointer thd_data)
 	// We close shutter just in case it's open because of camera position
 	// It's a noop for camera that don't feature a mechanical shutter
 	imgcam_shutter(1);
-
+	last = time(NULL);
+	// First time read, just in case.
+	if ((tecrun == 1) && (imgcam_get_tecp()->istec == 2))
+	{
+		// Camera only allow temp read with no concurrent access
+		imgcam_gettec(&imgcam_get_tecp()->tectemp, NULL); 			
+		// UI update
+		if (tmrtecrefresh != -1)
+		{
+			g_source_remove(tmrtecrefresh);
+		}
+		tmrtecrefresh = g_timeout_add(1, (GSourceFunc) tmr_tecstatus_write, NULL);			
+	}
 	while ((thdrun == 1) && (thderror == 0))
 	{
 		// To ensure the "sh(oot)" copy of the ex(posure) params is done clean
+		if ((tecrun == 1) && (imgcam_get_tecp()->istec == 2))
+		{
+			ref = time(NULL);
+			if (difftime(ref, last) > 2)
+			{
+				// Camera only allow temp read with no concurrent access
+				// Not more that once every 3 seconds, similar to tec reading threads for other models
+				imgcam_gettec(&imgcam_get_tecp()->tectemp, NULL); 			
+				// UI update
+				if (tmrtecrefresh != -1)
+				{
+					g_source_remove(tmrtecrefresh);
+				}
+				tmrtecrefresh = g_timeout_add(1, (GSourceFunc) tmr_tecstatus_write, NULL);			
+				// Reference update
+				last = time(NULL);
+			}
+		}
 		g_rw_lock_reader_lock(&thd_caplock);
 		thdshoot = imgcam_shoot();
 		thdexp = imgcam_get_shpar()->wtime;
