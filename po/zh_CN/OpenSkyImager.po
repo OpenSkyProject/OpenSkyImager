@@ -20,35 +20,35 @@ msgstr ""
 #: ../imgCFWio.c:141 ../imgCFWio.c:235
 msgctxt "cfw"
 msgid "Camera is not connected"
-msgstr "相机没有连接"
+msgstr ""
 
 #: ../imgCFWio.c:145 ../imgCFWio.c:239
 msgctxt "cfw"
 msgid "Camera does not support direct CFW connection"
-msgstr "相机不支持直接连接滤镜轮"
+msgstr ""
 
 #: ../imgCFWio.c:171
 msgctxt "cfw"
 msgid "Serial port does not exist"
-msgstr "串口不存在"
+msgstr ""
 
 #. / This will complete: "Filter wheel connected to %s"
 #: ../imgCFWio.c:190
 msgctxt "cfw"
 msgid "camera"
-msgstr "相机"
+msgstr ""
 
 #: ../imgCFWio.c:221
 #, c-format
 msgctxt "cfw"
 msgid "Could not connect to CFW on serial port %s, error: %s"
-msgstr "无法通过串口 %s 连接滤镜轮，错误：%s"
+msgstr ""
 
 #: ../imgCFWio.c:272 ../imgCFWio.c:273
 #, c-format
 msgctxt "cfw"
 msgid "Could not disconnect from CFW on serial port %s, error: %s"
-msgstr "无法从串口 %s 与滤镜轮断开连接，错误：%s"
+msgstr ""
 
 #. / Model name
 #: ../imgCFWio.c:313
@@ -76,31 +76,31 @@ msgstr ""
 #, c-format
 msgctxt "cfw"
 msgid "Could not read from CFW on serial port %s, error: %s"
-msgstr "无法通过串口 %s 读取滤镜轮信息，错误：%s"
+msgstr ""
 
 #: ../imgCFWio.c:352 ../imgCFWio.c:380 ../imgCFWio.c:381 ../imgCFWio.c:450
 #, c-format
 msgctxt "cfw"
 msgid "Could not write to CFW on serial port %s, error: %s"
-msgstr "无法通过串口 %s 向滤镜轮写数据，错误：%s"
+msgstr ""
 
 #: ../imgCFWio.c:433 ../imgCFWio.c:465
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel moving to slot: %d"
-msgstr "滤镜轮正移动到槽：%d"
+msgstr ""
 
 #: ../imgCFWio.c:442
 msgctxt "cfw"
 msgid ""
 "Could not start notification thread, btw slot selection command was sent ok."
-msgstr "无法启动通知线程，但槽选择命令已成功发送。"
+msgstr ""
 
 #: ../imgCFWio.c:455
 #, c-format
 msgctxt "cfw"
 msgid "Requested slot (%d) does not exist. Slots = %d"
-msgstr "请求的槽位（%d）不存在。槽 = %d"
+msgstr ""
 
 #. / Value "No cam" of the models combo
 #: ../imgCamio.c:154 ../imgCamio.c:278 ../imgCamio.c:284 ../imgWindow.c:1137
