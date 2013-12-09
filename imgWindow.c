@@ -245,6 +245,23 @@ void lbl_fbkfps_build()
 	pango_font_description_free(fd);
 }
 
+void lbl_fbkfwhm_build()
+{
+	PangoFontDescription *fd; 
+	
+	fwhmfbk[0] = '\0';
+	lbl_fbkfwhm = gtk_label_new_with_align(fwhmfbk, 0.0, 0.5, 480, 60);
+	fd = pango_font_description_from_string("Monospace 18"); 
+	#if GTK_MAJOR_VERSION == 3
+	gtk_widget_override_color(lbl_fbkfwhm , GTK_STATE_NORMAL, &clrFbk);
+	gtk_widget_override_font(lbl_fbkfwhm, fd);
+	#else
+	gtk_widget_modify_fg(lbl_fbkfwhm, GTK_STATE_NORMAL, &clrFbk);
+	gtk_widget_modify_font(lbl_fbkfwhm, fd);
+	#endif
+	pango_font_description_free(fd);
+}
+
 void cmd_histogram_build()
 {
 	cmd_histogram = gtk_toggle_button_new_with_label_color(C_("main","Show graph"), 90, 25, &clrSelected);	
@@ -331,6 +348,7 @@ void swindow_build()
 	lbl_fbkimg_build();
 	lbl_fbktec_build();
 	lbl_fbkfps_build();
+    lbl_fbkfwhm_build();
 	image_build();
 
 	// Pack image into scrolled window
@@ -338,6 +356,7 @@ void swindow_build()
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbkimg,  10, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbktec, 100, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbkfps, 230, 0);
+	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbkfwhm, 10, 30);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(swindow), GTK_WIDGET(fixed));
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swindow), GTK_POLICY_ALWAYS, GTK_POLICY_ALWAYS);
 	
