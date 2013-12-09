@@ -20,6 +20,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define ERR_BUFFER_EMPTY -1
+#define ERR_PARAM -2
+#define ERR_MALLOC -3
+#define OK 0
+
 // imgPixbuf "class" methods
 char       *imgpix_get_msg();
 int         imgpix_get_width();
@@ -30,4 +35,5 @@ int         imgpix_loaded();
 void        imgpix_init();
 void        imgpix_init_histogram();
 int         imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, int debayer, int maxadu, int minadu);
+int imgpix_calc_fwhm(int debayer, int x, int y, int width, int height, int *fwhm, int *peak);
 
