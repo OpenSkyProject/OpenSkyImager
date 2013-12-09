@@ -20,35 +20,35 @@ msgstr ""
 #: ../imgCFWio.c:141 ../imgCFWio.c:235
 msgctxt "cfw"
 msgid "Camera is not connected"
-msgstr ""
+msgstr "相机没有连接"
 
 #: ../imgCFWio.c:145 ../imgCFWio.c:239
 msgctxt "cfw"
 msgid "Camera does not support direct CFW connection"
-msgstr ""
+msgstr "相机不支持直接连接滤镜轮"
 
 #: ../imgCFWio.c:171
 msgctxt "cfw"
 msgid "Serial port does not exist"
-msgstr ""
+msgstr "串口不存在"
 
 #. / This will complete: "Filter wheel connected to %s"
 #: ../imgCFWio.c:190
 msgctxt "cfw"
 msgid "camera"
-msgstr ""
+msgstr "相机"
 
 #: ../imgCFWio.c:221
 #, c-format
 msgctxt "cfw"
 msgid "Could not connect to CFW on serial port %s, error: %s"
-msgstr ""
+msgstr "无法通过串口 %s 连接滤镜轮，错误：%s"
 
 #: ../imgCFWio.c:272 ../imgCFWio.c:273
 #, c-format
 msgctxt "cfw"
 msgid "Could not disconnect from CFW on serial port %s, error: %s"
-msgstr ""
+msgstr "无法从串口 %s 与滤镜轮断开连接，错误：%s"
 
 #. / Model name
 #: ../imgCFWio.c:313
@@ -59,48 +59,48 @@ msgstr ""
 #: ../imgCFWio.c:314
 msgctxt "cfw"
 msgid "|5-QHY 5 slots 2\""
-msgstr ""
+msgstr "|5-QHY 5槽"
 
 #. / Model name
 #: ../imgCFWio.c:325
 msgctxt "cfw"
 msgid "8-QHY serial"
-msgstr ""
+msgstr "8-QHY串口"
 
 #: ../imgCFWio.c:326
 msgctxt "cfw"
 msgid "|8-QHY serial"
-msgstr ""
+msgstr "|8-QHY串口"
 
 #: ../imgCFWio.c:345
 #, c-format
 msgctxt "cfw"
 msgid "Could not read from CFW on serial port %s, error: %s"
-msgstr ""
+msgstr "无法通过串口 %s 读取滤镜轮信息，错误：%s"
 
 #: ../imgCFWio.c:352 ../imgCFWio.c:380 ../imgCFWio.c:381 ../imgCFWio.c:450
 #, c-format
 msgctxt "cfw"
 msgid "Could not write to CFW on serial port %s, error: %s"
-msgstr ""
+msgstr "无法通过串口 %s 向滤镜轮写数据，错误：%s"
 
 #: ../imgCFWio.c:433 ../imgCFWio.c:465
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel moving to slot: %d"
-msgstr ""
+msgstr "滤镜轮正移动到槽：%d"
 
 #: ../imgCFWio.c:442
 msgctxt "cfw"
 msgid ""
 "Could not start notification thread, btw slot selection command was sent ok."
-msgstr ""
+msgstr "无法启动通知线程，但槽选择命令已成功发送。"
 
 #: ../imgCFWio.c:455
 #, c-format
 msgctxt "cfw"
 msgid "Requested slot (%d) does not exist. Slots = %d"
-msgstr ""
+msgstr "请求的槽位（%d）不存在。槽 = %d"
 
 #. / Value "No cam" of the models combo
 #: ../imgCamio.c:154 ../imgCamio.c:278 ../imgCamio.c:284 ../imgWindow.c:1137
@@ -122,7 +122,7 @@ msgstr "此相机不支持重置"
 #: ../imgFitsio.c:185 ../imgFitsio.c:186
 msgctxt "fitsio"
 msgid "Fit read only works on 2 axes images"
-msgstr ""
+msgstr "Fit只能读取2维图片"
 
 #: ../imgFitsio.c:193 ../imgFitsio.c:194 ../imgFitsio.c:229 ../imgFitsio.c:230
 #, c-format
@@ -260,7 +260,7 @@ msgstr "对焦模式"
 #: ../imgWCallbacks.c:442
 msgctxt "main"
 msgid "Folder or base name not set!"
-msgstr ""
+msgstr "请先设置保存目录或者文件前缀"
 
 #: ../imgWCallbacks.c:541
 msgctxt "main"
@@ -371,12 +371,12 @@ msgstr "隐藏直方图"
 #: ../imgWCallbacks.c:736
 msgctxt "main"
 msgid "Show graph image"
-msgstr "Show graph image"
+msgstr "显示直方图"
 
 #: ../imgWCallbacks.c:741 ../imgWindow.c:250
 msgctxt "main"
 msgid "Show graph"
-msgstr "显示缩略图"
+msgstr "显示直方图"
 
 #: ../imgWCallbacks.c:743
 msgctxt "main"
@@ -386,7 +386,7 @@ msgstr "显示上一个缩略图"
 #: ../imgWCallbacks.c:842
 msgctxt "quit-message"
 msgid "Confirm exit"
-msgstr ""
+msgstr "确认是否要退出"
 
 #: ../imgWCallbacks.c:842 ../imgWCallbacks.c:843
 msgctxt "quit-message"
@@ -618,12 +618,12 @@ msgstr "移除命名规则里的滤镜项"
 #: ../imgWCallbacks.c:1627
 msgctxt "main"
 msgid "Add filter to naming convention selected"
-msgstr ""
+msgstr "把滤镜加入到命名规则"
 
 #: ../imgWCallbacks.c:1633
 msgctxt "main"
 msgid "Add filter to naming convention removed"
-msgstr ""
+msgstr "移除命名规则里的滤镜选项"
 
 #: ../imgWCallbacks.c:1637 ../imgWCallbacks.c:1682
 #, c-format
@@ -675,65 +675,65 @@ msgstr "制冷温度设置为手动"
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel mode set: %s"
-msgstr ""
+msgstr "滤镜轮模式设置为："
 
 #: ../imgWCallbacks.c:1841
 msgctxt "cfw"
 msgid "Could not set cfw mode"
-msgstr ""
+msgstr "无法设置滤镜轮模式"
 
 #: ../imgWCallbacks.c:1859
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel serial port: %s"
-msgstr ""
+msgstr "滤镜轮使用串口:"
 
 #: ../imgWCallbacks.c:1867
 msgctxt "cfw"
 msgid "Serial port list reloaded"
-msgstr ""
+msgstr "重载串口列表"
 
 #: ../imgWCallbacks.c:1885
 msgctxt "cfw"
 msgid "Disconnect"
-msgstr ""
+msgstr "断开"
 
 #: ../imgWCallbacks.c:1886
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel connected to %s"
-msgstr ""
+msgstr "滤镜轮连接到：%s"
 
 #: ../imgWCallbacks.c:1902 ../imgWindow.c:761
 msgctxt "cfw"
 msgid "Connect"
-msgstr ""
+msgstr "连接"
 
 #: ../imgWCallbacks.c:1903
 msgctxt "cfw"
 msgid "Filter wheel disconnected"
-msgstr ""
+msgstr "滤镜轮已断开"
 
 #: ../imgWCallbacks.c:1932
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel configuration: %d slots, %s model"
-msgstr ""
+msgstr "滤镜轮设置：%d槽，型号%s"
 
 #: ../imgWCallbacks.c:1941
 msgctxt "cfw"
 msgid "Filter wheel controller factory reset done"
-msgstr ""
+msgstr "滤镜轮控制器复位完成"
 
 #: ../imgWCallbacks.c:1979
 msgctxt "cfw"
 msgid "Please wait for the filter to reach position..."
-msgstr ""
+msgstr "请等待滤镜轮移动到指定位置..."
 
 #: ../imgWCallbacks.c:1980
 msgctxt "cfw"
 msgid "Dialog will disappear when done"
-msgstr ""
+msgstr "当完成时对话框会自动隐藏"
 
 #: ../imgWFuncs.c:30
 msgctxt "dialog-open"
@@ -743,7 +743,7 @@ msgstr "打开文件"
 #: ../imgWFuncs.c:379
 msgctxt "cfw"
 msgid "Filter wheel reported error"
-msgstr ""
+msgstr "滤镜轮报错"
 
 #: ../imgWindow.c:183
 msgctxt "main"
@@ -860,7 +860,7 @@ msgstr ""
 #: ../imgWindow.c:731
 msgctxt "cfw"
 msgid "1-QHY Serial"
-msgstr ""
+msgstr "1-QHY串口"
 
 #: ../imgWindow.c:732 ../imgWindow.c:880
 msgctxt "settings"
@@ -890,7 +890,7 @@ msgstr "颜色模式"
 #: ../imgWindow.c:751
 msgctxt "cfw"
 msgid "Refresh"
-msgstr ""
+msgstr "刷新"
 
 #: ../imgWindow.c:771 ../imgWindow.c:919
 msgctxt "cooling"
@@ -922,7 +922,7 @@ msgstr "滤镜:"
 #, c-format
 msgctxt "cfw"
 msgid "Slot %d"
-msgstr ""
+msgstr "槽 %d"
 
 #: ../imgWindow.c:830 ../imgWindow.c:978
 msgctxt "timelapse"
@@ -997,7 +997,7 @@ msgstr ""
 #: ../imgWindow.c:1100
 msgctxt "cfw"
 msgid "Configuration"
-msgstr ""
+msgstr "配置"
 
 #: ../libusbio.c:94 ../libusbio.c:96
 msgctxt "usbio"
@@ -1134,30 +1134,30 @@ msgstr "I2C总线读写失败, 错误 %d"
 #: ../ttycom.c:703
 msgctxt "tty"
 msgid "No Error"
-msgstr ""
+msgstr "正常"
 
 #: ../ttycom.c:707
 #, c-format
 msgctxt "tty"
 msgid "Read Error: %s"
-msgstr ""
+msgstr "读取错误：%s"
 
 #: ../ttycom.c:712
 #, c-format
 msgctxt "tty"
 msgid "Write Error: %s"
-msgstr ""
+msgstr "写错误：%s"
 
 #: ../ttycom.c:717
 #, c-format
 msgctxt "tty"
 msgid "Select Error: %s"
-msgstr ""
+msgstr "选择错误：%s"
 
 #: ../ttycom.c:722
 msgctxt "tty"
 msgid "Timeout error"
-msgstr ""
+msgstr "超时"
 
 #: ../ttycom.c:727
 #, c-format
@@ -1166,19 +1166,21 @@ msgid ""
 "Port failure Error: %s. Try adding your user to the dialout group and "
 "restart (sudo adduser $username dialout)"
 msgstr ""
+"端口错误：%s。请尝试把你的用户名添加到dialout组并"
+"重新启动程序(sudo adduser 用户名 dialout)"
 
 #: ../ttycom.c:729
 #, c-format
 msgctxt "tty"
 msgid "Port failure Error: %s.Check if device is connected to this port."
-msgstr ""
+msgstr "端口错误：%s。请检查设备是否正确连接到端口"
 
 #: ../ttycom.c:735
 msgctxt "tty"
 msgid "Parameter error"
-msgstr ""
+msgstr "参数错误"
 
 #: ../ttycom.c:744
 msgctxt "tty"
 msgid "Error: unrecognized error code"
-msgstr ""
+msgstr "错误：无法识别的错误代码"
