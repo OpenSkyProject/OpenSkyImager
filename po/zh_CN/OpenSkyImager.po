@@ -772,7 +772,7 @@ msgid "None"
 msgstr "无"
 
 #: ../imgWindow.c:490 ../imgWindow.c:513
-msgctxt "fileanme"
+msgctxt "filename"
 msgid "Save As"
 msgstr "另存为"
 

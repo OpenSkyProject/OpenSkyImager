@@ -535,7 +535,7 @@ void cmb_debayer_build()
 
 void cmd_saveas_build()
 {
-	cmd_saveas = gtk_button_new_with_label(C_("fileanme","Save As"));
+	cmd_saveas = gtk_button_new_with_label(C_("filename","Save As"));
 	gtk_widget_set_size_request(cmd_saveas, 80, 30);
 	
 	// Callbacks
