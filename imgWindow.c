@@ -123,6 +123,7 @@ void cmb_exptime_build()
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
 	
 	g_signal_connect(G_OBJECT(cmb_exptime), "changed", G_CALLBACK(cmb_exptime_changed),  NULL);
+	g_signal_connect(G_OBJECT(gtk_bin_get_child (GTK_BIN(cmb_exptime))), "key-press-event", G_CALLBACK(numbers_input_keypress), (gpointer)5);	
 	crows = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb_exptime))), NULL);
 	if (crows > 0)
 	{
@@ -646,6 +647,7 @@ void spn_tectgt_build()
 	
 	//Callbacks
 	g_signal_connect(G_OBJECT(spn_tectgt), "value-changed", G_CALLBACK(spn_tectgt_changed),  NULL);
+	g_signal_connect(G_OBJECT(spn_tectgt), "key-press-event", G_CALLBACK(numbers_input_keypress), (gpointer)5);	
 }
 
 void vsc_tectemp_build()
@@ -1338,6 +1340,9 @@ void window_build()
 
 void imgwin_build()
 {
+	// Init locale conventions
+	sysloc = localeconv();
+	
 	// Init decorations
 	watchCursor = gdk_cursor_new(GDK_WATCH);
 	

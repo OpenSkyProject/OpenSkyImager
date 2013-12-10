@@ -910,6 +910,38 @@ void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
+gboolean numbers_input_keypress (GtkWidget *widget, GdkEventKey *event, int maxchars)
+{
+	char *kname = gdk_keyval_name(event->keyval);
+	
+	//printf("Keypress: %s %d\n", kname, event->keyval);
+
+	if ((strcmp(kname, "BackSpace") == 0) || (strcmp(kname, "Home") == 0) || (strcmp(kname, "End") == 0) || (strcmp(kname, "Up") == 0) || (strcmp(kname, "Down") == 0) || (strcmp(kname, "Left") == 0) || (strcmp(kname, "Right") == 0) || (strcmp(kname, "Page_Up") == 0) || (strcmp(kname, "Page_Down") == 0))
+		// Movement keys are accepted no matter what
+		return FALSE;	
+
+	if (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) >= maxchars)
+		// In order to accept key, string must be shorter than max
+		return TRUE;
+
+	if ((strcmp(kname, "plus") == 0) && (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) == 0))
+		// + is accepted as first char only
+		return FALSE;	
+		
+	if ((strcmp(kname, "minus") == 0) && (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) == 0))
+		// - is accepted as first char only
+		return FALSE;	
+		
+	if ((event->keyval >= 48) && (event->keyval <= 57))
+		// Numbers are accepted
+		return FALSE;	
+	if ((sysloc->decimal_point[0] == event->keyval) && (strchr(gtk_entry_get_text(GTK_ENTRY(widget)), sysloc->decimal_point[0]) == NULL))
+		// Only one decimal separator is allowed
+		return FALSE;
+
+	return TRUE;
+}
+
 void cmb_camera_changed (GtkComboBox *widget, gpointer user_data)
 {
 	if (gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)) != NULL)

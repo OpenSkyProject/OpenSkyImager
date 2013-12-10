@@ -131,6 +131,9 @@
 	char fpsfbk[16];
 	int tecrun = 0;
 	struct tm tlstart, tlend;
+	
+	// Locale definitions
+	struct lconv *sysloc;
 #else
 	// Decorations
 	#if GTK_MAJOR_VERSION == 3
@@ -216,6 +219,9 @@
 	extern char fpsfbk[16];
 	extern int tecrun;
 	extern struct tm tlstart, tlend;
+	
+	// Locale definitions
+	extern struct lconv *sysloc;
 #endif
 	
 void imgwin_build();

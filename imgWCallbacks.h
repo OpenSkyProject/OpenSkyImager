@@ -49,6 +49,7 @@ void mainw_destroy( GtkWidget *widget, gpointer   data );
 gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data);
 void cmb_debayer_changed (GtkComboBox *widget, gpointer user_data);
 void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data);
+gboolean numbers_input_keypress (GtkWidget *widget, GdkEventKey *event, int maxchars);
 void cmb_camera_changed (GtkComboBox *widget, gpointer user_data);
 void cmd_camera_click(GtkWidget *widget, gpointer data);
 void cmd_setcamlst_click(GtkWidget *widget, gpointer data);
