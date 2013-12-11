@@ -33,8 +33,11 @@ void tec_print_graph();
 void combo_setlist(GtkWidget *cmb, char *str);
 void combo_ttylist(GtkWidget *cmb);
 void cfwmsgdestroy(int response);
+void filenaming(char *thdfit);
+void shotsnaming(char *thdfit, int thdshots, int thdpreshots);
 gpointer thd_capture_run(gpointer thd_data);
 gpointer thd_pixbuf_run(gpointer thd_data);
 gpointer thd_fitsav_run(gpointer thd_data);
+gpointer thd_avisav_run(gpointer thd_data);
 gpointer thd_temp_run(gpointer thd_data);
 

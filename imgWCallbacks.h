@@ -87,6 +87,7 @@ void cmd_dateadd_click(GtkWidget *widget, gpointer data);
 void cmd_timeadd_click(GtkWidget *widget, gpointer data);
 void cmd_fltadd_click(GtkWidget *widget, gpointer data);
 void cmb_flt_changed (GtkComboBox *widget, gpointer user_data);
+void cmb_fmt_changed (GtkComboBox *widget, gpointer user_data);
 void cmd_tecenable_click(GtkWidget *widget, gpointer data);
 void cmd_tecauto_click(GtkWidget *widget, gpointer data);
 gboolean spn_tectgt_changed(GtkSpinButton *spinbutton, gpointer user_data);

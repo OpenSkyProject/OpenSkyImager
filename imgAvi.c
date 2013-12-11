@@ -22,18 +22,31 @@
 
 #include "avilib.h"
 #include "imgBase.h"
+#include "imgAvi.h"
 
 static unsigned char *databuffer = NULL;
-static int            awidth, aheight;
+static unsigned char *framebuffer = NULL;
+static int             awidth, aheight, bytepix;
 static char           *avimsg;
-static int            isopen = 0;
-static char           avifile[2048];
-static avi_t           *aviptr = NULL;
+static int             isopen = 0;
+static char            avifile[2048];
+static avi_t          *aviptr = NULL;
 static int             frameno = 0;
+
+char *imgavi_get_name()
+{
+	return avifile;
+}
+
+void imgavi_set_name(char *filename)
+{
+	strcpy(avifile, filename);
+}
+
 
 char *imgavi_get_msg()
 {
-	return pixmsg;
+	return avimsg;
 }
 
 unsigned char *imgavi_get_data()
@@ -41,9 +54,19 @@ unsigned char *imgavi_get_data()
 	return databuffer;
 }
 
+void imgavi_set_data(unsigned char *data)
+{
+	databuffer = data;
+}
+
 int imgavi_get_width()
 {
 	return awidth;
+}
+
+void imgavi_set_width(int val)
+{
+	awidth = val;
 }
 
 int imgavi_get_height()
@@ -51,14 +74,24 @@ int imgavi_get_height()
 	return aheight;
 }
 
+void imgavi_set_height(int val)
+{
+	aheight = val;
+}
+
+int imgavi_get_bytepix()
+{
+	return bytepix;
+}
+
+void imgavi_set_bytepix(int val)
+{
+	bytepix = (val <= 1) ? 1 : 2;
+}
+
 int imgavi_isopen()
 {
 	return (isopen);
-}
-
-char *imgavi_get_avifile()
-{
-	return avifile;
 }
 
 void imgavi_init()
@@ -82,32 +115,30 @@ void imgavi_init()
 	avifile[0] = '\0';	
 	awidth  = 0;
 	aheight = 0;
+	bytepix = 1;
 	frameno = 0;
 }
 
-int imgavi_open(char *filename, int width, int height)
+int imgavi_open()
 {
 	int retval = 0;
 
 	if (isopen)
 	{
-		imgavi_init();
+		imgavi_close();
 	}
 	avimsg[0] = '\0';
-	if (strlen(filename) > 0)
+	if (strlen(avifile) > 0)
 	{
-		if (isfile(filename) == 0)
+		if (isfile(avifile) == 0)
 		{
 			if ((errno != EACCES) && (errno != ENOTDIR))
 			{ 
-				if ((aviptr = AVI_open_output_file(filename)) != NULL)
+				if ((aviptr = AVI_open_output_file(avifile)) != NULL)
 				{ 
-					// Get image data just in case
-					awidth  = width;
-					aheight = height;
 					frameno = 0;
-					// Allocate suitable databuffer
-					databuffer = (unsigned char*)realloc(databuffer, awidth * aheight * 3);
+					// Allocate suitable framebuffer
+					framebuffer = (unsigned char*)realloc(framebuffer, awidth * aheight * 3);
 					// Set avi properties accordingly
 					AVI_set_video(aviptr, awidth, aheight, 25, "RGB");
 					// Internal flags
@@ -121,35 +152,35 @@ int imgavi_open(char *filename, int width, int height)
 			}
 			else if (errno != EACCES)
 			{
-				strcpy(avimsg, "Unable to write file %s. Check permissions", filename);
+				sprintf(avimsg, "Unable to write file %s. Check permissions", avifile);
 			}
 			else if (errno != ENOTDIR)
 			{
-				strcpy(avimsg, "A component of the file path %s is not a folder", filename);
+				sprintf(avimsg, "A component of the file path %s is not a folder", avifile);
 			}
 		}
 	}
 	return (retval);	
 }
 
-int imgavi_add(unsigned char *imgdata, int bytepix)
+int imgavi_add()
 {
 	int retval = 0;
 	int i, j, pval;
-	unsigned char *frmptr = databuffer;
-	unsigned char *imgptr = imgdata;
+	unsigned char *frmptr = framebuffer;
+	unsigned char *imgptr = databuffer;
 	
 	avimsg[0] = '\0';
-	if (data != NULL)
+	if (databuffer != NULL)
 	{
 		// Convert Data
-		for (i = 0; i < height; i++)
+		for (i = 0; i < aheight; i++)
 		{
-			imgptr = imgdata + ((height - i - 1) * bytepix);
-			frmptr = databuffer + (i * 3);
+			imgptr = databuffer + ((aheight - i - 1) * bytepix);
+			frmptr = framebuffer + (i * 3);
 			if (bytepix == 1)
 			{ 
-				for (j = 0; j < width; j++)
+				for (j = 0; j < awidth; j++)
 				{
 					frmptr[0] = *imgptr;
 					frmptr[1] = *imgptr;
@@ -160,7 +191,7 @@ int imgavi_add(unsigned char *imgdata, int bytepix)
 			}
 			else if (bytepix == 2)
 			{
-				for (j = 0; j < width; j++)
+				for (j = 0; j < awidth; j++)
 				{
 					pval = (imgptr[0] + imgptr[1] * 256) / 257;
 					frmptr[0] = pval;
@@ -172,7 +203,7 @@ int imgavi_add(unsigned char *imgdata, int bytepix)
 			}
 		}
 		// Proper add into avi
-		if ((retval = AVI_write_frame(aviptr, (char *)databuffer, (awidth * aheight * 3), frameno)) == 1)
+		if ((retval = AVI_write_frame(aviptr, (char *)framebuffer, (awidth * aheight * 3), frameno)) == 1)
 		{
 			frameno++;
 		}
@@ -189,13 +220,17 @@ int imgavi_close()
 	int retval = 0;
 		
 	avimsg[0] = '\0';	
-	if ((retval = AVI_close(aviptr)) == 1)
+	if (aviptr != NULL)
 	{
-		aviptr = NULL;
-	}
-	else
-	{
-		sprintf(avimsg, "%s", AVI_strerror());
+		if ((retval = AVI_close(aviptr)) == 1)
+		{
+			aviptr = NULL;
+			isopen = 0;
+		}
+		else
+		{
+			sprintf(avimsg, "%s", AVI_strerror());
+		}
 	}
 	return (retval);
 }

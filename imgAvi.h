@@ -20,12 +20,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+char           *imgavi_get_name();
+void            imgavi_set_name(char *filename);
 char           *imgavi_get_msg();
 unsigned char *imgavi_get_data();
-int            imgavi_get_width();
-int            imgavi_get_height();
-int            imgavi_isopen();
-char           *imgavi_get_avifile();
-void           imgavi_init();
-int            imgavi_open(char *filename, int width, int height);
-int            imgavi_add(unsigned char *data, int bytepix);
+void            imgavi_set_data(unsigned char *data);
+int             imgavi_get_width();
+void            imgavi_set_width(int val);
+int             imgavi_get_height();
+void            imgavi_set_height(int val);
+int             imgavi_get_bytepix();
+void            imgavi_set_bytepix(int val);
+int             imgavi_isopen();
+void            imgavi_init();
+int             imgavi_open();
+int             imgavi_add();
+int             imgavi_close();
+
