@@ -103,7 +103,8 @@ void imgavi_init()
 	isopen = 0;
 	if (databuffer != NULL)
 	{
-		free(databuffer);
+		// Databuffere is never allocated here
+		// Hence we only clear the pointer when no longer needed
 		databuffer = NULL;
 	}
 	if (aviptr != NULL)
@@ -140,7 +141,7 @@ int imgavi_open()
 					// Allocate suitable framebuffer
 					framebuffer = (unsigned char*)realloc(framebuffer, awidth * aheight * 3);
 					// Set avi properties accordingly
-					AVI_set_video(aviptr, awidth, aheight, 25, "RGB");
+					AVI_set_video(aviptr, awidth, aheight, 10, "RGB");
 					// Internal flags
 					isopen = 1;
 					retval = 1;
@@ -176,8 +177,9 @@ int imgavi_add()
 		// Convert Data
 		for (i = 0; i < aheight; i++)
 		{
-			imgptr = databuffer + ((aheight - i - 1) * bytepix);
-			frmptr = framebuffer + (i * 3);
+			// We invert top / bottom and left / right so imgptr is eol
+			imgptr = databuffer + ((aheight - i) * bytepix * awidth);
+			frmptr = framebuffer + (i * 3 * awidth);
 			if (bytepix == 1)
 			{ 
 				for (j = 0; j < awidth; j++)
@@ -185,7 +187,7 @@ int imgavi_add()
 					frmptr[0] = *imgptr;
 					frmptr[1] = *imgptr;
 					frmptr[2] = *imgptr;
-					imgptr++;
+					imgptr--;
 					frmptr += 3;
 				}
 			}
@@ -197,15 +199,16 @@ int imgavi_add()
 					frmptr[0] = pval;
 					frmptr[1] = pval;
 					frmptr[2] = pval;
-					imgptr += 2;
+					imgptr -= 2;
 					frmptr += 3;
 				}
 			}
 		}
 		// Proper add into avi
-		if ((retval = AVI_write_frame(aviptr, (char *)framebuffer, (awidth * aheight * 3), frameno)) == 1)
+		if (AVI_write_frame(aviptr, (char *)framebuffer, (awidth * aheight * 3), frameno) == 0)
 		{
 			frameno++;
+			retval = 1;
 		}
 		else
 		{
@@ -222,10 +225,11 @@ int imgavi_close()
 	avimsg[0] = '\0';	
 	if (aviptr != NULL)
 	{
-		if ((retval = AVI_close(aviptr)) == 1)
+		if (AVI_close(aviptr) == 0)
 		{
 			aviptr = NULL;
 			isopen = 0;
+			retval = 1;
 		}
 		else
 		{

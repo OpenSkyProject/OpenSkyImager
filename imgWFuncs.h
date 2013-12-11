@@ -34,7 +34,7 @@ void combo_setlist(GtkWidget *cmb, char *str);
 void combo_ttylist(GtkWidget *cmb);
 void cfwmsgdestroy(int response);
 void filenaming(char *thdfit);
-void shotsnaming(char *thdfit, int thdshots, int thdpreshots);
+void shotsnaming(char *thdfit, int thdshots);
 gpointer thd_capture_run(gpointer thd_data);
 gpointer thd_pixbuf_run(gpointer thd_data);
 gpointer thd_fitsav_run(gpointer thd_data);

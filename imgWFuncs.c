@@ -455,20 +455,21 @@ void filenaming(char *thdfit)
 	}
 }
 
-void shotsnaming(char *thdfit, int thdshots, int thdpreshots)
+void shotsnaming(char *thdfit, int thdshots)
 {
 	char thdsuffix[32];
 
 	if (irisnaming == 1)
 	{
-		sprintf(thdsuffix, "_%d.fit", thdshots + thdpreshots);
+		sprintf(thdsuffix, "_%d.fit", thdshots);
 	}
 	else	
 	{						
-		sprintf(thdsuffix, "_%04d.fit", thdshots + thdpreshots);
+		sprintf(thdsuffix, "_%04d.fit", thdshots);
 	}
 	strcat(thdfit, thdsuffix);
 }
+
 gpointer thd_capture_run(gpointer thd_data)
 {
 	int thdrun = 1, thderror = 0, thdhold = 0, thdmode = 0, thdshoot = 0;
@@ -494,7 +495,7 @@ gpointer thd_capture_run(gpointer thd_data)
 	else if ((thdmode == 1) && (thdrun == 1))
 	{
 		// In capture mode also total shots count
-		thdrun = ((thdrun == 1) && (expnum > shots));
+		thdrun = ((thdrun == 1) && (expnum > (shots - thdpreshots)));
 	}
 	g_rw_lock_reader_unlock(&thd_caplock);		
 
@@ -622,8 +623,18 @@ gpointer thd_capture_run(gpointer thd_data)
 					//printf("Readout ok\n");
 					g_rw_lock_writer_lock(&thd_caplock);
 					readout = 0;
+					
+					// The fit data structure is also used anyway to store preview params
+					imgfit_init();
+					imgfit_set_width(imgcam_get_shpar()->width);
+					imgfit_set_height(imgcam_get_shpar()->height);
+					imgfit_set_bytepix(imgcam_get_shpar()->bytepix);
+					imgfit_set_data(imgcam_get_data());
+					
 					if (thdmode == 1)
 					{
+						// UI flags update in save mode
+						shots++;
 						filenaming(thdfit);
 						if ((savefmt == 2) || (savefmt == 3))
 						{
@@ -643,17 +654,10 @@ gpointer thd_capture_run(gpointer thd_data)
 						if ((savefmt == 1) || (savefmt == 3))
 						{
 							// Fit
-							shotsnaming(thdfit, shots, thdpreshots);
-							imgfit_init();
-							imgfit_set_width(imgcam_get_shpar()->width);
-							imgfit_set_height(imgcam_get_shpar()->height);
-							imgfit_set_bytepix(imgcam_get_shpar()->bytepix);
+							shotsnaming(thdfit, shots);
 							imgfit_set_name(thdfit);
-							imgfit_set_data(imgcam_get_data());
 						}
 					
-						// UI flags update in save mode
-						shots++;
 						if (thdtlmode == 2)
 						{
 							// If we are in FULL TimeLapse mode
@@ -663,7 +667,7 @@ gpointer thd_capture_run(gpointer thd_data)
 						}
 						else
 						{
-							shotfract = ((double)shots / (double)expnum);
+							shotfract = ((double)(shots - thdpreshots) / (double)expnum);
 						}
 					}
 					g_rw_lock_writer_unlock(&thd_caplock);		
@@ -729,7 +733,7 @@ gpointer thd_capture_run(gpointer thd_data)
 			}
 			else if ((thdmode == 1) && (thdrun == 1))
 			{
-				thdrun = ((thdrun == 1) && (expnum > shots));
+				thdrun = ((thdrun == 1) && (expnum > (shots - thdpreshots)));
 			}
 			g_rw_lock_reader_unlock(&thd_caplock);
 			// If we are in tlmode, even bare tl mode
@@ -770,7 +774,7 @@ gpointer thd_capture_run(gpointer thd_data)
 				}
 				else if ((thdmode == 1) && (thdrun == 1))
 				{
-					thdrun = ((thdrun == 1) && (expnum > shots));
+					thdrun = ((thdrun == 1) && (expnum > (shots - thdpreshots)));
 				}
 				g_rw_lock_reader_unlock(&thd_caplock);
 			}
@@ -787,6 +791,12 @@ gpointer thd_capture_run(gpointer thd_data)
 	if ((thdmode == 1) && ((savefmt == 2) || (savefmt == 3)))
 	{
 		//No matter TL mode (and error status), if avi is saved it must be ended properly
+		if (thd_avisav != NULL)
+		{
+			// Checks and wait if the last frame add is completed
+			g_thread_join(thd_avisav);
+			thd_avisav = NULL;
+		}
 		imgavi_close();
 	}
 
