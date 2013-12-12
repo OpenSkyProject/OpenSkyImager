@@ -5,23 +5,23 @@
  *  multiple audio track support Copyright (C) 2002 Thomas �streich
  *
  *  Original code:
- *  Copyright (C) 1999 Rainer Johanni <Rainer@Johanni.de>
+ *  Copyright (C) 1999 Rainer Johanni <Rainer@Johanni.de> 
  *
  *  This file is part of transcode, a linux video stream processing tool
- *
+ *      
  *  transcode is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2, or (at your option)
  *  any later version.
- *
+ *   
  *  transcode is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *
+ *   
  *  You should have received a copy of the GNU General Public License
  *  along with GNU Make; see the file COPYING.  If not, write to
- *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. 
  *
  */
 
@@ -29,25 +29,8 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <fcntl.h>
-
-//SLM
-#ifdef __CYGWIN__
-#include <sys/types.h>
-#elif defined WIN32
-#if defined __GNUWIN32__
-#include <stdint.h>
-#else
-#define uint32_t unsigned __int32
-#define uint8_t unsigned __int8
-#define uint16_t unsigned __int16
-#define uint64_t unsigned __int64
-#endif
-#else
 #include <unistd.h>
 #include <inttypes.h>
-#endif
-
-
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,16 +43,16 @@
 
 typedef struct
 {
-  off_t key;
-  off_t pos;
-  off_t len;
+  unsigned long key;
+  unsigned long pos;
+  unsigned long len;
 } video_index_entry;
 
 typedef struct
 {
-   off_t pos;
-   off_t len;
-   off_t tot;
+   unsigned long pos;
+   unsigned long len;
+   unsigned long tot;
 } audio_index_entry;
 
 typedef struct track_s
@@ -82,15 +65,15 @@ typedef struct track_s
     long   mp3rate;           /* mp3 bitrate kbs*/
 
     long   audio_strn;        /* Audio stream number */
-    off_t  audio_bytes;       /* Total number of bytes of audio data */
+    long   audio_bytes;       /* Total number of bytes of audio data */
     long   audio_chunks;      /* Chunks of audio data in the file */
 
     char   audio_tag[4];      /* Tag of audio data */
     long   audio_posc;        /* Audio position: chunk */
     long   audio_posb;        /* Audio position: byte within chunk */
-
-    off_t a_codech_off;       /* absolut offset of audio codec information */
-    off_t a_codecf_off;       /* absolut offset of audio codec information */
+ 
+    long  a_codech_off;       /* absolut offset of audio codec information */ 
+    long  a_codecf_off;       /* absolut offset of audio codec information */ 
 
     audio_index_entry *audio_index;
 
@@ -98,61 +81,10 @@ typedef struct track_s
 
 typedef struct
 {
-  uint32_t  bi_size;
-  uint32_t  bi_width;
-  uint32_t  bi_height;
-  uint16_t  bi_planes;
-  uint16_t  bi_bit_count;
-  uint32_t  bi_compression;
-  uint32_t  bi_size_image;
-  uint32_t  bi_x_pels_per_meter;
-  uint32_t  bi_y_pels_per_meter;
-  uint32_t  bi_clr_used;
-  uint32_t  bi_clr_important;
-} BITMAPINFOHEADER_avilib;
-
-typedef struct
-{
-  uint16_t  w_format_tag;
-  uint16_t  n_channels;
-  uint32_t  n_samples_per_sec;
-  uint32_t  n_avg_bytes_per_sec;
-  uint16_t  n_block_align;
-  uint16_t  w_bits_per_sample;
-  uint16_t  cb_size;
-} WAVEFORMATEX_avilib;
-
-typedef struct
-{
-  uint32_t fcc_type;
-  uint32_t fcc_handler;
-  uint32_t dw_flags;
-  uint32_t dw_caps;
-  uint16_t w_priority;
-  uint16_t w_language;
-  uint32_t dw_scale;
-  uint32_t dw_rate;
-  uint32_t dw_start;
-  uint32_t dw_length;
-  uint32_t dw_initial_frames;
-  uint32_t dw_suggested_buffer_size;
-  uint32_t dw_quality;
-  uint32_t dw_sample_size;
-  uint32_t dw_left;
-  uint32_t dw_top;
-  uint32_t dw_right;
-  uint32_t dw_bottom;
-  uint32_t dw_edit_count;
-  uint32_t dw_format_change_count;
-  char     sz_name[64];
-} AVISTREAMINFO;
-
-typedef struct
-{
-
+  
   long   fdes;              /* File descriptor of AVI file */
   long   mode;              /* 0 for reading, 1 for writing */
-
+  
   long   width;             /* Width  of a video frame */
   long   height;            /* Height of a video frame */
   double fps;               /* Frames per second */
@@ -163,31 +95,29 @@ typedef struct
   char   video_tag[4];      /* Tag of video data */
   long   video_pos;         /* Number of next frame to be read
 			       (if index present) */
-
+  
   unsigned long max_len;    /* maximum video chunk present */
-
+  
   track_t track[AVI_MAX_TRACKS];  // up to AVI_MAX_TRACKS audio tracks supported
-
-  off_t pos;        /* position in file */
+  
+  unsigned long pos;        /* position in file */
   long   n_idx;             /* number of index entries actually filled */
   long   max_idx;           /* number of index entries actually allocated */
-
-  off_t v_codech_off;       /* absolut offset of video codec (strh) info */
-  off_t v_codecf_off;       /* absolut offset of video codec (strf) info */
-
+  
+  long  v_codech_off;       /* absolut offset of video codec (strh) info */ 
+  long  v_codecf_off;       /* absolut offset of video codec (strf) info */ 
+  
   unsigned char (*idx)[16]; /* index entries (AVI idx1 tag) */
   video_index_entry *video_index;
-
-  off_t last_pos;          /* Position of last frame written */
+  
+  unsigned long last_pos;          /* Position of last frame written */
   unsigned long last_len;          /* Length of last frame written */
   int must_use_index;              /* Flag if frames are duplicated */
-  off_t movi_start;
-
-  int anum;            // total number of audio tracks
-  int aptr;            // current audio working track
-
-  BITMAPINFOHEADER_avilib *bitmap_info_header;
-  WAVEFORMATEX_avilib *wave_format_ex[AVI_MAX_TRACKS];
+  unsigned long   movi_start;
+  
+  int anum;            // total number of audio tracks 
+  int aptr;            // current audio working track 
+  
 } avi_t;
 
 #define AVI_MODE_WRITE  0
@@ -257,11 +187,6 @@ typedef struct
 #define IBM_FORMAT_ADPCM                (0x0103)
 #endif
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 avi_t* AVI_open_output_file(char * filename);
 void AVI_set_video(avi_t *AVI, int width, int height, double fps, char *compressor);
 void AVI_set_audio(avi_t *AVI, int channels, long rate, int bits, int format, long mp3rate);
@@ -273,7 +198,7 @@ long AVI_bytes_remain(avi_t *AVI);
 int  AVI_close(avi_t *AVI);
 long AVI_bytes_written(avi_t *AVI);
 
-avi_t *AVI_open_input_file(const char *filename, int getIndex);
+avi_t *AVI_open_input_file(char *filename, int getIndex);
 avi_t *AVI_open_fd(int fd, int getIndex);
 int avi_parse_input_file(avi_t *AVI, int getIndex);
 long AVI_audio_mp3rate(avi_t *AVI);
@@ -303,7 +228,6 @@ int  AVI_set_audio_position(avi_t *AVI, long byte);
 int  AVI_set_audio_bitrate(avi_t *AVI, long bitrate);
 
 long AVI_read_audio(avi_t *AVI, char *audbuf, long bytes);
-long AVI_read_audio_chunk(avi_t *AVI, char *audbuf);
 
 long AVI_audio_codech_offset(avi_t *AVI);
 long AVI_audio_codecf_offset(avi_t *AVI);
@@ -315,8 +239,8 @@ int  AVI_read_data(avi_t *AVI, char *vidbuf, long max_vidbuf,
                                long *len);
 
 void AVI_print_error(char *str);
-const char *AVI_strerror(void);
-char *AVI_syserror(void);
+char *AVI_strerror();
+char *AVI_syserror();
 
 int AVI_scan(char *name);
 int AVI_dump(char *name, int mode);
@@ -325,42 +249,39 @@ char *AVI_codec2str(short cc);
 int AVI_file_check(char *import_file);
 
 void AVI_info(avi_t *avifile);
-uint64_t AVI_max_size(void);
+uint64_t AVI_max_size();
 int avi_update_header(avi_t *AVI);
 
 int AVI_set_audio_track(avi_t *AVI, int track);
 int AVI_get_audio_track(avi_t *AVI);
 int AVI_audio_tracks(avi_t *AVI);
 
-#ifdef __cplusplus
-}
-#endif
 
-struct riff_struct
+struct riff_struct 
 {
   unsigned char id[4];   /* RIFF */
-  uint32_t len;
+  unsigned long len;
   unsigned char wave_id[4]; /* WAVE */
 };
 
 
-struct chunk_struct
+struct chunk_struct 
 {
 	unsigned char id[4];
-	uint32_t len;
+	unsigned long len;
 };
 
-struct common_struct
+struct common_struct 
 {
-	uint16_t wFormatTag;
-	uint16_t wChannels;
-	uint32_t dwSamplesPerSec;
-	uint32_t dwAvgBytesPerSec;
-	uint16_t wBlockAlign;
-	uint16_t wBitsPerSample;  /* Only for PCM */
+	unsigned short wFormatTag;
+	unsigned short wChannels;
+	unsigned long dwSamplesPerSec;
+	unsigned long dwAvgBytesPerSec;
+	unsigned short wBlockAlign;
+	unsigned short wBitsPerSample;  /* Only for PCM */
 };
 
-struct wave_header
+struct wave_header 
 {
 	struct riff_struct   riff;
 	struct chunk_struct  format;
@@ -386,3 +307,4 @@ struct AVIStreamHeader {
 };
 
 #endif
+

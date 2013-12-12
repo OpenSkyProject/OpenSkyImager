@@ -474,6 +474,7 @@ gpointer thd_capture_run(gpointer thd_data)
 {
 	int thdrun = 1, thderror = 0, thdhold = 0, thdmode = 0, thdshoot = 0;
 	int thdpreshots = shots, thdtimer = 0, thdexp = 0, thdtlmode = 0;
+	int avimaxframes = 0;
 	char thdfit[2048];
 	time_t ref, last;
 	struct timeval clks, clke;
@@ -631,7 +632,7 @@ gpointer thd_capture_run(gpointer thd_data)
 					imgfit_set_bytepix(imgcam_get_shpar()->bytepix);
 					imgfit_set_data(imgcam_get_data());
 					
-					if (thdmode == 1)
+					if ((thdmode == 1) && (runerr == 0))
 					{
 						// UI flags update in save mode
 						shots++;
@@ -639,12 +640,14 @@ gpointer thd_capture_run(gpointer thd_data)
 						if ((savefmt == 2) || (savefmt == 3))
 						{
 							// Avi
-							if ((imgcam_get_shpar()->width != imgavi_get_width()) || (imgcam_get_shpar()->height != imgavi_get_height()) || (imgcam_get_shpar()->bytepix != imgavi_get_bytepix()))
+							if ((imgcam_get_shpar()->width != imgavi_get_width()) || (imgcam_get_shpar()->height != imgavi_get_height()) || (imgcam_get_shpar()->bytepix != imgavi_get_bytepix()) || (shots > avimaxframes))
 							{
 								// Close current and create a new one
 								imgavi_set_width(imgcam_get_shpar()->width);
 								imgavi_set_height(imgcam_get_shpar()->height);
 								imgavi_set_bytepix(imgcam_get_shpar()->bytepix);
+								avimaxframes = imgavi_get_maxsize() / (imgavi_get_width() * imgavi_get_height() * 6) + shots - 10;
+								printf("Max frames: %d\n", avimaxframes);
 								imgavi_set_name(thdfit);
 								run = imgavi_open();
 							}
@@ -674,7 +677,7 @@ gpointer thd_capture_run(gpointer thd_data)
 
 					//printf("run: %d, runerr: %d, expnum: %d, shots: %d\n", run, runerr, expnum, shots);
 
-					if (thdmode == 1)
+					if ((thdmode == 1) && (runerr == 0))
 					{
 						// Save mode
 						if ((savefmt == 1) || (savefmt == 3))
@@ -682,6 +685,7 @@ gpointer thd_capture_run(gpointer thd_data)
 							// Fit
 							if (thd_fitsav != NULL)
 							{
+								g_thread_join(thd_fitsav);							
 								g_thread_unref(thd_fitsav);
 								thd_fitsav = NULL;
 							}
@@ -693,6 +697,7 @@ gpointer thd_capture_run(gpointer thd_data)
 							// Avi
 							if (thd_avisav != NULL)
 							{
+								g_thread_join(thd_avisav);
 								g_thread_unref(thd_avisav);
 								thd_avisav = NULL;
 							}
@@ -797,7 +802,10 @@ gpointer thd_capture_run(gpointer thd_data)
 			g_thread_join(thd_avisav);
 			thd_avisav = NULL;
 		}
-		imgavi_close();
+		if (imgavi_isopen())
+		{
+			imgavi_close();
+		}
 	}
 
 	if ((thdrun > 0) || (thderror == 1))

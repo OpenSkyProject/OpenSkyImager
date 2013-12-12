@@ -133,7 +133,7 @@ void cmb_exptime_build()
 
 void spn_expnum_build()
 {
-	spn_expnum = gtk_spin_button_new_with_range (1.0, 900.0, 1.0);
+	spn_expnum = gtk_spin_button_new_with_range (1.0, 9999.0, 1.0);
 	gtk_widget_set_size_request(spn_expnum, 40, 25);
 	expnum = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_expnum));
 	//Callbacks
@@ -142,7 +142,7 @@ void spn_expnum_build()
 
 void spn_shots_build()
 {
-	spn_shots = gtk_spin_button_new_with_range (0.0, 900.0, 1.0);
+	spn_shots = gtk_spin_button_new_with_range (0.0, 9999.0, 1.0);
 	gtk_widget_set_size_request(spn_shots, 40, 25);
 	shots = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_shots));
 	

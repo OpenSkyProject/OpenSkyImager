@@ -20,6 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+unsigned int   imgavi_get_maxsize();
 char           *imgavi_get_name();
 void            imgavi_set_name(char *filename);
 char           *imgavi_get_msg();

@@ -33,6 +33,11 @@ static char            avifile[2048];
 static avi_t          *aviptr = NULL;
 static int             frameno = 0;
 
+unsigned int   imgavi_get_maxsize()
+{
+	return (unsigned int)AVI_max_size();
+}
+
 char *imgavi_get_name()
 {
 	return avifile;
@@ -103,7 +108,7 @@ void imgavi_init()
 	isopen = 0;
 	if (databuffer != NULL)
 	{
-		// Databuffere is never allocated here
+		// Databuffer is never allocated here
 		// Hence we only clear the pointer when no longer needed
 		databuffer = NULL;
 	}
