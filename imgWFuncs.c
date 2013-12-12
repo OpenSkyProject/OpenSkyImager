@@ -461,11 +461,11 @@ void shotsnaming(char *thdfit, int thdshots)
 
 	if (irisnaming == 1)
 	{
-		sprintf(thdsuffix, "_%d.fit", thdshots);
+		sprintf(thdsuffix, "_%d", thdshots);
 	}
 	else	
 	{						
-		sprintf(thdsuffix, "_%04d.fit", thdshots);
+		sprintf(thdsuffix, "_%04d", thdshots);
 	}
 	strcat(thdfit, thdsuffix);
 }
@@ -647,9 +647,11 @@ gpointer thd_capture_run(gpointer thd_data)
 								imgavi_set_height(imgcam_get_shpar()->height);
 								imgavi_set_bytepix(imgcam_get_shpar()->bytepix);
 								avimaxframes = imgavi_get_maxsize() / (imgavi_get_width() * imgavi_get_height() * 6) + shots - 10;
-								printf("Max frames: %d\n", avimaxframes);
+								//printf("Max frames: %d\n", avimaxframes);
+								shotsnaming(thdfit, shots);
 								imgavi_set_name(thdfit);
 								run = imgavi_open();
+								runerr = (run == 0);
 							}
 							imgavi_set_data(imgcam_get_data());
 						}
@@ -710,6 +712,7 @@ gpointer thd_capture_run(gpointer thd_data)
 					{
 						// Checks and wait if the pixbuf from previous frame is completed
 						g_thread_join(thd_pixbuf);
+						g_thread_unref(thd_pixbuf);
 						thd_pixbuf = NULL;
 					}
 					// Starts backgroung elaboration of pixbuf
@@ -788,7 +791,7 @@ gpointer thd_capture_run(gpointer thd_data)
 		{
 			thderror = 1;
 		}
-	}
+	} // While end
 	g_rw_lock_reader_lock(&thd_caplock);
 	thdrun = run;
 	g_rw_lock_reader_unlock(&thd_caplock);		
@@ -800,6 +803,7 @@ gpointer thd_capture_run(gpointer thd_data)
 		{
 			// Checks and wait if the last frame add is completed
 			g_thread_join(thd_avisav);
+			g_thread_unref(thd_avisav);
 			thd_avisav = NULL;
 		}
 		if (imgavi_isopen())
@@ -825,6 +829,21 @@ gpointer thd_capture_run(gpointer thd_data)
 	expfract = 0.0;
 	tmrexpprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_exp_progress_refresh, NULL);
 	
+	if (thd_fitsav != NULL)
+	{
+		g_thread_join(thd_fitsav);							
+		g_thread_unref(thd_fitsav);
+		thd_fitsav = NULL;
+	}
+
+	if (thd_pixbuf != NULL)
+	{
+		// Checks and wait if the pixbuf from previous frame is completed
+		g_thread_join(thd_pixbuf);
+		g_thread_unref(thd_pixbuf);
+		thd_pixbuf = NULL;
+	}
+
 	// It's a noop for camera that don't feature a mechanical shutter
 	// Close
 	imgcam_shutter(1);

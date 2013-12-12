@@ -142,7 +142,7 @@ void spn_expnum_build()
 
 void spn_shots_build()
 {
-	spn_shots = gtk_spin_button_new_with_range (0.0, 9999.0, 1.0);
+	spn_shots = gtk_spin_button_new_with_range (0.0, 99999.0, 1.0);
 	gtk_widget_set_size_request(spn_shots, 40, 25);
 	shots = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_shots));
 	

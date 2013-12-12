@@ -26,7 +26,7 @@
 
 static unsigned char *databuffer = NULL;
 static unsigned char *framebuffer = NULL;
-static int             awidth, aheight, bytepix;
+static int             awidth, aheight, bytepix, doalloc;
 static char           *avimsg;
 static int             isopen = 0;
 static char            avifile[2048];
@@ -46,6 +46,10 @@ char *imgavi_get_name()
 void imgavi_set_name(char *filename)
 {
 	strcpy(avifile, filename);
+	if (strstr(avifile, ".avi") == NULL)
+	{
+		strcat(avifile, ".avi");
+	}
 }
 
 
@@ -71,6 +75,7 @@ int imgavi_get_width()
 
 void imgavi_set_width(int val)
 {
+	doalloc = (awidth != val) ? 1 : doalloc;
 	awidth = val;
 }
 
@@ -81,6 +86,7 @@ int imgavi_get_height()
 
 void imgavi_set_height(int val)
 {
+	doalloc = (aheight != val) ? 1 : doalloc;
 	aheight = val;
 }
 
@@ -91,6 +97,7 @@ int imgavi_get_bytepix()
 
 void imgavi_set_bytepix(int val)
 {
+	doalloc = (bytepix != val) ? 1 : doalloc;
 	bytepix = (val <= 1) ? 1 : 2;
 }
 
@@ -122,6 +129,7 @@ void imgavi_init()
 	awidth  = 0;
 	aheight = 0;
 	bytepix = 1;
+	doalloc = 1;
 	frameno = 0;
 }
 
@@ -136,34 +144,46 @@ int imgavi_open()
 	avimsg[0] = '\0';
 	if (strlen(avifile) > 0)
 	{
-		if (isfile(avifile) == 0)
+		if (mkpath(avifile, 0))
 		{
-			if ((errno != EACCES) && (errno != ENOTDIR))
-			{ 
-				if ((aviptr = AVI_open_output_file(avifile)) != NULL)
+			if (isfile(avifile) == 0)
+			{
+				if ((errno != EACCES) && (errno != ENOTDIR))
 				{ 
-					frameno = 0;
-					// Allocate suitable framebuffer
-					framebuffer = (unsigned char*)realloc(framebuffer, awidth * aheight * 3);
-					// Set avi properties accordingly
-					AVI_set_video(aviptr, awidth, aheight, 10, "RGB");
-					// Internal flags
-					isopen = 1;
-					retval = 1;
+					if ((aviptr = AVI_open_output_file(avifile)) != NULL)
+					{ 
+						// Reset frameno
+						frameno = 0;
+						// Allocate suitable framebuffer, eventually
+						if (doalloc == 1)
+						{
+							framebuffer = (unsigned char*)realloc(framebuffer, awidth * aheight * 3);
+							doalloc = 0;
+						}
+						// Set avi properties accordingly
+						AVI_set_video(aviptr, awidth, aheight, 10, "RGB");
+						// Internal flags
+						isopen = 1;
+						retval = 1;
+					}
+					else
+					{
+						sprintf(avimsg, "%s", AVI_strerror());
+					}
 				}
-				else
+				else if (errno != EACCES)
 				{
-					sprintf(avimsg, "%s", AVI_strerror());
+					sprintf(avimsg, C_("avi","Unable to write file %s. Check permissions"), avifile);
+				}
+				else if (errno != ENOTDIR)
+				{
+					sprintf(avimsg, C_("avi","A component of the file path %s is not a folder"), avifile);
 				}
 			}
-			else if (errno != EACCES)
-			{
-				sprintf(avimsg, "Unable to write file %s. Check permissions", avifile);
-			}
-			else if (errno != ENOTDIR)
-			{
-				sprintf(avimsg, "A component of the file path %s is not a folder", avifile);
-			}
+		}
+		else
+		{
+			sprintf(avimsg, C_("avi","A component of the file path %s could not be created, check permissions"), avifile);
 		}
 	}
 	return (retval);	
