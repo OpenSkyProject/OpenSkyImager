@@ -131,8 +131,21 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 		{
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_shots), (int)tmpshots);
 			gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbr_expnum), tmpfract);
-			/// Message on statusbar about last saved frame (%s)
-			sprintf(imgmsg, C_("main","Image: %s saved"), fitfile);
+			if (savefmt == 1)
+			{
+				/// Message on statusbar about last saved frame (%s)
+				sprintf(imgmsg, C_("main","Image: %s saved"), imgfit_get_name());
+			}
+			else if (savefmt == 2)
+			{
+				/// Message on statusbar about last frame add to avi (%s)
+				sprintf(imgmsg, C_("main","Frame: add to %s"), imgavi_get_name());
+			}
+			else if (savefmt == 3)
+			{
+				/// Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
+				sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), imgfit_get_name(), imgavi_get_name());
+			}
 			// Main image update
 			sprintf(imgfbk, "#%04d", (int)tmpshots);
 			gtk_label_set_text(GTK_LABEL(lbl_fbkimg), (gchar *) imgfbk);	
@@ -172,6 +185,10 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 		{ 
 			sprintf(imgmsg, "%s", imgfit_get_msg());
 		}
+		else if (strlen(imgavi_get_msg()) > 0)
+		{ 
+			sprintf(imgmsg, "%s", imgavi_get_msg());
+		}
 		else if (strlen(imgcam_get_msg()) > 0)
 		{
 			sprintf(imgmsg, "%s", imgcam_get_msg());
@@ -195,9 +212,22 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbr_expnum), tmpfract);
 		if (capture)
 		{
-			/// Message to confirm end of capture thread in capture mode
-			/// Message on statusbar about last saved frame (%s)
-			sprintf(imgmsg, C_("main","Image: %s saved"), fitfile);
+			// Message to confirm end of capture thread in capture mode
+			if (savefmt == 1)
+			{
+				/// Message on statusbar about last saved frame (%s)
+				sprintf(imgmsg, C_("main","Image: %s saved"), imgfit_get_name());
+			}
+			else if (savefmt == 2)
+			{
+				/// Message on statusbar about last frame add to avi (%s)
+				sprintf(imgmsg, C_("main","Frame: add to %s"), imgavi_get_name());
+			}
+			else if (savefmt == 3)
+			{
+				/// Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
+				sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), imgfit_get_name(), imgavi_get_name());
+			}
 			/// This goes concat with last saved frame
 			strcat(imgmsg, C_("main",", capture end"));
 			// Main image update
@@ -443,10 +473,12 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 			{
 				gtk_button_set_label(GTK_BUTTON(cmd_capture), C_("main","Capture mode"));
 				gtk_widget_set_sensitive(box_filename, 0);
+				gtk_widget_set_sensitive(box_cfw, 0);
 			}
 			else
 			{
 				gtk_widget_set_sensitive(box_filename, 1);
+				gtk_widget_set_sensitive(box_cfw, 1);
 				gtk_button_set_label(GTK_BUTTON(cmd_capture), C_("main","Focus mode"));
 			}
 		}
@@ -908,6 +940,38 @@ void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
 	g_rw_lock_writer_unlock(&thd_caplock);
 	sprintf(imgmsg, C_("main","Exposure time set to: %s"), gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}
+
+gboolean numbers_input_keypress (GtkWidget *widget, GdkEventKey *event, int maxchars)
+{
+	char *kname = gdk_keyval_name(event->keyval);
+	
+	//printf("Keypress: %s %d\n", kname, event->keyval);
+
+	if ((strcmp(kname, "BackSpace") == 0) || (strcmp(kname, "Home") == 0) || (strcmp(kname, "End") == 0) || (strcmp(kname, "Up") == 0) || (strcmp(kname, "Down") == 0) || (strcmp(kname, "Left") == 0) || (strcmp(kname, "Right") == 0) || (strcmp(kname, "Page_Up") == 0) || (strcmp(kname, "Page_Down") == 0))
+		// Movement keys are accepted no matter what
+		return FALSE;	
+
+	if (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) >= maxchars)
+		// In order to accept key, string must be shorter than max
+		return TRUE;
+
+	if ((strcmp(kname, "plus") == 0) && (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) == 0))
+		// + is accepted as first char only
+		return FALSE;	
+		
+	if ((strcmp(kname, "minus") == 0) && (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) == 0))
+		// - is accepted as first char only
+		return FALSE;	
+		
+	if ((event->keyval >= 48) && (event->keyval <= 57))
+		// Numbers are accepted
+		return FALSE;	
+	if ((sysloc->decimal_point[0] == event->keyval) && (strchr(gtk_entry_get_text(GTK_ENTRY(widget)), sysloc->decimal_point[0]) == NULL))
+		// Only one decimal separator is allowed
+		return FALSE;
+
+	return TRUE;
 }
 
 void cmb_camera_changed (GtkComboBox *widget, gpointer user_data)
@@ -1664,6 +1728,27 @@ void cmb_flt_changed (GtkComboBox *widget, gpointer user_data)
 			fitflt[0] = '\0';	
 			sprintf(imgmsg, C_("main","Filter name removed from naming convention"));
 		}
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
+}
+
+void cmb_fmt_changed (GtkComboBox *widget, gpointer user_data)
+{
+	int tmp;
+	char str[32];
+	
+	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
+	{
+		sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%d-%[^\n]", &tmp, str);
+		if ((tmp >= 1) && (tmp <= 3))
+		{
+			savefmt = tmp;
+		}
+		else
+		{
+			savefmt = 1;
+		}
+		sprintf(imgmsg, C_("main","Save format set to: %s"), str);
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 }

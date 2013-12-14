@@ -191,8 +191,8 @@ void load_histogram_from_data()
 
 		// Actual resize
 		#if GTK_MAJOR_VERSION == 3
-		tgtw -= 15;
-		tgth -= 15;
+		//tgtw -= 15;
+		//tgth -= 15;
 		#endif
 		GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_histogram(gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_histogram)) * 10), tgtw, tgth, GDK_INTERP_HYPER);
 		gtk_image_set_from_pixbuf((GtkImage *) histogram, tmpbuf);
@@ -220,8 +220,8 @@ void load_histogram_from_null()
 		// Actual resize
 		imgpix_init_histogram();
 		#if GTK_MAJOR_VERSION == 3
-		tgtw -= 15;
-		tgth -= 15;
+		//tgtw -= 15;
+		//tgth -= 15;
 		#endif
 		GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_data(), tgtw, tgth, GDK_INTERP_HYPER);
 		gtk_image_set_from_pixbuf((GtkImage *) histogram, tmpbuf);
@@ -294,7 +294,7 @@ void tec_show_graph()
 	GtkAllocation *alloc = g_new0 (GtkAllocation, 1);
 	gtk_widget_get_allocation(GTK_WIDGET(frm_tecgraph), alloc);
 	tgtw = (alloc->width > 5) ? alloc->width - 5 : alloc->width;
-	tgth = (alloc->height >5) ? alloc->height - 5 : alloc->height;
+	tgth = (alloc->height > 5) ? alloc->height - 5 : alloc->height;
 	// Cleanup
 	g_free(alloc);
 
@@ -381,59 +381,147 @@ void cfwmsgdestroy(int response)
 	}
 }
 
+void filenaming(char *thdfit)
+{
+	struct tm now;
+	time_t localt;
+	char thdtdmark[32];
+	char thdsuffix[32];
+	
+	// Filename calculations 
+	// tab deactivated in capture mode, no need to lock
+	if ((fitdateadd == 1) || (fittimeadd == 1))
+	{
+		strcpy(thdfit, g_build_path(G_DIR_SEPARATOR_S, fitfolder, fitbase, NULL));
+		localt = time(NULL);
+		now    = *(localtime(&localt));
+		if (fitdateadd == 1)
+		{
+			if (strftime(thdtdmark, 32, "_%Y%m%d" ,&now) > 0)
+			{
+				strcat(thdfit, thdtdmark);
+			}
+		}
+		if (fittimeadd == 1)
+		{
+			if (strftime(thdtdmark, 32, "_%H%M%S" ,&now) > 0)
+			{
+				strcat(thdfit, thdtdmark);
+			}
+		}
+		if (strlen(fitflt) > 0)
+		{
+			sprintf(thdsuffix, "_%s", fitflt);
+			strcat(thdfit, thdsuffix);
+		}
+	}
+	else if (audelanaming == 1)
+	{
+		localt = time(NULL);
+		now    = *(localtime(&localt));
+		if (strftime(thdtdmark, 32, "_%Y-%m-%d" ,&now) > 0)
+		{
+			strcpy(thdfit, g_build_path(G_DIR_SEPARATOR_S, fitfolder, thdtdmark+1, G_DIR_SEPARATOR_S, NULL));
+			// Check if basefolder exists
+			if(isdir(thdfit) == 0)
+			{
+				// Folders does not exist, create it
+				mkpath(thdfit, 0);
+			}
+			// Base folder/ + date/ + base file name
+			strcat(thdfit, fitbase);
+			strcat(thdfit, "_");
+			strcat(thdfit, imgcam_get_model());
+			if (strlen(fitflt) > 0)
+			{
+				sprintf(thdsuffix, "_%s", fitflt);
+				strcat(thdfit, thdsuffix);
+			}
+			strcat(thdfit, thdtdmark);
+			if (strftime(thdtdmark, 32, "_%H-%M-%S" ,&now) > 0)
+			{
+				strcat(thdfit, thdtdmark);
+			}
+		}
+	}
+	else
+	{
+		strcpy(thdfit, g_build_path(G_DIR_SEPARATOR_S, fitfolder, fitbase, NULL));
+		if (strlen(fitflt) > 0)
+		{
+			sprintf(thdsuffix, "_%s", fitflt);
+			strcat(thdfit, thdsuffix);
+		}
+	}
+}
+
+void shotsnaming(char *thdfit, int thdshots)
+{
+	char thdsuffix[32];
+
+	if (irisnaming == 1)
+	{
+		sprintf(thdsuffix, "_%d", thdshots);
+	}
+	else	
+	{						
+		sprintf(thdsuffix, "_%04d", thdshots);
+	}
+	strcat(thdfit, thdsuffix);
+}
+
 gpointer thd_capture_run(gpointer thd_data)
 {
 	int thdrun = 1, thderror = 0, thdhold = 0, thdmode = 0, thdshoot = 0;
-	int thdshots = 0, thdpreshots = shots, thdexpnum = 0, thdtimer = 0, thdexp = 0, thdtlmode = 0;
+	int thdpreshots = shots, thdtimer = 0, thdexp = 0, thdtlmode = 0;
+	int avimaxframes = 0;
 	char thdfit[2048];
-	char thdtdmark[32];
-	char thdsuffix[32];
-	struct tm now;
-	time_t localt;
 	time_t ref, last;
 	struct timeval clks, clke;
 	GThread *thd_pixbuf = NULL;
 	GThread *thd_fitsav = NULL;
+	GThread *thd_avisav = NULL;
 
 	gettimeofday(&clks, NULL);
 	g_rw_lock_reader_lock(&thd_caplock);
 	thdmode = capture;
 	thdrun = run;
 	thdtlmode = tlenable + tlcalendar;
-	thdexpnum = expnum;
 	if ((thdtlmode == 2) && (thdrun == 1))
 	{
 		// In FULL TimeLapse mode only start / end / interval count
-		localt = time(NULL);
-		thdrun = ((thdrun == 1) && (difftime(mktime(&tlend), localt) > 0));
+		ref = time(NULL);
+		thdrun = ((thdrun == 1) && (difftime(mktime(&tlend), ref) > 0));
 	}
 	else if ((thdmode == 1) && (thdrun == 1))
 	{
 		// In capture mode also total shots count
-		thdrun = ((thdrun == 1) && (thdexpnum > thdshots));
+		thdrun = ((thdrun == 1) && (expnum > (shots - thdpreshots)));
 	}
 	g_rw_lock_reader_unlock(&thd_caplock);		
+
+	//No matter what, avi is init just in case (needed only once)
+	imgavi_init();
 
 	// If we are in FULL timelapse mode
 	if ((thdtlmode == 2) && (thdrun == 1))
 	{
-		localt = time(NULL);
+		ref = time(NULL);
 		// Wait for the start time to arrive
-		while (difftime(mktime(&tlstart), localt) > 0)
+		while (difftime(mktime(&tlstart), ref) > 0)
 		{
 			usleep(500000);
 			// Check if we're still in run condition
 			g_rw_lock_reader_lock(&thd_caplock);
 			thdrun = run;
 			thdmode = capture;
-			thdexpnum = expnum;
 			g_rw_lock_reader_unlock(&thd_caplock);		
 			if (thdrun == 0)
 			{
 				// User abort
 				break;
 			}
-			localt = time(NULL);
+			ref = time(NULL);
 		}
 	}
 	// We close shutter just in case it's open because of camera position
@@ -510,7 +598,6 @@ gpointer thd_capture_run(gpointer thd_data)
 					g_rw_lock_reader_lock(&thd_caplock);
 					thdrun = run;
 					thdmode = capture;
-					thdexpnum = expnum;
 					g_rw_lock_reader_unlock(&thd_caplock);		
 					if (thdrun == 0)
 					{
@@ -537,139 +624,106 @@ gpointer thd_capture_run(gpointer thd_data)
 					//printf("Readout ok\n");
 					g_rw_lock_writer_lock(&thd_caplock);
 					readout = 0;
+					
+					// The fit data structure is also used anyway to store preview params
 					imgfit_init();
 					imgfit_set_width(imgcam_get_shpar()->width);
 					imgfit_set_height(imgcam_get_shpar()->height);
 					imgfit_set_bytepix(imgcam_get_shpar()->bytepix);
 					imgfit_set_data(imgcam_get_data());
-					g_rw_lock_writer_unlock(&thd_caplock);		
-					if (imgfit_loaded())
+					
+					if ((thdmode == 1) && (runerr == 0))
 					{
-						if (thdmode == 1)
+						// UI flags update in save mode
+						shots++;
+						filenaming(thdfit);
+						if ((savefmt == 2) || (savefmt == 3))
 						{
-							// Flags								
-							thdshots++;
-							
-							// Filename calculations
-							g_rw_lock_reader_lock(&thd_caplock);
-							if ((fitdateadd == 1) || (fittimeadd == 1))
+							// Avi
+							if ((imgcam_get_shpar()->width != imgavi_get_width()) || (imgcam_get_shpar()->height != imgavi_get_height()) || (imgcam_get_shpar()->bytepix != imgavi_get_bytepix()) || (shots > avimaxframes))
 							{
-								strcpy(thdfit, g_build_path(G_DIR_SEPARATOR_S, fitfolder, fitbase, NULL));
-								localt = time(NULL);
-								now    = *(localtime(&localt));
-								if (fitdateadd == 1)
-								{
-									if (strftime(thdtdmark, 32, "_%Y%m%d" ,&now) > 0)
-									{
-										strcat(thdfit, thdtdmark);
-									}
-								}
-								if (fittimeadd == 1)
-								{
-									if (strftime(thdtdmark, 32, "_%H%M%S" ,&now) > 0)
-									{
-										strcat(thdfit, thdtdmark);
-									}
-								}
-								if (strlen(fitflt) > 0)
-								{
-									sprintf(thdsuffix, "_%s", fitflt);
-									strcat(thdfit, thdsuffix);
-								}
+								// Close current and create a new one
+								imgavi_set_width(imgcam_get_shpar()->width);
+								imgavi_set_height(imgcam_get_shpar()->height);
+								imgavi_set_bytepix(imgcam_get_shpar()->bytepix);
+								avimaxframes = imgavi_get_maxsize() / (imgavi_get_width() * imgavi_get_height() * 6) + shots - 10;
+								//printf("Max frames: %d\n", avimaxframes);
+								shotsnaming(thdfit, shots);
+								imgavi_set_name(thdfit);
+								run = imgavi_open();
+								runerr = (run == 0);
 							}
-							else if (audelanaming == 1)
-							{
-								localt = time(NULL);
-								now    = *(localtime(&localt));
-								if (strftime(thdtdmark, 32, "_%Y-%m-%d" ,&now) > 0)
-								{
-									strcpy(thdfit, g_build_path(G_DIR_SEPARATOR_S, fitfolder, thdtdmark+1, G_DIR_SEPARATOR_S, NULL));
-									// Check if basefolder exists
-									if(isdir(thdfit) == 0)
-									{
-										// Folders does not exist, create it
-										mkpath(thdfit, 0);
-									}
-									// Base folder/ + date/ + base file name
-									strcat(thdfit, fitbase);
-									strcat(thdfit, "_");
-									strcat(thdfit, imgcam_get_model());
-									if (strlen(fitflt) > 0)
-									{
-										sprintf(thdsuffix, "_%s", fitflt);
-										strcat(thdfit, thdsuffix);
-									}
-									strcat(thdfit, thdtdmark);
-									if (strftime(thdtdmark, 32, "_%H-%M-%S" ,&now) > 0)
-									{
-										strcat(thdfit, thdtdmark);
-									}
-								}
-							}
-							else
-							{
-								strcpy(thdfit, g_build_path(G_DIR_SEPARATOR_S, fitfolder, fitbase, NULL));
-								if (strlen(fitflt) > 0)
-								{
-									sprintf(thdsuffix, "_%s", fitflt);
-									strcat(thdfit, thdsuffix);
-								}
-							}
-							if (irisnaming == 1)
-							{
-								sprintf(thdsuffix, "_%d.fit", thdshots + thdpreshots);
-							}
-							else	
-							{						
-								sprintf(thdsuffix, "_%04d.fit", thdshots + thdpreshots);
-							}
-							strcat(thdfit, thdsuffix);
-							strcpy(fitfile, thdfit);
-							g_rw_lock_reader_unlock(&thd_caplock);
+							imgavi_set_data(imgcam_get_data());
+						}
 
-							g_rw_lock_writer_lock(&thd_caplock);
-							shots++;
-							thdexpnum = expnum;
-							if (thdtlmode == 2)
-							{
-								// If we are in FULL TimeLapse mode
-								localt = time(NULL);
-								shotfract = ((double)difftime(localt, mktime(&tlstart)) / (double)difftime(mktime(&tlend), mktime(&tlstart)));
-								shotfract = (shotfract > 1.0) ? 1.0 : shotfract;
-							}
-							else
-							{
-								shotfract = ((double)thdshots / (double)thdexpnum);
-							}
-							g_rw_lock_writer_unlock(&thd_caplock);
+						if ((savefmt == 1) || (savefmt == 3))
+						{
+							// Fit
+							shotsnaming(thdfit, shots);
+							imgfit_set_name(thdfit);
+						}
+					
+						if (thdtlmode == 2)
+						{
+							// If we are in FULL TimeLapse mode
+							ref = time(NULL);
+							shotfract = ((double)difftime(ref, mktime(&tlstart)) / (double)difftime(mktime(&tlend), mktime(&tlstart)));
+							shotfract = (shotfract > 1.0) ? 1.0 : shotfract;
+						}
+						else
+						{
+							shotfract = ((double)(shots - thdpreshots) / (double)expnum);
+						}
+					}
+					g_rw_lock_writer_unlock(&thd_caplock);		
 
+					//printf("run: %d, runerr: %d, expnum: %d, shots: %d\n", run, runerr, expnum, shots);
+
+					if ((thdmode == 1) && (runerr == 0))
+					{
+						// Save mode
+						if ((savefmt == 1) || (savefmt == 3))
+						{
+							// Fit
 							if (thd_fitsav != NULL)
 							{
+								g_thread_join(thd_fitsav);							
 								g_thread_unref(thd_fitsav);
 								thd_fitsav = NULL;
 							}
-							// Starts backgroung save of fit file
+							// Starts background save of fit file
 							thd_fitsav = g_thread_new("Fitsave", thd_fitsav_run, NULL);
-
-							//printf("run: %d, runerr: %d, expnum: %d, shots: %d\n", run, runerr, thdexpnum, thdshots);
 						}
-
-						if (thd_pixbuf != NULL)
+						if ((savefmt == 2) || (savefmt == 3))
 						{
-							// Checks and wait if the pixbuf from previous frame is completed
-							g_thread_join(thd_pixbuf);
-							thd_pixbuf = NULL;
+							// Avi
+							if (thd_avisav != NULL)
+							{
+								g_thread_join(thd_avisav);
+								g_thread_unref(thd_avisav);
+								thd_avisav = NULL;
+							}
+							// Starts background save of avi frame
+							thd_avisav = g_thread_new("Avisave", thd_avisav_run, NULL);
 						}
-						// Starts backgroung elaboration of pixbuf
-						thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, NULL);
-
-						//UI update
-						if (tmrcapprgrefresh != -1)
-						{
-							g_source_remove(tmrcapprgrefresh);
-						}
-						tmrcapprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_capture_progress_refresh, NULL);
 					}
+					
+					if (thd_pixbuf != NULL)
+					{
+						// Checks and wait if the pixbuf from previous frame is completed
+						g_thread_join(thd_pixbuf);
+						g_thread_unref(thd_pixbuf);
+						thd_pixbuf = NULL;
+					}
+					// Starts backgroung elaboration of pixbuf
+					thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, NULL);
+
+					//UI update
+					if (tmrcapprgrefresh != -1)
+					{
+						g_source_remove(tmrcapprgrefresh);
+					}
+					tmrcapprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_capture_progress_refresh, NULL);
 				}
 			}
 			// Determine if loop has to stop
@@ -679,16 +733,15 @@ gpointer thd_capture_run(gpointer thd_data)
 			thdrun = run;
 			thderror = runerr;
 			thdtlmode = tlenable + tlcalendar;
-			thdexpnum = expnum;
 			if ((thdtlmode == 2) && (thdrun == 1))
 			{
 				// If we are in FULL TimeLapse mode
-				localt = time(NULL);
-				thdrun = ((thdrun == 1) && (difftime(mktime(&tlend), localt) > 0));
+				ref = time(NULL);
+				thdrun = ((thdrun == 1) && (difftime(mktime(&tlend), ref) > 0));
 			}
 			else if ((thdmode == 1) && (thdrun == 1))
 			{
-				thdrun = ((thdrun == 1) && (thdexpnum > thdshots));
+				thdrun = ((thdrun == 1) && (expnum > (shots - thdpreshots)));
 			}
 			g_rw_lock_reader_unlock(&thd_caplock);
 			// If we are in tlmode, even bare tl mode
@@ -704,7 +757,6 @@ gpointer thd_capture_run(gpointer thd_data)
 					g_rw_lock_reader_lock(&thd_caplock);
 					thdrun = run;
 					thdmode = capture;					
-					thdexpnum = expnum;
 					g_rw_lock_reader_unlock(&thd_caplock);		
 					if (thdrun == 0)
 					{
@@ -722,16 +774,15 @@ gpointer thd_capture_run(gpointer thd_data)
 				thdmode = capture;
 				thdrun = run;
 				thdtlmode = tlenable + tlcalendar;
-				thdexpnum = expnum;
 				if ((thdtlmode == 2) && (thdrun == 1))
 				{
 					// If we are in FULL TimeLapse mode
-					localt = time(NULL);
-					thdrun = ((thdrun == 1) && (difftime(mktime(&tlend), localt) > 0));
+					ref = time(NULL);
+					thdrun = ((thdrun == 1) && (difftime(mktime(&tlend), ref) > 0));
 				}
 				else if ((thdmode == 1) && (thdrun == 1))
 				{
-					thdrun = ((thdrun == 1) && (thdexpnum > thdshots));
+					thdrun = ((thdrun == 1) && (expnum > (shots - thdpreshots)));
 				}
 				g_rw_lock_reader_unlock(&thd_caplock);
 			}
@@ -740,10 +791,27 @@ gpointer thd_capture_run(gpointer thd_data)
 		{
 			thderror = 1;
 		}
-	}
+	} // While end
 	g_rw_lock_reader_lock(&thd_caplock);
 	thdrun = run;
 	g_rw_lock_reader_unlock(&thd_caplock);		
+
+	if ((thdmode == 1) && ((savefmt == 2) || (savefmt == 3)))
+	{
+		//No matter TL mode (and error status), if avi is saved it must be ended properly
+		if (thd_avisav != NULL)
+		{
+			// Checks and wait if the last frame add is completed
+			g_thread_join(thd_avisav);
+			g_thread_unref(thd_avisav);
+			thd_avisav = NULL;
+		}
+		if (imgavi_isopen())
+		{
+			imgavi_close();
+		}
+	}
+
 	if ((thdrun > 0) || (thderror == 1))
 	{
 		g_rw_lock_writer_lock(&thd_caplock);
@@ -761,6 +829,21 @@ gpointer thd_capture_run(gpointer thd_data)
 	expfract = 0.0;
 	tmrexpprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_exp_progress_refresh, NULL);
 	
+	if (thd_fitsav != NULL)
+	{
+		g_thread_join(thd_fitsav);							
+		g_thread_unref(thd_fitsav);
+		thd_fitsav = NULL;
+	}
+
+	if (thd_pixbuf != NULL)
+	{
+		// Checks and wait if the pixbuf from previous frame is completed
+		g_thread_join(thd_pixbuf);
+		g_thread_unref(thd_pixbuf);
+		thd_pixbuf = NULL;
+	}
+
 	// It's a noop for camera that don't feature a mechanical shutter
 	// Close
 	imgcam_shutter(1);
@@ -791,7 +874,22 @@ gpointer thd_fitsav_run(gpointer thd_data)
 {
 	// Save fit goes here
 	g_rw_lock_reader_lock(&thd_caplock);
-	int retval = imgfit_save_file(fitfile);
+	int retval = imgfit_save_file(NULL);
+	g_rw_lock_reader_unlock(&thd_caplock);
+
+	if (retval == 0)
+	{
+		g_rw_lock_writer_lock(&thd_caplock);
+		runerr = 1;
+		g_rw_lock_writer_unlock(&thd_caplock);
+	}
+	return 0;
+}
+
+gpointer thd_avisav_run(gpointer thd_data)
+{
+	g_rw_lock_reader_lock(&thd_caplock);
+	int retval = imgavi_add();
 	g_rw_lock_reader_unlock(&thd_caplock);
 
 	if (retval == 0)

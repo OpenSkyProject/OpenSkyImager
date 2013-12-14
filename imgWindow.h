@@ -27,6 +27,7 @@
 #include "gtkTools.h"
 #include "imgPixbuf.h"
 #include "imgFitsio.h"
+#include "imgAvi.h"
 #include "imgCamio.h"
 #include "imgCFWio.h"
 #include "gtkversions.h"
@@ -72,7 +73,7 @@
 	GtkWidget *cmb_camera, *cmb_bin, *cmb_csize, *cmb_dspeed, *cmb_mode, *lbl_mode, *cmb_amp, *cmb_denoise, *cmb_depth, *cmb_debayer;
 	GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
 	GtkWidget *cmd_tecenable, *cmd_tecauto, *spn_tectgt, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
-	GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd;
+	GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd, *cmb_fmt;
 	GtkWidget *txt_fitfolder, *txt_fitbase;
 	GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	GtkWidget *cmd_tlenable;
@@ -108,6 +109,8 @@
 	int scrmaxadu = 255;
 	int scrminadu = 0;
 	char *fltstr = " |L|R|G|B|Dk|Ff|Bs|IR|UV|CLS|Ha|S2|O3|Hb|CH4|KaK|Kont|:0";
+	char *fmtstr = "1-.fit|2-.avi|3-.fit + .avi|:0";
+	int  savefmt = 1;
 	guint tmrstatusbar = -1;
 	guint tmrimgrefresh = -1;
 	guint tmraducheck = -1;
@@ -119,7 +122,6 @@
 	guint tmrtecpwr = -1;
 	char fitfolder[1024];
 	char fitbase[1024];
-	char fitfile[2048];
 	char fitflt[16];
 	double fps = 0.;
 	int fitdateadd = 0, fittimeadd = 0, audelanaming = 0, irisnaming = 0, zerofc = 0, tlenable = 0, tlcalendar = 0;
@@ -132,6 +134,9 @@
 	char fwhmfbk[40];
 	int tecrun = 0;
 	struct tm tlstart, tlend;
+	
+	// Locale definitions
+	struct lconv *sysloc;
 #else
 	// Decorations
 	#if GTK_MAJOR_VERSION == 3
@@ -159,7 +164,7 @@
 	extern GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
 	extern GtkWidget *cmd_tecenable, *cmd_tecauto, *spn_tectgt, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
 	extern GtkWidget *hsc_offset, *hsc_gain;
-	extern GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd;
+	extern GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd, *cmb_fmt;
 	extern GtkWidget *txt_fitfolder, *txt_fitbase;
 	extern GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	extern GtkWidget *cmd_tlenable;
@@ -194,6 +199,8 @@
 	extern int scrmaxadu;
 	extern int scrminadu;
 	extern char *fltstr;
+	extern char *fmtstr;
+	extern int  savefmt;
 	extern guint tmrstatusbar;
 	extern guint tmrimgrefresh;
 	extern guint tmraducheck;
@@ -205,7 +212,6 @@
 	extern guint tmrtecpwr;
 	extern char fitfolder[1024];
 	extern char fitbase[1024];
-	extern char fitfile[2048];
 	extern char fitflt[16];
 	extern double fps;
 	extern int fitdateadd, fittimeadd, audelanaming, irisnaming, zerofc, tlenable, tlcalendar;
@@ -217,6 +223,9 @@
 	extern char fpsfbk[16];
 	extern int tecrun;
 	extern struct tm tlstart, tlend;
+	
+	// Locale definitions
+	extern struct lconv *sysloc;
 #endif
 	
 void imgwin_build();

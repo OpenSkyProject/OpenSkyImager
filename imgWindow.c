@@ -70,35 +70,60 @@ void cmd_capture_build()
 void cmb_exptime_build()
 {
 	int crows = 0;
+	char tmp[8];
 	
 	cmb_exptime = gtk_combo_box_text_new_with_entry();
 	gtk_entry_set_width_chars(GTK_ENTRY(gtk_bin_get_child (GTK_BIN(cmb_exptime))), 6);
 	gtk_widget_set_size_request(cmb_exptime, 40, 25);
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "1800");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "1200");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "900");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "600");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "480");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "240");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "120");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "60");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "30");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "20");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "10");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "5");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "2");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), "1");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), ".5");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), ".2");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), ".1");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), ".05");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), ".02");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), ".01");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), ".005");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), ".002");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), ".001");
+	sprintf(tmp, "%4.4g", 1800.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 1200.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 900.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 600.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 480.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 240.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 120.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 60.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 30.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 20.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 10.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 5.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 2.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", 1.);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", .5);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", .2);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", .1);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", .05);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", .02);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", .01);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", .005);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", .002);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
+	sprintf(tmp, "%4.4g", .001);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
 	
 	g_signal_connect(G_OBJECT(cmb_exptime), "changed", G_CALLBACK(cmb_exptime_changed),  NULL);
+	g_signal_connect(G_OBJECT(gtk_bin_get_child (GTK_BIN(cmb_exptime))), "key-press-event", G_CALLBACK(numbers_input_keypress), (gpointer)5);	
 	crows = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb_exptime))), NULL);
 	if (crows > 0)
 	{
@@ -108,7 +133,7 @@ void cmb_exptime_build()
 
 void spn_expnum_build()
 {
-	spn_expnum = gtk_spin_button_new_with_range (1.0, 900.0, 1.0);
+	spn_expnum = gtk_spin_button_new_with_range (1.0, 9999.0, 1.0);
 	gtk_widget_set_size_request(spn_expnum, 40, 25);
 	expnum = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_expnum));
 	//Callbacks
@@ -117,7 +142,7 @@ void spn_expnum_build()
 
 void spn_shots_build()
 {
-	spn_shots = gtk_spin_button_new_with_range (0.0, 900.0, 1.0);
+	spn_shots = gtk_spin_button_new_with_range (0.0, 99999.0, 1.0);
 	gtk_widget_set_size_request(spn_shots, 40, 25);
 	shots = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_shots));
 	
@@ -613,6 +638,17 @@ void cmb_flt_build()
 	combo_setlist(cmb_flt, fltstr);
 }
 
+void cmb_fmt_build()
+{
+	cmb_fmt = gtk_combo_box_text_new();
+	gtk_widget_set_size_request(cmb_fmt, 80, 30);
+	//gtk_widget_set_sensitive(cmb_fmt, 0);
+	
+	g_signal_connect(G_OBJECT(cmb_fmt), "changed", G_CALLBACK(cmb_fmt_changed),  NULL);
+	// Also set initial value for the char variable ;-)
+	combo_setlist(cmb_fmt, fmtstr);
+}
+
 void cmd_tecenable_build()
 {
 	cmd_tecenable = gtk_toggle_button_new_with_label_color(C_("cooling","Enable tec read"), 140, 30, &clrSelected);
@@ -641,6 +677,7 @@ void spn_tectgt_build()
 	
 	//Callbacks
 	g_signal_connect(G_OBJECT(spn_tectgt), "value-changed", G_CALLBACK(spn_tectgt_changed),  NULL);
+	g_signal_connect(G_OBJECT(spn_tectgt), "key-press-event", G_CALLBACK(numbers_input_keypress), (gpointer)5);	
 }
 
 void vsc_tectemp_build()
@@ -670,8 +707,8 @@ void frm_tecgraph_build()
 	tecgraph = gtk_image_new();	
 	gtk_widget_set_size_request(tecgraph, 360, 240);
 	//#if GTK_MAJOR_VERSION == 3
-	//gtk_widget_set_hexpand(tecgraph, TRUE);
-	//gtk_widget_set_vexpand(tecgraph, TRUE);
+	gtk_widget_set_hexpand(tecgraph, FALSE);
+	gtk_widget_set_vexpand(tecgraph, FALSE);
 	//#endif
 	
 	// Image init
@@ -953,29 +990,31 @@ void box_filename_build()
 	gtk_container_set_border_width(GTK_CONTAINER(box_filename), 4);
 	
 	cmd_saveas_build();
+	cmd_audela_build();
+	cmd_iris_build();
+	cmb_fmt_build();
+	txt_fitfolder_build();
+	txt_fitbase_build();
 	cmd_dateadd_build();
 	cmd_timeadd_build();
 	cmd_fltadd_build();
 	cmb_flt_build();
-	txt_fitfolder_build();
-	txt_fitbase_build();
-	cmd_audela_build();
-	cmd_iris_build();
 	cmd_zerofc_build();
 	cmd_tlenable_build();
 	
 	//gtk_table_attach(GTK_TABLE(box_filename), gtk_label_new_with_align("", 0.5, 0.5), 0, 1, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_filename),    cmd_saveas,  0,  2,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),   cmd_dateadd,  2,  4,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),   cmd_timeadd,  4,  6,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_fltadd,  6,  8,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_audela,  2,  4,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),      cmd_iris,  4,  6,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),       cmb_fmt,  6,  8,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_filename), txt_fitfolder,  0,  8,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_filename),   txt_fitbase,  0,  8,  3,  4, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_audela,  0,  2,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),      cmd_iris,  2,  4,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_zerofc,  4,  6,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),   cmd_dateadd,  0,  2,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),   cmd_timeadd,  2,  4,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_fltadd,  4,  6,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_filename),       cmb_flt,  6,  8,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),  cmd_tlenable,  0,  2,  5,  6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_zerofc,  0,  2,  5,  6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),  cmd_tlenable,  0,  2,  6,  7, GTK_FILL, GTK_FILL, 0, 0);
 }
 
 void box_timelapse_build()
@@ -1333,6 +1372,9 @@ void window_build()
 
 void imgwin_build()
 {
+	// Init locale conventions
+	sysloc = localeconv();
+	
 	// Init decorations
 	watchCursor = gdk_cursor_new(GDK_WATCH);
 	

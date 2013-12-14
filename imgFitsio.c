@@ -35,6 +35,21 @@ static double nulval = 0.;
 static long naxis[2];
 static int naxes = 0;
 static char *fitmsg;
+static char fitfile[2048];
+
+char *imgfit_get_name()
+{
+	return fitfile;
+}
+
+void imgfit_set_name(char *filename)
+{
+	strcpy(fitfile, filename);
+	if (strstr(fitfile, ".fit") == NULL)
+	{
+		strcat(fitfile, ".fit");
+	}
+}
 
 int imgfit_get_width()
 {
@@ -132,7 +147,8 @@ void imgfit_init()
 		fitmsg = (char*)realloc(fitmsg, 1024);
 		first_time = 0;
 	}
-	fitmsg[0] = '\0';	
+	fitmsg[0] = '\0';
+	fitfile[0] = '\0';	
 }
 
 int imgfit_load_file(char *filename)
@@ -143,8 +159,13 @@ int imgfit_load_file(char *filename)
 	// Reset... all
 	imgfit_init();
 
+	if (filename != NULL)
+	{
+		strcpy(fitfile, filename);
+	}
+
 	// Open the input file
-	fits_open_image(&infptr, filename, READONLY, &status);
+	fits_open_image(&infptr, fitfile, READONLY, &status);
 	if (status == 0) 
 	{
 		// Get the axis count for the image
@@ -205,33 +226,61 @@ int imgfit_save_file(char *filename)
 	int retval = 1;
 	fitsfile *ofptr;   
 	char fname[2048] = "!";	// ! for deleting existing file and create new
-	strcat(fname, filename);
 
-	// Create the new file
-	fits_create_file(&ofptr, fname, &status); 
-	if (status == 0)
+	if (filename != NULL)
 	{
-		fits_create_img(ofptr, bitpix, naxes, naxis, &status);
-		// Header update must go here
-		//fits_update_key(fptr, TSTRING, "SOFTWARE", PROGNAME,"", &status);
-		//fits_update_key(fptr, TSTRING, "CAMERA", CAMERANAME,"", &status);
-		//fits_update_key(fptr, TLONG,   "GAIN", &gain,"", &status);
-		//fits_update_key(fptr, TLONG,   "OFFSET", &offset,"", &status);
-		//fits_update_key(fptr, TLONG,   "AMP", &amp,"", &status);
-		//fits_update_key(fptr, TLONG,   "EXPOSURE", &exposuretime, "Total Exposure Time", &status);
-		//fits_update_key(fptr, TDOUBLE, "SENSTEMP", &temp, "Sensor temperature", &status);
-		//
-		fits_write_img(ofptr, datatype, 1, (naxis[0] * naxis[1]), databuffer, &status);
-		fits_close_file(ofptr, &status);
+		if (mkpath(filename, 0))
+		{
+			strcat(fname, filename);
+		}
+		else
+		{
+			retval = 0;
+		}
 	}
-
-	if (status != 0)
-	{    
-		sprintf(fitmsg, C_("fitsio","cfitsio error: %d"), status);
-		retval = 0;
+	else
+	{
+		if (mkpath(fitfile, 0))
+		{
+			strcpy(fname, fitfile);
+		}
+		else
+		{
+			retval = 0;
+		}
 	}
-	//free(ofptr);
 	
+	if (retval == 1)
+	{
+		// Create the new file
+		fits_create_file(&ofptr, fname, &status); 
+		if (status == 0)
+		{
+			fits_create_img(ofptr, bitpix, naxes, naxis, &status);
+			// Header update must go here
+			//fits_update_key(fptr, TSTRING, "SOFTWARE", PROGNAME,"", &status);
+			//fits_update_key(fptr, TSTRING, "CAMERA", CAMERANAME,"", &status);
+			//fits_update_key(fptr, TLONG,   "GAIN", &gain,"", &status);
+			//fits_update_key(fptr, TLONG,   "OFFSET", &offset,"", &status);
+			//fits_update_key(fptr, TLONG,   "AMP", &amp,"", &status);
+			//fits_update_key(fptr, TLONG,   "EXPOSURE", &exposuretime, "Total Exposure Time", &status);
+			//fits_update_key(fptr, TDOUBLE, "SENSTEMP", &temp, "Sensor temperature", &status);
+			//
+			fits_write_img(ofptr, datatype, 1, (naxis[0] * naxis[1]), databuffer, &status);
+			fits_close_file(ofptr, &status);
+		}
+
+		if (status != 0)
+		{    
+			sprintf(fitmsg, C_("fitsio","cfitsio error: %d"), status);
+			retval = 0;
+		}
+		//free(ofptr);
+	}
+	else
+	{
+		sprintf(fitmsg, C_("fitsio","A component of the file path %s could not be created, check permissions"), fname);
+	}		
 	return (retval);
 }
 

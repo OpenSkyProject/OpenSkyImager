@@ -1,5 +1,5 @@
 /*
- * imgWFuncs.h
+ * imgAvi.c
  *
  *  Created on: 01.09.2013
  *      Author: Giampiero Spezzano (gspezzano@gmail.com)
@@ -20,24 +20,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void get_filename(char **filename, int mode, char* flt);
-void set_img_fit();
-void set_img_full();
-void set_adu_limits(int bytepix);
-void load_image_from_data();
-void load_histogram_from_data();
-void load_histogram_from_null();
-void tec_init_graph();
-void tec_show_graph();
-void tec_print_graph();
-void combo_setlist(GtkWidget *cmb, char *str);
-void combo_ttylist(GtkWidget *cmb);
-void cfwmsgdestroy(int response);
-void filenaming(char *thdfit);
-void shotsnaming(char *thdfit, int thdshots);
-gpointer thd_capture_run(gpointer thd_data);
-gpointer thd_pixbuf_run(gpointer thd_data);
-gpointer thd_fitsav_run(gpointer thd_data);
-gpointer thd_avisav_run(gpointer thd_data);
-gpointer thd_temp_run(gpointer thd_data);
+unsigned int   imgavi_get_maxsize();
+char           *imgavi_get_name();
+void            imgavi_set_name(char *filename);
+char           *imgavi_get_msg();
+unsigned char *imgavi_get_data();
+void            imgavi_set_data(unsigned char *data);
+int             imgavi_get_width();
+void            imgavi_set_width(int val);
+int             imgavi_get_height();
+void            imgavi_set_height(int val);
+int             imgavi_get_bytepix();
+void            imgavi_set_bytepix(int val);
+int             imgavi_isopen();
+void            imgavi_init();
+int             imgavi_open();
+int             imgavi_add();
+int             imgavi_close();
 
