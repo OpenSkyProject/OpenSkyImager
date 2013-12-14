@@ -358,7 +358,16 @@ void frm_histogram_build()
 void image_build()
 {
 	// Image
-	image = gtk_image_new();	
+	image    = gtk_image_new();	
+	fwhmroi  = gtk_image_new();	
+	imgevent = gtk_event_box_new();
+	gtk_event_box_set_visible_window(GTK_EVENT_BOX(imgevent), FALSE);
+	
+	gtk_container_add(GTK_CONTAINER(imgevent), image);
+	
+	//Callbacks
+	gtk_widget_add_events(imgevent, GDK_BUTTON_PRESS_MASK);
+	g_signal_connect(G_OBJECT(imgevent), "button-press-event", G_CALLBACK(imgevent_button_press),  NULL);
 	
 	// Initialize pixbuf RW lock for the capture thread
 	g_rw_lock_init(&pixbuf_lock);
@@ -373,11 +382,12 @@ void swindow_build()
 	lbl_fbkimg_build();
 	lbl_fbktec_build();
 	lbl_fbkfps_build();
-    lbl_fbkfwhm_build();
+	lbl_fbkfwhm_build();
 	image_build();
 
 	// Pack image into scrolled window
-	gtk_fixed_put(GTK_FIXED(fixed), image, 0, 0);
+	gtk_fixed_put(GTK_FIXED(fixed), imgevent, 0, 0);
+	gtk_fixed_put(GTK_FIXED(fixed), fwhmroi, 0, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbkimg,  10, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbktec, 100, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbkfps, 230, 0);

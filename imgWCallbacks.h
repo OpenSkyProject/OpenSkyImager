@@ -45,6 +45,7 @@ gboolean hsc_maxadu_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 gboolean hsc_minadu_changed (GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
 gboolean frm_histogram_allocate(GtkWidget *widget, GdkRectangle *alloc, gpointer data);
 gboolean swindow_allocate(GtkWidget *widget, GdkRectangle *alloc, gpointer data);
+gboolean imgevent_button_press (GtkWidget *widget, GdkEventButton *event, gpointer data);
 void mainw_destroy( GtkWidget *widget, gpointer   data );
 gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data);
 void cmb_debayer_changed (GtkComboBox *widget, gpointer user_data);

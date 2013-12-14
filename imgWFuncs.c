@@ -618,9 +618,13 @@ gpointer thd_capture_run(gpointer thd_data)
 			tmrexpprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_exp_progress_refresh, NULL);
 			if (thdrun)
 			{
+				// Prevent tec readig during frame transfer
+				g_rw_lock_reader_lock(&thd_teclock);
 				// Unless aborted during exposure time
 				if (imgcam_readout())
 				{
+					// Free tec reading
+					g_rw_lock_reader_unlock(&thd_teclock);
 					//printf("Readout ok\n");
 					g_rw_lock_writer_lock(&thd_caplock);
 					readout = 0;
@@ -725,6 +729,13 @@ gpointer thd_capture_run(gpointer thd_data)
 					}
 					tmrcapprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_capture_progress_refresh, NULL);
 				}
+				else
+				{
+					// Free tec reading even in case of error
+					g_rw_lock_reader_unlock(&thd_teclock);
+					run = 0;
+					runerr = 1;
+				}
 			}
 			// Determine if loop has to stop
 			g_rw_lock_reader_lock(&thd_caplock);
@@ -744,6 +755,15 @@ gpointer thd_capture_run(gpointer thd_data)
 				thdrun = ((thdrun == 1) && (expnum > (shots - thdpreshots)));
 			}
 			g_rw_lock_reader_unlock(&thd_caplock);
+			if ((tecrun == 1) && (imgcam_get_tecp()->istec == 1))
+			{
+				if (thdexp < 500)
+				{
+					// If tec is in auto mode we must leave some room for the 
+					// poor camera cpu to process tec read 0.05s
+					usleep(400000);
+				}
+			}
 			// If we are in tlmode, even bare tl mode
 			if ((thdtlmode > 0) && (thdrun == 1))
 			{
@@ -932,6 +952,7 @@ gpointer thd_temp_run(gpointer thd_data)
 			g_rw_lock_writer_lock(&thd_teclock);
 			if (imgcam_gettec(&imgcam_get_tecp()->tectemp, &mV))
 			{
+				//printf("Temp: %f\n", imgcam_get_tecp()->tectemp);
 				if (imgcam_get_tecp()->tecauto)
 				{
 					if (setwait == 0)

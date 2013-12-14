@@ -878,6 +878,30 @@ gboolean swindow_allocate(GtkWidget *widget, GdkRectangle *alloc, gpointer data)
 	return FALSE;
 }
 
+gboolean imgevent_button_press (GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+	static int roix, roiy;
+	
+	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1))
+	{
+		if (((event->x > roix) && (event->x < (roix + 64))) && ((event->y > roiy) && (event->y < (roiy + 64))))
+		{
+			// Clear Roi
+			gtk_image_clear(GTK_IMAGE(fwhmroi));
+		}
+	}
+	else if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
+	{
+		// Set ref and draw roi
+		roix = event->x - 32;
+		roiy = event->y - 32;
+
+		gtk_image_set_from_pixbuf((GtkImage *) fwhmroi, imgpix_get_roi(64));
+		gtk_fixed_move(GTK_FIXED(fixed), fwhmroi, roix, roiy);
+	}
+	return FALSE;
+}
+
 void mainw_destroy( GtkWidget *widget, gpointer   data )
 {
 	gtk_main_quit ();
