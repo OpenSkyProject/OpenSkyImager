@@ -535,7 +535,7 @@ void cmb_debayer_build()
 
 void cmd_saveas_build()
 {
-	cmd_saveas = gtk_button_new_with_label(C_("fileanme","Save As"));
+	cmd_saveas = gtk_button_new_with_label(C_("filename","Save As"));
 	gtk_widget_set_size_request(cmd_saveas, 80, 30);
 	
 	// Callbacks
@@ -676,10 +676,10 @@ void frm_tecgraph_build()
 {
 	tecgraph = gtk_image_new();	
 	gtk_widget_set_size_request(tecgraph, 360, 240);
-	//#if GTK_MAJOR_VERSION == 3
+	#if GTK_MAJOR_VERSION == 3
 	gtk_widget_set_hexpand(tecgraph, FALSE);
 	gtk_widget_set_vexpand(tecgraph, FALSE);
-	//#endif
+	#endif
 	
 	// Image init
 	#if GTK_MAJOR_VERSION == 3

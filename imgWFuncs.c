@@ -691,6 +691,15 @@ gpointer thd_capture_run(gpointer thd_data)
 				thdrun = ((thdrun == 1) && (thdexpnum > thdshots));
 			}
 			g_rw_lock_reader_unlock(&thd_caplock);
+			if ((tecrun == 1) && (imgcam_get_tecp()->istec == 1))
+			{
+				if (thdexp < 500)
+				{
+					// If tec is in auto mode we must leave some room for the 
+					// poor camera cpu to process tec read 0.05s
+					usleep(400000);
+				}
+			}
 			// If we are in tlmode, even bare tl mode
 			if ((thdtlmode > 0) && (thdrun == 1))
 			{

@@ -799,7 +799,7 @@ msgid "None"
 msgstr "----"
 
 #: ../imgWindow.c:490 ../imgWindow.c:513
-msgctxt "fileanme"
+msgctxt "filename"
 msgid "Save As"
 msgstr "Salva come"
 
