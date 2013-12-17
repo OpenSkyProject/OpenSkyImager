@@ -474,6 +474,7 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 				gtk_button_set_label(GTK_BUTTON(cmd_capture), C_("main","Capture mode"));
 				gtk_widget_set_sensitive(box_filename, 0);
 				gtk_widget_set_sensitive(box_cfw, 0);
+				fwhm_hide();
 			}
 			else
 			{
@@ -880,24 +881,35 @@ gboolean swindow_allocate(GtkWidget *widget, GdkRectangle *alloc, gpointer data)
 
 gboolean imgevent_button_press (GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-	static int roix, roiy;
 	
 	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1))
 	{
-		if (((event->x > roix) && (event->x < (roix + 64))) && ((event->y > roiy) && (event->y < (roiy + 64))))
+		int roisize = fwhms / imgratio;
+		int roix = ((fwhmx - (roisize / 2)) / imgratio), roiy = ((fwhmy - (roisize / 2)) / imgratio);
+
+		if (((event->x > roix) && (event->x < (roix + roisize))) && ((event->y > roiy) && (event->y < (roiy + roisize))))
 		{
-			// Clear Roi
-			gtk_image_clear(GTK_IMAGE(fwhmroi));
+			fwhm_hide();
 		}
 	}
 	else if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
 	{
-		// Set ref and draw roi
-		roix = event->x - 32;
-		roiy = event->y - 32;
+		// Center on image data regardless of "fit to screen"
+		fwhmx = event->x * imgratio;
+		fwhmy = event->y * imgratio;
+		
+		/*int width = imgfit_get_width(), height = imgfit_get_height(), bytepix = imgfit_get_bytepix();
+		unsigned char *psrc = NULL;
+		psrc = imgfit_get_data() + ((((height- fwhmy - 1) * width) + (width - fwhmx - 1)) * bytepix);
+		printf("%d\n", psrc[0]);*/
 
-		gtk_image_set_from_pixbuf((GtkImage *) fwhmroi, imgpix_get_roi(64));
-		gtk_fixed_move(GTK_FIXED(fixed), fwhmroi, roix, roiy);
+
+		// Draw roi
+		fwhm_show();
+		// Calc
+		fwhm_calc();
+		// Draw roi after possible calc move
+		fwhm_show();
 	}
 	return FALSE;
 }

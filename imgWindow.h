@@ -100,6 +100,7 @@
 
 	// Flags
 	int fit = 0, hst = 0;
+	double imgratio = 1., icoratio = 1.;
 	int capture = 0;
 	int run = 0, hold = 0, readout = 0, runerr = 0;
 	int expnum = 0, shots = 0;
@@ -131,12 +132,16 @@
 	char imgfbk[16];
 	char tecfbk[16];
 	char fpsfbk[16];
-	char fwhmfbk[40];
+	char fwhmfbk[64];
+	int fwhmx = 0, fwhmy = 0, fwhmv = 0, fwhms = 64, fwhmp = 4096, afwhm = 0, pfwhm = 1;
 	int tecrun = 0;
 	struct tm tlstart, tlend;
 	
 	// Locale definitions
 	struct lconv *sysloc;
+	
+	// Cpu
+	int cpucores = 1;
 #else
 	// Decorations
 	#if GTK_MAJOR_VERSION == 3
@@ -170,7 +175,7 @@
 	extern GtkWidget *cmd_tlenable;
 	extern GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
 	extern GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmd_cfwrst, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS], *cfwmsg;
-	extern GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps;
+	extern GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps, *lbl_fbkfwhm;
 	extern GdkCursor* watchCursor;
 	extern GdkPixbuf *tecpixbuf;
 	extern GdkPixbuf *icopixbuf;
@@ -190,6 +195,7 @@
 
 	// Flags
 	extern int fit, hst;
+	extern double imgratio, icoratio;
 	extern int capture;
 	extern int run, hold, readout, runerr;
 	extern int expnum, shots;
@@ -221,11 +227,16 @@
 	extern char imgfbk[16];
 	extern char tecfbk[16];
 	extern char fpsfbk[16];
+	extern char fwhmfbk[64];
+	extern int fwhmx, fwhmy, fwhmv, fwhms, fwhmp, afwhm, pfwhm;
 	extern int tecrun;
 	extern struct tm tlstart, tlend;
 	
 	// Locale definitions
 	extern struct lconv *sysloc;
+
+	// Cpu
+	extern int cpucores;
 #endif
 	
 void imgwin_build();

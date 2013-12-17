@@ -75,10 +75,12 @@ void set_img_fit()
 		// Choose final size
 		if (wratio > hratio)
 		{
+			imgratio = wratio;
 			tgth = imgpix_get_height() / wratio;
 		}
 		else
 		{
+			imgratio = hratio;
 			tgtw = imgpix_get_width() / hratio;
 		}	
 		//printf("w: %d, h: %d\n", tgtw, tgth);
@@ -86,6 +88,11 @@ void set_img_fit()
 		GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_data(), tgtw, tgth, GDK_INTERP_TILES);
 		gtk_image_set_from_pixbuf((GtkImage *) image, tmpbuf);
 		g_object_unref(tmpbuf);
+		
+		if (fwhmv == 1)
+		{
+			fwhm_show();
+		}
 	}
 	fit = 1;
 	g_rw_lock_reader_unlock(&pixbuf_lock);
@@ -100,6 +107,12 @@ void set_img_full()
 		gtk_image_set_from_pixbuf((GtkImage *) image, imgpix_get_data());
 	}
 	fit = 0;
+	imgratio = 1;
+
+	if (fwhmv == 1)
+	{
+		fwhm_show();
+	}
 	g_rw_lock_reader_unlock(&pixbuf_lock);
 }
 
@@ -153,7 +166,11 @@ void load_image_from_data()
 			// No debayer for captured frames if bin > 1
 			debayer = (imgcam_get_shpar()->bin == 1) ? debayer : 0;
 		}
-
+		if (fwhmv == 1)
+		{
+			fwhm_calc();
+		}
+		
 		// Actual pixbuffer load (thread safe)
 		g_rw_lock_writer_lock(&pixbuf_lock);
 		retval = imgpix_load(imgfit_get_data(), imgfit_get_width(), imgfit_get_height(), imgfit_get_bytepix(), debayer, scrmaxadu, scrminadu);
@@ -204,6 +221,7 @@ void load_histogram_from_data()
 void load_histogram_from_null()
 {
 	int tgtw, tgth;
+	double wratio, hratio;
 
 	// Thread safe read
 	g_rw_lock_reader_lock(&pixbuf_lock);
@@ -216,6 +234,20 @@ void load_histogram_from_null()
 		tgth = alloc->height -5;
 		// Cleanup
 		g_free(alloc);
+		// Resize ratios
+		wratio = ((double) imgpix_get_width() / tgtw);
+		hratio = ((double) imgpix_get_height() / tgth);
+		// Choose final size
+		if (wratio > hratio)
+		{
+			icoratio = wratio;
+			tgth = imgpix_get_height() / wratio;
+		}
+		else
+		{
+			icoratio = hratio;
+			tgtw = imgpix_get_width() / hratio;
+		}	
 
 		// Actual resize
 		imgpix_init_histogram();
@@ -228,6 +260,225 @@ void load_histogram_from_null()
 		g_object_unref(tmpbuf);
 	}
 	g_rw_lock_reader_unlock(&pixbuf_lock);
+}
+
+void fwhm_show()
+{
+	int roisize = fwhms / imgratio;
+	int roix = ((fwhmx - (roisize / 2)) / imgratio), roiy = ((fwhmy - (roisize / 2)) / imgratio);
+
+	// Set flag "is visible"	
+	fwhmv = 1;
+
+	gtk_image_set_from_pixbuf((GtkImage *) fwhmroi, imgpix_get_roi(roisize));
+	gtk_fixed_move(GTK_FIXED(fixed), fwhmroi, roix, roiy);
+	
+	// Write label
+	sprintf(fwhmfbk, "FWHM=%d,Peak=%d,FWHM/Peak=%05.2F", afwhm, pfwhm, (afwhm / (double)pfwhm));
+	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), (gchar *) fwhmfbk);
+
+}
+
+void fwhm_hide()
+{
+	// Set flag "is visible"	
+	fwhmv = 0;
+
+	// Clear Roi
+	gtk_image_clear(GTK_IMAGE(fwhmroi));
+	
+	// Clear label
+	fwhmfbk[0] = '\0';
+	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), (gchar *) fwhmfbk);
+
+}
+
+void fwhm_calc()
+{
+	int i, j, k;
+	int roix = (fwhmx - (fwhms / 2)), roiy = (fwhmy - (fwhms / 2));
+	int width = imgfit_get_width(), height = imgfit_get_height(), bytepix = imgfit_get_bytepix();
+	int resx, resy, prex = roix, prey = roiy, mass, threshold, pval, resp, vfwhm, ofwhm;
+	int roi[fwhmp];
+	unsigned char *porigin = NULL, *psrc = NULL;
+
+	for ( k = 0; k < 10; k++ )
+	{
+		// This brings us to the first byte of the pixel that is ROI(0,0)
+		// Beware! Screen image is upside down and left right reversed
+		porigin = imgfit_get_data() + ((((height- roiy - 1) * width) + (width - roix - 1)) * bytepix);
+
+		// Read 
+		if (bytepix == 1)
+		{
+			for( j = 0; j < fwhms; j++ )
+			{
+				// databuffer pointer need to move on full frame width
+				psrc = porigin - (j * width);
+				for( i = 0; i < fwhms; i++ )
+				{
+					// ROI element is relative to ROI size
+					roi[((j * fwhms) + i)] = psrc[0];
+					psrc--;
+				}
+			}
+		}
+		else if (bytepix == 2)
+		{
+			for( j = 0; j < fwhms; j++ )
+			{
+				// databuffer pointer need to move on full frame width
+				psrc = porigin - (j * width * bytepix);
+				for( i = 0; i < fwhms; i++ )
+				{
+					// ROI element is relative to ROI size
+					roi[((j * fwhms) + i)] = psrc[0] + psrc[1] * 256;
+					psrc -= bytepix;
+				}
+			}
+		}
+
+		// Find threshold value
+		threshold = 0;
+		for( i = 0; i < fwhmp; i++ )
+		{
+			threshold += roi[i];
+		}
+		threshold /= fwhmp;
+
+		resx = 0;
+		resy = 0;
+		mass = 0;
+		// Calculating offset in ROI for the maximum
+		for( j = 0; j < fwhms; j++ )
+		{
+			for( i = 0; i < fwhms; i++ )
+			{
+				pval = roi[((j * fwhms) + i)] - threshold;
+				pval = pval < 0 ? 0 : pval;
+
+				resx += i * pval;
+				resy += j * pval;
+
+				mass += pval;
+			}
+		}
+
+		mass = (mass == 0) ? 1. : mass;
+
+		// Result coordinates of the centroid, relative to ROI 
+		resx /= mass;
+		resy /= mass;
+
+		// Pixel value of the centroid
+		resp = roi[((resy * fwhms) + resx)];
+
+		// Move ROI to have star_pos in the center (if possibile)
+		roix = roix + (resx - (fwhms / 2));
+		roiy = roiy + (resy - (fwhms / 2));
+		
+		if ((prex == roix) && (prey == roiy))
+		{
+			break;
+		}
+		prex = roix;
+		prey = roiy;
+	}
+
+	//Result coordinates of the centroid, relative to full image
+	fwhmx = roix + (fwhms / 2);
+	fwhmy = roiy + (fwhms / 2);
+	
+	// check ROI is fully inside frame and fix if needed
+	// Move centroid position relative to ROI accordingly
+	if( roix < 0 )
+	{
+		resx += roix;
+		roix = 0;
+	}
+	if( roiy < 0 )
+	{
+		resy += roiy;
+		roiy = 0;
+	}
+	if( roix + fwhms > width )
+	{
+		resx += (roix + fwhms - width);
+		roix = width - fwhms;
+	}
+	if( roiy + fwhms > height )
+	{
+		resy += (roiy + fwhms - height);
+		roiy = height - fwhms;
+	}
+	
+	// This brings us to the first byte of the pixel that is ROI(0,0)
+	porigin = imgfit_get_data() + ((((height- roiy - 1) * width) + (width - roix - 1)) * bytepix);
+
+	// Now read ROI pixels again and calculate fwhm
+	// Read 
+	if (bytepix == 1)
+	{
+		for( j = 0; j < fwhms; j++ )
+		{
+			// databuffer pointer need to move on full frame width
+			psrc = porigin - (j * width);
+			for( i = 0; i < fwhms; i++ )
+			{
+				// ROI element is relative to ROI size
+				roi[((j * fwhms) + i)] = psrc[0];
+				psrc--;
+			}
+		}
+	}
+	else if (bytepix == 2)
+	{
+		for( j = 0; j < fwhms; j++ )
+		{
+			// databuffer pointer need to move on full frame width
+			psrc = porigin - (j * width * bytepix);
+			for( i = 0; i < fwhms; i++ )
+			{
+				// ROI element is relative to ROI size
+				roi[((j * fwhms) + i)] = psrc[0] + psrc[1] * 256;
+				psrc -= bytepix;
+			}
+		}
+	}
+
+	// Vertical fwhm
+	threshold = resp / 2; 
+	vfwhm = 0;
+	for( j = resy; j < fwhms; j++ )
+	{
+		if (roi[((j * fwhms) + resx)] < threshold)
+		{
+			vfwhm *= 2;
+			break;
+		}
+		else
+		{
+			vfwhm++;
+		}
+	}
+
+	// Vertical fwhm
+	ofwhm = 0;
+	for( i = resx; i < fwhms; i++ )
+	{
+		if (roi[((resy * fwhms) + i)] < threshold)
+		{
+			ofwhm *= 2;
+			break;
+		}
+		else
+		{
+			ofwhm++;
+		}
+	}
+
+	afwhm = (vfwhm + ofwhm) / 2;
+	pfwhm = resp;
 }
 
 void tec_init_graph()
@@ -619,12 +870,12 @@ gpointer thd_capture_run(gpointer thd_data)
 			if (thdrun)
 			{
 				// Prevent tec readig during frame transfer
-				g_rw_lock_reader_lock(&thd_teclock);
+				g_rw_lock_writer_lock(&thd_teclock);
 				// Unless aborted during exposure time
 				if (imgcam_readout())
 				{
 					// Free tec reading
-					g_rw_lock_reader_unlock(&thd_teclock);
+					g_rw_lock_writer_unlock(&thd_teclock);
 					//printf("Readout ok\n");
 					g_rw_lock_writer_lock(&thd_caplock);
 					readout = 0;
@@ -683,45 +934,66 @@ gpointer thd_capture_run(gpointer thd_data)
 
 					//printf("run: %d, runerr: %d, expnum: %d, shots: %d\n", run, runerr, expnum, shots);
 
-					if ((thdmode == 1) && (runerr == 0))
+					if (cpucores > 1)
 					{
-						// Save mode
-						if ((savefmt == 1) || (savefmt == 3))
+						// Threaded
+						if ((thdmode == 1) && (runerr == 0))
 						{
-							// Fit
-							if (thd_fitsav != NULL)
+							// Save mode
+							if ((savefmt == 1) || (savefmt == 3))
 							{
-								g_thread_join(thd_fitsav);							
-								g_thread_unref(thd_fitsav);
-								thd_fitsav = NULL;
+								// Fit
+								if (thd_fitsav != NULL)
+								{
+									g_thread_join(thd_fitsav);							
+									thd_fitsav = NULL;
+								}
+								// Starts background save of fit file
+								thd_fitsav = g_thread_new("Fitsave", thd_fitsav_run, NULL);
 							}
-							// Starts background save of fit file
-							thd_fitsav = g_thread_new("Fitsave", thd_fitsav_run, NULL);
+							if ((savefmt == 2) || (savefmt == 3))
+							{
+								// Avi
+								if (thd_avisav != NULL)
+								{
+									g_thread_join(thd_avisav);
+									thd_avisav = NULL;
+								}
+								// Starts background save of avi frame
+								thd_avisav = g_thread_new("Avisave", thd_avisav_run, NULL);
+							}
 						}
-						if ((savefmt == 2) || (savefmt == 3))
+
+						if (thd_pixbuf != NULL)
 						{
-							// Avi
-							if (thd_avisav != NULL)
-							{
-								g_thread_join(thd_avisav);
-								g_thread_unref(thd_avisav);
-								thd_avisav = NULL;
-							}
-							// Starts background save of avi frame
-							thd_avisav = g_thread_new("Avisave", thd_avisav_run, NULL);
+							// Checks and wait if the pixbuf from previous frame is completed
+							g_thread_join(thd_pixbuf);
+							thd_pixbuf = NULL;
 						}
+						// Starts backgroung elaboration of pixbuf
+						thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, NULL);
+					}
+					else
+					{
+						// Serialized
+						if ((thdmode == 1) && (runerr == 0))
+						{
+							// Save mode
+							if ((savefmt == 1) || (savefmt == 3))
+							{
+								// Fit
+								thd_fitsav_run(NULL);
+							}
+							if ((savefmt == 2) || (savefmt == 3))
+							{
+								// Avi
+								thd_avisav_run(NULL);
+							}
+						}
+						// Pixbuffer for preview
+						thd_pixbuf_run(NULL);
 					}
 					
-					if (thd_pixbuf != NULL)
-					{
-						// Checks and wait if the pixbuf from previous frame is completed
-						g_thread_join(thd_pixbuf);
-						g_thread_unref(thd_pixbuf);
-						thd_pixbuf = NULL;
-					}
-					// Starts backgroung elaboration of pixbuf
-					thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, NULL);
-
 					//UI update
 					if (tmrcapprgrefresh != -1)
 					{
@@ -732,7 +1004,7 @@ gpointer thd_capture_run(gpointer thd_data)
 				else
 				{
 					// Free tec reading even in case of error
-					g_rw_lock_reader_unlock(&thd_teclock);
+					g_rw_lock_writer_unlock(&thd_teclock);
 					run = 0;
 					runerr = 1;
 				}
@@ -823,7 +1095,6 @@ gpointer thd_capture_run(gpointer thd_data)
 		{
 			// Checks and wait if the last frame add is completed
 			g_thread_join(thd_avisav);
-			g_thread_unref(thd_avisav);
 			thd_avisav = NULL;
 		}
 		if (imgavi_isopen())
@@ -852,7 +1123,6 @@ gpointer thd_capture_run(gpointer thd_data)
 	if (thd_fitsav != NULL)
 	{
 		g_thread_join(thd_fitsav);							
-		g_thread_unref(thd_fitsav);
 		thd_fitsav = NULL;
 	}
 
@@ -860,7 +1130,6 @@ gpointer thd_capture_run(gpointer thd_data)
 	{
 		// Checks and wait if the pixbuf from previous frame is completed
 		g_thread_join(thd_pixbuf);
-		g_thread_unref(thd_pixbuf);
 		thd_pixbuf = NULL;
 	}
 
@@ -952,6 +1221,7 @@ gpointer thd_temp_run(gpointer thd_data)
 			g_rw_lock_writer_lock(&thd_teclock);
 			if (imgcam_gettec(&imgcam_get_tecp()->tectemp, &mV))
 			{
+				g_rw_lock_writer_unlock(&thd_teclock);
 				//printf("Temp: %f\n", imgcam_get_tecp()->tectemp);
 				if (imgcam_get_tecp()->tecauto)
 				{
@@ -1070,7 +1340,9 @@ gpointer thd_temp_run(gpointer thd_data)
 						}
 						if (setwait)
 						{
+							g_rw_lock_writer_lock(&thd_teclock);
 							imgcam_settec(imgcam_get_tecp()->tecpwr);
+							g_rw_lock_writer_unlock(&thd_teclock);
 						}
 					}
 					else
@@ -1081,7 +1353,10 @@ gpointer thd_temp_run(gpointer thd_data)
 				//Set the loop reference
 				oldT = imgcam_get_tecp()->tectemp;
 			}
-			g_rw_lock_writer_unlock(&thd_teclock);
+			else
+			{
+				g_rw_lock_writer_unlock(&thd_teclock);
+			}
 		}
 		// UI update
 		if (tmrtecrefresh != -1)

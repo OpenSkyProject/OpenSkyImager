@@ -34,10 +34,10 @@ static int       loaded;
 static double hst[256];
 
 
-/* for FWHM */
+/* for FWHM 
 extern GtkWidget *lbl_fbkfwhm;
 extern char fwhmfbk[];
-extern int capture;
+extern int capture;*/
 
 char *imgpix_get_msg()
 {
@@ -51,12 +51,14 @@ GdkPixbuf *imgpix_get_data()
 
 int imgpix_get_width()
 {
-	return (pwidth / ((pdebayer > 0) ? 2 : 1));
+	//return (pwidth / ((pdebayer > 0) ? 2 : 1));
+	return pwidth;
 }
 
 int imgpix_get_height()
 {
-	return (pheight / ((pdebayer > 0) ? 2 : 1));
+	//return (pheight / ((pdebayer > 0) ? 2 : 1));
+	return pheight;
 }
 
 GdkPixbuf *imgpix_get_histogram(int scale)
@@ -175,8 +177,8 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 	double resample = 1;
 	unsigned char *pix8;
 	unsigned char *pix16;
-    /* for FWHM */
-    int ret, fwhm, peak;
+    /* for FWHM 
+    int ret, fwhm, peak;*/
 	
 	// Reset... all
 	imgpix_init();
@@ -451,7 +453,7 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 		}
 	}
 
-    /* only work on focus mode */
+    /* only work on focus mode 
     if (!capture) {
         if ((ret = imgpix_calc_fwhm(debayer,width/2,height/2,200,200,&fwhm,&peak)) == 0)
             sprintf(fwhmfbk, "FWHM=%d,Peak=%d,FWHM/Peak=%d",fwhm,peak,fwhm/peak);
@@ -460,7 +462,7 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
     } else {
         fwhmfbk[0] = '\0';
     }
-    gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), (gchar *) fwhmfbk);	
+    gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), (gchar *) fwhmfbk); */
 
 	if (retval)
 	{
@@ -474,7 +476,7 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 	return (retval);
 }
 
-int imgpix_calc_fwhm(int debayer, int x, int y, int width, int height, int *fwhm, int *peak)
+/*int imgpix_calc_fwhm(int debayer, int x, int y, int width, int height, int *fwhm, int *peak)
 {
 	int rowstride, bpp;
 	guchar *pixels, *p;
@@ -506,7 +508,7 @@ int imgpix_calc_fwhm(int debayer, int x, int y, int width, int height, int *fwhm
     if (fwhm_buf_ptr == NULL)
         return ERR_MALLOC;
 
-    /* get a Luminance buffer */
+    // get a Luminance buffer 
     if (debayer == 0) {     //mono
         for (row = y - height / 2; row < y + height / 2; row++) {
             for (col = x - width / 2; col < x + width / 2; col++) {
@@ -523,7 +525,7 @@ int imgpix_calc_fwhm(int debayer, int x, int y, int width, int height, int *fwhm
         }
     }
 
-    /* draw a red rectangle */
+    // draw a red rectangle
     for (col = x - width / 2; col < x + width / 2; col++) {
         row = y - height / 2;
         p = pixels + rowstride * row + col * bpp;
@@ -542,13 +544,13 @@ int imgpix_calc_fwhm(int debayer, int x, int y, int width, int height, int *fwhm
         p[0]=255; p[1]=0; p[2]=0;
     }
 
-    /* calc the peak */
+    // calc the peak
     *peak = 0;
     for(i = 0; i < size; i++)
         if (fwhm_buf_ptr[i] > *peak)
             *peak = fwhm_buf_ptr[i];
 
-    /* calc the fwhm */
+    // calc the fwhm 
     *peak /= 2;
     *fwhm = 0;
     for (i = 0; i < size; i++)
@@ -558,4 +560,5 @@ int imgpix_calc_fwhm(int debayer, int x, int y, int width, int height, int *fwhm
 
     free(fwhm_buf_ptr);
     return OK;
-}
+}*/
+
