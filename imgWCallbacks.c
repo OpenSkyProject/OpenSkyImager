@@ -881,44 +881,52 @@ gboolean swindow_allocate(GtkWidget *widget, GdkRectangle *alloc, gpointer data)
 
 gboolean fwhmroi_scroll (GtkWidget *widget, GdkEventScroll *event, gpointer data)
 {
+	int roisize = fwhms / imgratio;
+	int roix = ((fwhmx - (fwhms / 2)) / imgratio), roiy = ((fwhmy - (fwhms / 2)) / imgratio);
+
 	if ((event->type == GDK_SCROLL) && (fwhmv == 1))
 	{
-		#if GTK_MAJOR_VERSION == 3
-			#if GTK_MINOR_VERSION >= 4
-				GdkScrollDirection direction;
-				if (event->delta_y != 0) 
-				{
-					direction = (event->delta_y != 0) ? GDK_SCROLL_UP : GDK_SCROLL_DOWN;
-				}
-				else
-				{
-					direction = event->direction;
-				}
+		// It's a scroll event and the fwhm is visible 
+		if (((event->x > roix) && (event->x < (roix + roisize))) && ((event->y > roiy) && (event->y < (roiy + roisize))))
+		{
+			// It's in the ROI
+			#if GTK_MAJOR_VERSION == 3
+				#if GTK_MINOR_VERSION >= 4
+					GdkScrollDirection direction;
+					if (event->delta_y != 0) 
+					{
+						direction = (event->delta_y != 0) ? GDK_SCROLL_UP : GDK_SCROLL_DOWN;
+					}
+					else
+					{
+						direction = event->direction;
+					}
+				#else
+					GdkScrollDirection direction = event->direction;
+				#endif
 			#else
 				GdkScrollDirection direction = event->direction;
 			#endif
-		#else
-			GdkScrollDirection direction = event->direction;
-		#endif
 		
-		if (direction == GDK_SCROLL_UP)
-		{
-			fwhmp *= (fwhms < 64) ? 4 : 1;
-			fwhms *= (fwhms < 64) ? 2 : 1;
-		}
-		else if (direction == GDK_SCROLL_DOWN)
-		{
-			fwhmp /= (fwhms > 8) ? 4 : 1;
-			fwhms /= (fwhms > 8) ? 2 : 1;
-		}
+			if (direction == GDK_SCROLL_UP)
+			{
+				fwhmp *= (fwhms < 64) ? 4 : 1;
+				fwhms *= (fwhms < 64) ? 2 : 1;
+			}
+			else if (direction == GDK_SCROLL_DOWN)
+			{
+				fwhmp /= (fwhms > 8) ? 4 : 1;
+				fwhms /= (fwhms > 8) ? 2 : 1;
+			}
 		
-		// Draw roi
-		fwhm_show();
-		// Calc
-		fwhm_calc();
-		// Draw roi after possible calc move
-		fwhm_show();
-		return TRUE;
+			// Draw roi
+			fwhm_show();
+			// Calc
+			fwhm_calc();
+			// Draw roi after possible calc move
+			fwhm_show();
+			return TRUE;
+		}
 	}
 	return FALSE;
 }
