@@ -267,7 +267,26 @@ void fwhm_show()
 	int roisize = fwhms / imgratio;
 	int roix = ((fwhmx - (fwhms / 2)) / imgratio), roiy = ((fwhmy - (fwhms / 2)) / imgratio);
 	int lblx = roix, lbly = roiy;
-	int width = (imgpix_get_width() / imgratio);
+	int width = (imgpix_get_width() / imgratio), height = (imgpix_get_height() / imgratio);
+
+	// check ROI is fully inside frame and fix if needed
+	// Move centroid position relative to ROI accordingly
+	if( roix <= 0 )
+	{
+		roix = 1;
+	}
+	if( roiy <= 0 )
+	{
+		roiy = 1;
+	}
+	if( roix + fwhms >= width )
+	{
+		roix = width - roisize - 1;
+	}
+	if( roiy + fwhms >= height )
+	{
+		roiy = height - roisize - 1;
+	}	
 
 	// Set flag "is visible"	
 	fwhmv = 1;
