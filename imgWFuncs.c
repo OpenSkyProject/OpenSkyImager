@@ -909,6 +909,13 @@ gpointer thd_capture_run(gpointer thd_data)
 					imgfit_set_bytepix(imgcam_get_shpar()->bytepix);
 					imgfit_set_data(imgcam_get_data());
 					
+					if (fwhmv == 1)
+					{
+						// We only cal here, display is done in main 
+						// thread (tmr_capture_progress_refresh)
+						fwhm_calc();
+					}
+					
 					if ((thdmode == 1) && (runerr == 0))
 					{
 						// UI flags update in save mode

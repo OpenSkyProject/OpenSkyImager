@@ -127,6 +127,12 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 	}
 	if (tmprun == 1)
 	{
+	
+		if (fwhmv == 1)
+		{
+			fwhm_show();
+		}
+		
 		if (capture)
 		{
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_shots), (int)tmpshots);
@@ -948,6 +954,7 @@ gboolean image_button_press (GtkWidget *widget, GdkEventButton *event, gpointer 
 	}
 	else if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
 	{
+		g_rw_lock_reader_lock(&thd_caplock);
 		int width = (imgpix_get_width() / imgratio), height = (imgpix_get_height() / imgratio);
 
 		// Center on image data regardless of "fit to screen"
@@ -987,6 +994,7 @@ gboolean image_button_press (GtkWidget *widget, GdkEventButton *event, gpointer 
 		fwhm_calc();
 		// Draw roi after possible calc move
 		fwhm_show();
+		g_rw_lock_reader_unlock(&thd_caplock);
 	}
 	return FALSE;
 }
