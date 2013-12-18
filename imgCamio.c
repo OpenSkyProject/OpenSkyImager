@@ -628,8 +628,8 @@ int imgcam_abort()
 	switch (camid)
 	{
 		case 5:
-			retval = qhy_cmosAbortCapture(shpar.tsize);
-			break;
+		//	retval = qhy_cmosAbortCapture(shpar.tsize);
+		//	break;
 		case 20:
 		case 60:
 		case 80:

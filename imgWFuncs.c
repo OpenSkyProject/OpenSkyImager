@@ -854,6 +854,7 @@ gpointer thd_capture_run(gpointer thd_data)
 			// Ok, exposuring
 			g_rw_lock_writer_lock(&thd_caplock);
 			readout = 1;
+			thdrun = run;
 			g_rw_lock_writer_unlock(&thd_caplock);	
 			// Active wait for exp time to elapse, unless user abort	
 			if (thdexp > 1000)

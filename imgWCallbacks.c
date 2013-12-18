@@ -707,6 +707,13 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 				}
 			}
 		}
+		else
+		{
+			kill = 0;
+			gtk_button_set_label(GTK_BUTTON(widget), C_("main","Start"));
+			gtk_widget_modify_bkg(widget, GTK_STATE_ACTIVE, &clrSelected);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_hold), FALSE);
+		}
 	}
 	else
 	{
@@ -1117,6 +1124,19 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 		if (imgcam_connected())
 		{
 			//Disconnect
+			if (run)
+			{
+				// Brute force thread end
+				g_rw_lock_writer_lock(&thd_caplock);
+				run  = 0;
+				runerr = 1;
+				if (readout)
+				{
+					imgcam_abort();
+				}
+				readout = 0;
+				g_rw_lock_writer_unlock(&thd_caplock);
+			}
 			if ((imgcam_get_tecp()->istec != 0))
 			{
 				// Terminates the tec thread and disable choice
