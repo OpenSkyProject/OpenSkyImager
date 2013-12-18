@@ -33,12 +33,6 @@ static char     *pixmsg;
 static int       loaded;
 static double hst[256];
 
-
-/* for FWHM 
-extern GtkWidget *lbl_fbkfwhm;
-extern char fwhmfbk[];
-extern int capture;*/
-
 char *imgpix_get_msg()
 {
 	return pixmsg;
@@ -177,8 +171,6 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 	double resample = 1;
 	unsigned char *pix8;
 	unsigned char *pix16;
-    /* for FWHM 
-    int ret, fwhm, peak;*/
 	
 	// Reset... all
 	imgpix_init();
@@ -453,17 +445,6 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 		}
 	}
 
-    /* only work on focus mode 
-    if (!capture) {
-        if ((ret = imgpix_calc_fwhm(debayer,width/2,height/2,200,200,&fwhm,&peak)) == 0)
-            sprintf(fwhmfbk, "FWHM=%d,Peak=%d,FWHM/Peak=%d",fwhm,peak,fwhm/peak);
-        else
-            sprintf(fwhmfbk, "imgpix_calc_fwhm got error:%d",ret);
-    } else {
-        fwhmfbk[0] = '\0';
-    }
-    gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), (gchar *) fwhmfbk); */
-
 	if (retval)
 	{
 		// "Resize" to fit histogram "height"
@@ -475,90 +456,4 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 	loaded = retval;
 	return (retval);
 }
-
-/*int imgpix_calc_fwhm(int debayer, int x, int y, int width, int height, int *fwhm, int *peak)
-{
-	int rowstride, bpp;
-	guchar *pixels, *p;
-	int row, col, size = (width * height);
-    int i = 0;
-
-    if (pixbuf == NULL)
-        return ERR_BUFFER_EMPTY;
-
-    rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-    pixels    = gdk_pixbuf_get_pixels (pixbuf);
-    bpp       = gdk_pixbuf_get_n_channels (pixbuf);
-    int buf_width = gdk_pixbuf_get_width(pixbuf);
-    int buf_height= gdk_pixbuf_get_height(pixbuf);
-
-    if (width > buf_width || height > buf_height)
-        return ERR_PARAM;
-
-    if (x < width / 2)
-        x = width / 2;
-    if (x > buf_width - width / 2)
-        x = buf_width - width / 2;
-    if (y < height / 2)
-        y = height / 2;
-    if (y > buf_height - height / 2)
-        y = buf_height - height / 2;
-
-    unsigned char *fwhm_buf_ptr = (unsigned char *)malloc(size);
-    if (fwhm_buf_ptr == NULL)
-        return ERR_MALLOC;
-
-    // get a Luminance buffer 
-    if (debayer == 0) {     //mono
-        for (row = y - height / 2; row < y + height / 2; row++) {
-            for (col = x - width / 2; col < x + width / 2; col++) {
-                *(fwhm_buf_ptr + i++) = *(unsigned char *)(pixels + rowstride * row + col * bpp);
-            }
-        }
-    } else {                //color
-        //Luminance (standard, objective): (0.2126*R) + (0.7152*G) + (0.0722*B)
-        for (row = y - height / 2; row < y + height / 2; row++) {
-            for (col = x - width / 2; col < x + width / 2; col++) {
-                p = pixels + rowstride * row + col * bpp;
-                *(fwhm_buf_ptr + i++) = (unsigned char)(0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]);
-            }
-        }
-    }
-
-    // draw a red rectangle
-    for (col = x - width / 2; col < x + width / 2; col++) {
-        row = y - height / 2;
-        p = pixels + rowstride * row + col * bpp;
-        p[0]=255; p[1]=0; p[2]=0;
-        row = y + height / 2;
-        p = pixels + rowstride * row + col * bpp;
-        p[0]=255; p[1]=0; p[2]=0;
-    }
-
-    for (row = y - height / 2; row < y + height / 2; row++) {
-        col = x - width / 2;
-        p = pixels + rowstride * row + col * bpp;
-        p[0]=255; p[1]=0; p[2]=0;
-        col = x + width / 2;
-        p = pixels + rowstride * row + col * bpp;
-        p[0]=255; p[1]=0; p[2]=0;
-    }
-
-    // calc the peak
-    *peak = 0;
-    for(i = 0; i < size; i++)
-        if (fwhm_buf_ptr[i] > *peak)
-            *peak = fwhm_buf_ptr[i];
-
-    // calc the fwhm 
-    *peak /= 2;
-    *fwhm = 0;
-    for (i = 0; i < size; i++)
-        if (fwhm_buf_ptr[i] > *peak)
-            (*fwhm)++;
-    *peak *= 2;
-
-    free(fwhm_buf_ptr);
-    return OK;
-}*/
 

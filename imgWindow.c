@@ -716,10 +716,10 @@ void frm_tecgraph_build()
 {
 	tecgraph = gtk_image_new();	
 	gtk_widget_set_size_request(tecgraph, 360, 240);
-	//#if GTK_MAJOR_VERSION == 3
+	#if GTK_MAJOR_VERSION == 3
 	gtk_widget_set_hexpand(tecgraph, FALSE);
 	gtk_widget_set_vexpand(tecgraph, FALSE);
-	//#endif
+	#endif
 	
 	// Image init
 	#if GTK_MAJOR_VERSION == 3
@@ -1398,5 +1398,15 @@ void imgwin_build()
 	window_build();	
 	// Draw all
 	gtk_widget_show_all(window);
+
+	// Get fwhm lablel max allocated size
+	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), "FWHM=05.20, Peak=65535, FWHM/Peak=05.20");
+	GtkAllocation *alloc = g_new0 (GtkAllocation, 1);
+	gtk_widget_get_allocation(GTK_WIDGET(lbl_fbkfwhm), alloc);
+	fwhmlblw = alloc->width;
+	fwhmlblh = alloc->height;
+	// Cleanup
+	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), "");
+	g_free(alloc);
 }
 

@@ -881,11 +881,13 @@ gboolean swindow_allocate(GtkWidget *widget, GdkRectangle *alloc, gpointer data)
 
 gboolean imgevent_button_press (GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
+	int roisize = fwhms / imgratio;
+	int roix, roiy;
 	
 	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1))
 	{
-		int roisize = fwhms / imgratio;
-		int roix = ((fwhmx - (roisize / 2)) / imgratio), roiy = ((fwhmy - (roisize / 2)) / imgratio);
+		roix = ((fwhmx - (fwhms / 2)) / imgratio);
+		roiy = ((fwhmy - (fwhms / 2)) / imgratio);
 
 		if (((event->x > roix) && (event->x < (roix + roisize))) && ((event->y > roiy) && (event->y < (roiy + roisize))))
 		{
@@ -894,15 +896,38 @@ gboolean imgevent_button_press (GtkWidget *widget, GdkEventButton *event, gpoint
 	}
 	else if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
 	{
+		int width = (imgpix_get_width() / imgratio), height = (imgpix_get_height() / imgratio);
+
 		// Center on image data regardless of "fit to screen"
 		fwhmx = event->x * imgratio;
 		fwhmy = event->y * imgratio;
-		
-		/*int width = imgfit_get_width(), height = imgfit_get_height(), bytepix = imgfit_get_bytepix();
-		unsigned char *psrc = NULL;
-		psrc = imgfit_get_data() + ((((height- fwhmy - 1) * width) + (width - fwhmx - 1)) * bytepix);
-		printf("%d\n", psrc[0]);*/
 
+		// Roi position depending on "fit to screen"
+		roix = ((fwhmx - (fwhms / 2)) / imgratio);
+		roiy = ((fwhmy - (fwhms / 2)) / imgratio);
+
+		// check ROI is fully inside frame and fix if needed
+		// Move centroid position relative to ROI accordingly
+		if( roix <= 0 )
+		{
+			roix = 1;
+		}
+		if( roiy <= 0 )
+		{
+			roiy = 1;
+		}
+		if( roix + fwhms >= width )
+		{
+			roix = width - roisize - 1;
+		}
+		if( roiy + fwhms >= height )
+		{
+			roiy = height - roisize - 1;
+		}	
+		
+		// Center on image data regardless of "fit to screen"
+		fwhmx = (roix * imgratio) + (fwhms / 2);
+		fwhmy = (roiy * imgratio) + (fwhms / 2);
 
 		// Draw roi
 		fwhm_show();

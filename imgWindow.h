@@ -133,7 +133,8 @@
 	char tecfbk[16];
 	char fpsfbk[16];
 	char fwhmfbk[64];
-	int fwhmx = 0, fwhmy = 0, fwhmv = 0, fwhms = 64, fwhmp = 4096, afwhm = 0, pfwhm = 1;
+	int fwhmx = 0, fwhmy = 0, fwhmv = 0, fwhms = 64, fwhmp = 4096, pfwhm = 1, fwhmlblh = 0, fwhmlblw = 0;
+	double afwhm = 0.;
 	int tecrun = 0;
 	struct tm tlstart, tlend;
 	
@@ -228,7 +229,8 @@
 	extern char tecfbk[16];
 	extern char fpsfbk[16];
 	extern char fwhmfbk[64];
-	extern int fwhmx, fwhmy, fwhmv, fwhms, fwhmp, afwhm, pfwhm;
+	extern int fwhmx, fwhmy, fwhmv, fwhms, fwhmp, pfwhm, fwhmlblh, fwhmlblw;
+	extern double afwhm;
 	extern int tecrun;
 	extern struct tm tlstart, tlend;
 	

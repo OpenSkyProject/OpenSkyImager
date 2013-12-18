@@ -265,7 +265,9 @@ void load_histogram_from_null()
 void fwhm_show()
 {
 	int roisize = fwhms / imgratio;
-	int roix = ((fwhmx - (roisize / 2)) / imgratio), roiy = ((fwhmy - (roisize / 2)) / imgratio);
+	int roix = ((fwhmx - (fwhms / 2)) / imgratio), roiy = ((fwhmy - (fwhms / 2)) / imgratio);
+	int lblx = roix, lbly = roiy;
+	int width = (imgpix_get_width() / imgratio);
 
 	// Set flag "is visible"	
 	fwhmv = 1;
@@ -274,9 +276,27 @@ void fwhm_show()
 	gtk_fixed_move(GTK_FIXED(fixed), fwhmroi, roix, roiy);
 	
 	// Write label
-	sprintf(fwhmfbk, "FWHM=%d,Peak=%d,FWHM/Peak=%05.2F", afwhm, pfwhm, (afwhm / (double)pfwhm));
+	sprintf(fwhmfbk, "FWHM=%05.2F, Peak=%d, FWHM/Peak=%05.2F", afwhm, pfwhm, (afwhm / (double)pfwhm));
 	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), (gchar *) fwhmfbk);
-
+	
+	// Move Label
+	if ((roiy - fwhmlblh - 10) > 0)
+	{
+		lbly = (roiy - fwhmlblh - 10);
+	}
+	else
+	{
+		lbly = (roiy + roisize + 10);
+	}
+	if ((roix - (fwhmlblw / 2)) > 0)
+	{
+		lblx = (roix - (fwhmlblw / 2));
+	}
+	if ((roix + (fwhmlblw / 2)) > width)
+	{
+		lblx = (roix - fwhmlblw);
+	}
+	gtk_fixed_move(GTK_FIXED(fixed), lbl_fbkfwhm, lblx, lbly);
 }
 
 void fwhm_hide()
@@ -290,6 +310,7 @@ void fwhm_hide()
 	// Clear label
 	fwhmfbk[0] = '\0';
 	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), (gchar *) fwhmfbk);
+	gtk_fixed_move(GTK_FIXED(fixed), lbl_fbkfwhm, 0, 0);
 
 }
 
@@ -298,7 +319,8 @@ void fwhm_calc()
 	int i, j, k;
 	int roix = (fwhmx - (fwhms / 2)), roiy = (fwhmy - (fwhms / 2));
 	int width = imgfit_get_width(), height = imgfit_get_height(), bytepix = imgfit_get_bytepix();
-	int resx, resy, prex = roix, prey = roiy, mass, threshold, pval, resp, vfwhm, ofwhm;
+	int resx, resy, prex = roix, prey = roiy, mass, threshold, pval, resp;
+	double vfwhm, ofwhm;
 	int roi[fwhmp];
 	unsigned char *porigin = NULL, *psrc = NULL;
 
@@ -377,6 +399,33 @@ void fwhm_calc()
 		roix = roix + (resx - (fwhms / 2));
 		roiy = roiy + (resy - (fwhms / 2));
 		
+		//Result coordinates of the centroid, relative to full image
+		fwhmx = roix + (fwhms / 2);
+		fwhmy = roiy + (fwhms / 2);
+	
+		// check ROI is fully inside frame and fix if needed
+		// Move centroid position relative to ROI accordingly
+		if( roix <= 0 )
+		{
+			resx += (roix + 1);
+			roix = 1;
+		}
+		if( roiy <= 0 )
+		{
+			resy += (roiy + 1);
+			roiy = 1;
+		}
+		if( roix + fwhms >= width )
+		{
+			resx += (roix + fwhms - width - 1);
+			roix = width - fwhms - 1;
+		}
+		if( roiy + fwhms >= height )
+		{
+			resy += (roiy + fwhms - height - 1);
+			roiy = height - fwhms - 1;
+		}	
+
 		if ((prex == roix) && (prey == roiy))
 		{
 			break;
@@ -385,33 +434,6 @@ void fwhm_calc()
 		prey = roiy;
 	}
 
-	//Result coordinates of the centroid, relative to full image
-	fwhmx = roix + (fwhms / 2);
-	fwhmy = roiy + (fwhms / 2);
-	
-	// check ROI is fully inside frame and fix if needed
-	// Move centroid position relative to ROI accordingly
-	if( roix < 0 )
-	{
-		resx += roix;
-		roix = 0;
-	}
-	if( roiy < 0 )
-	{
-		resy += roiy;
-		roiy = 0;
-	}
-	if( roix + fwhms > width )
-	{
-		resx += (roix + fwhms - width);
-		roix = width - fwhms;
-	}
-	if( roiy + fwhms > height )
-	{
-		resy += (roiy + fwhms - height);
-		roiy = height - fwhms;
-	}
-	
 	// This brings us to the first byte of the pixel that is ROI(0,0)
 	porigin = imgfit_get_data() + ((((height- roiy - 1) * width) + (width - roix - 1)) * bytepix);
 
@@ -453,7 +475,7 @@ void fwhm_calc()
 	{
 		if (roi[((j * fwhms) + resx)] < threshold)
 		{
-			vfwhm *= 2;
+			vfwhm *= 2.;
 			break;
 		}
 		else
@@ -468,7 +490,7 @@ void fwhm_calc()
 	{
 		if (roi[((resy * fwhms) + i)] < threshold)
 		{
-			ofwhm *= 2;
+			ofwhm *= 2.;
 			break;
 		}
 		else
@@ -477,7 +499,7 @@ void fwhm_calc()
 		}
 	}
 
-	afwhm = (vfwhm + ofwhm) / 2;
+	afwhm = (vfwhm + ofwhm) / 2.;
 	pfwhm = resp;
 }
 
