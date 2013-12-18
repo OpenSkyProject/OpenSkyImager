@@ -951,58 +951,63 @@ gboolean image_button_press (GtkWidget *widget, GdkEventButton *event, gpointer 
 	
 	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1))
 	{
+		// Left click
 		roix = ((fwhmx - (fwhms / 2)) / imgratio);
 		roiy = ((fwhmy - (fwhms / 2)) / imgratio);
 
-		if (((event->x > roix) && (event->x < (roix + roisize))) && ((event->y > roiy) && (event->y < (roiy + roisize))))
+		if (((event->x > roix) && (event->x < (roix + roisize))) && ((event->y > roiy) && (event->y < (roiy + roisize))) && (fwhmv == 1))
 		{
 			fwhm_hide();
 		}
-	}
-	else if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
-	{
-		g_rw_lock_reader_lock(&thd_caplock);
-		int width = (imgpix_get_width() / imgratio), height = (imgpix_get_height() / imgratio);
+		else
+		{
+			g_rw_lock_reader_lock(&thd_caplock);
+			int width = (imgpix_get_width() / imgratio), height = (imgpix_get_height() / imgratio);
 
-		// Center on image data regardless of "fit to screen"
-		fwhmx = event->x * imgratio;
-		fwhmy = event->y * imgratio;
+			// Center on image data regardless of "fit to screen"
+			fwhmx = event->x * imgratio;
+			fwhmy = event->y * imgratio;
 
-		// Roi position depending on "fit to screen"
-		roix = ((fwhmx - (fwhms / 2)) / imgratio);
-		roiy = ((fwhmy - (fwhms / 2)) / imgratio);
+			// Roi position depending on "fit to screen"
+			roix = ((fwhmx - (fwhms / 2)) / imgratio);
+			roiy = ((fwhmy - (fwhms / 2)) / imgratio);
 
-		// check ROI is fully inside frame and fix if needed
-		// Move centroid position relative to ROI accordingly
-		if( roix <= 0 )
-		{
-			roix = 1;
-		}
-		if( roiy <= 0 )
-		{
-			roiy = 1;
-		}
-		if( roix + fwhms >= width )
-		{
-			roix = width - roisize - 1;
-		}
-		if( roiy + fwhms >= height )
-		{
-			roiy = height - roisize - 1;
-		}	
+			// check ROI is fully inside frame and fix if needed
+			// Move centroid position relative to ROI accordingly
+			if( roix <= 0 )
+			{
+				roix = 1;
+			}
+			if( roiy <= 0 )
+			{
+				roiy = 1;
+			}
+			if( roix + fwhms >= width )
+			{
+				roix = width - roisize - 1;
+			}
+			if( roiy + fwhms >= height )
+			{
+				roiy = height - roisize - 1;
+			}	
 		
-		// Center on image data regardless of "fit to screen"
-		fwhmx = (roix * imgratio) + (fwhms / 2);
-		fwhmy = (roiy * imgratio) + (fwhms / 2);
+			// Center on image data regardless of "fit to screen"
+			fwhmx = (roix * imgratio) + (fwhms / 2);
+			fwhmy = (roiy * imgratio) + (fwhms / 2);
 
-		// Draw roi
-		fwhm_show();
-		// Calc
-		fwhm_calc();
-		// Draw roi after possible calc move
-		fwhm_show();
-		g_rw_lock_reader_unlock(&thd_caplock);
+			// Draw roi
+			fwhm_show();
+			// Calc
+			fwhm_calc();
+			// Draw roi after possible calc move
+			fwhm_show();
+			g_rw_lock_reader_unlock(&thd_caplock);
+		}
 	}
+	/*else if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
+	{
+		// Right click
+	}*/
 	return FALSE;
 }
 
