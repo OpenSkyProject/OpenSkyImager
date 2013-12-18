@@ -366,8 +366,11 @@ void image_build()
 	gtk_container_add(GTK_CONTAINER(imgevent), image);
 	
 	//Callbacks
+	gtk_widget_add_events(fwhmroi, GDK_BUTTON_PRESS_MASK);
+	g_signal_connect(G_OBJECT(imgevent), "scroll-event", G_CALLBACK(fwhmroi_scroll),  NULL);
+
 	gtk_widget_add_events(imgevent, GDK_BUTTON_PRESS_MASK);
-	g_signal_connect(G_OBJECT(imgevent), "button-press-event", G_CALLBACK(imgevent_button_press),  NULL);
+	g_signal_connect(G_OBJECT(imgevent), "button-press-event", G_CALLBACK(image_button_press),  NULL);
 	
 	// Initialize pixbuf RW lock for the capture thread
 	g_rw_lock_init(&pixbuf_lock);
