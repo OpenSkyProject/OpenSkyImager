@@ -31,6 +31,7 @@
 	#define g_rw_lock_reader_unlock(lock)             g_static_rw_lock_reader_unlock(lock)
 	#define g_thread_try_new(name, func, data, error) g_thread_create(func, data, TRUE, error)
 	#define g_thread_new(name, func, data)            g_thread_create(func, data, TRUE, NULL)
+	#define g_thread_unref(thd)                       //g_thread_unref(thd)
 #endif
 
 #if GTK_MAJOR_VERSION == 3
@@ -56,6 +57,7 @@
 	#define GTK_COMBO_BOX_TEXT(cmb)                            GTK_COMBO_BOX(cmb)
 	#define gtk_combo_box_text_append_text(cmb, val)           gtk_combo_box_append_text(cmb, val)
 	#define gtk_combo_box_text_get_active_text(cmb)            gtk_combo_box_get_active_text(cmb)
+	#define gtk_combo_box_text_remove(cmb, pos)                gtk_combo_box_remove_text(cmb, pos)
 	#define gtk_statusbar_remove_all(stb, id)                  gtk_statusbar_pop(stb, id)
 #endif
 
