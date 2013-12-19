@@ -29,7 +29,22 @@
 void imgstatus_build()
 {
 	imgstatus = gtk_statusbar_new();
+	#if GTK_MAJOR_VERSION == 2
+	gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(imgstatus), FALSE);
+	#endif
 	g_signal_connect(G_OBJECT(imgstatus), "text-pushed", G_CALLBACK(imgstatus_push), NULL);
+	
+	imgstatec = gtk_statusbar_new();
+	#if GTK_MAJOR_VERSION == 2
+	gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(imgstatec), FALSE);
+	#endif
+	g_signal_connect(G_OBJECT(imgstatec), "text-pushed", G_CALLBACK(imgstatec_push), NULL);
+
+	imgstafit = gtk_statusbar_new();
+	#if GTK_MAJOR_VERSION == 2
+	gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(imgstafit), FALSE);
+	#endif
+	g_signal_connect(G_OBJECT(imgstafit), "text-pushed", G_CALLBACK(imgstafit_push), NULL);
 }
 
 void cmd_settings_build()
@@ -349,6 +364,7 @@ void frm_histogram_build()
 	frm_histogram = gtk_frame_new(NULL);
 	gtk_widget_set_size_request(frm_histogram, 180, 70);
 	gtk_container_add(GTK_CONTAINER(frm_histogram), histogram);
+	gtk_frame_set_shadow_type(GTK_FRAME(frm_histogram), GTK_SHADOW_IN);
 	#endif
 		
 	// Callback
@@ -764,7 +780,7 @@ void vsc_tecpwr_build()
 
 void cmd_tlcalendar_build()
 {
-	cmd_tlcalendar = gtk_toggle_button_new_with_label_color(C_("timelapse","Simple mode"), 140, 30, &clrSelected);
+	cmd_tlcalendar = gtk_toggle_button_new_with_label_color(C_("timelapse","Full mode"), 140, 30, &clrSelected);
 	// Callbacks
 	g_signal_connect(G_OBJECT(cmd_tlcalendar), "clicked", G_CALLBACK(cmd_tlcalendar_click), NULL);
 }
@@ -1321,13 +1337,17 @@ void pnd_main_build()
 
 void box_main_build()
 {
-	box_main = gtk_table_new(10, 5, FALSE);
+	box_main = gtk_table_new(100, 10, FALSE);
 	
 	imgstatus_build();
 	pnd_main_build();
 	
-	gtk_table_attach(GTK_TABLE(box_main), pnd_main,  0, 5, 0,  9, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_main), imgstatus, 0, 5, 9, 10, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), imgstatec,   0,  26,  0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), gtk_vseparator_new(),  26,  27, 0,  1, GTK_SHRINK, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), imgstatus,  27,  75,  0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), gtk_vseparator_new(),  75,  76, 0,  1, GTK_SHRINK, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), imgstafit,  76, 100,  0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), pnd_main ,   0, 100,  1, 10, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
 }
 
 void window_build()

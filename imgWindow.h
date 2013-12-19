@@ -65,7 +65,7 @@
 	GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
 	GtkWidget *hsc_maxadu, *hsc_minadu;
 	GtkWidget *box_main, *pnd_main, *pnd_left, *box_top_left, *box_bot_left, *tab_right, *tab_settings;
-	GtkWidget *imgstatus;
+	GtkWidget *imgstatus, *imgstatec, *imgstafit;
 	GtkWidget *frm_histogram;
 	GtkWidget *spn_histogram;
 	GtkWidget *box_ccd, *box_cooling, *box_filename, *box_scripting, *box_timelapse, *box_header, *box_cfw, *box_calc;
@@ -113,6 +113,8 @@
 	char *fmtstr = "1-.fit|2-.avi|3-.fit + .avi|:0";
 	int  savefmt = 1;
 	guint tmrstatusbar = -1;
+	guint tmrstatusfit = -1;
+	guint tmrstatustec = -1;
 	guint tmrimgrefresh = -1;
 	guint tmraducheck = -1;
 	guint tmrfrmrefresh = -1;
@@ -161,7 +163,7 @@
 	extern GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
 	extern GtkWidget *hsc_maxadu, *hsc_minadu;
 	extern GtkWidget *box_main, *pnd_main, *pnd_left, *box_top_left, *box_bot_left, *tab_right, *tab_settings;
-	extern GtkWidget *imgstatus;
+	extern GtkWidget *imgstatus, *imgstatec, *imgstafit;
 	extern GtkWidget *frm_histogram;
 	extern GtkWidget *spn_histogram;
 	extern GtkWidget *box_ccd, *box_cooling, *box_filename, *box_scripting, *box_timelapse, *box_header, *box_cfw, *box_calc;
@@ -209,6 +211,8 @@
 	extern char *fmtstr;
 	extern int  savefmt;
 	extern guint tmrstatusbar;
+	extern guint tmrstatusfit;
+	extern guint tmrstatustec;
 	extern guint tmrimgrefresh;
 	extern guint tmraducheck;
 	extern guint tmrfrmrefresh;

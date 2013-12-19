@@ -182,7 +182,7 @@ void load_image_from_data()
 		}
 		else if (strlen(imgpix_get_msg()) != 0)
 		{
-			gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgpix_get_msg());
+			tmrfrmrefresh = g_timeout_add(1, (GSourceFunc) tmr_imgstatus_pixmsg, NULL);			
 		}
 		// Reset
 		//gdk_window_set_cursor(GDK_WINDOW(window->window), NULL);
@@ -856,17 +856,17 @@ gpointer thd_capture_run(gpointer thd_data)
 		g_rw_lock_reader_lock(&thd_caplock);
 		thdshoot = imgcam_shoot();
 		thdexp = imgcam_get_shpar()->wtime;
-		if (thdexp < 1000)
-		{
+		//if (thdexp < 1000)
+		//{
 			// Get the time for a complete loop (first loop is invalid result)
 			gettimeofday(&clke, NULL);
-			fps = 1. / (clke.tv_sec - clks.tv_sec + 0.000001 * (clke.tv_usec - clks.tv_usec));
+			fps = (clke.tv_sec - clks.tv_sec + 0.000001 * (clke.tv_usec - clks.tv_usec));
 			gettimeofday(&clks, NULL);
-		}
-		else
-		{
-			fps = 0.;
-		}
+		//}
+		//else
+		//{
+		//	fps = 0.;
+		//}
 		g_rw_lock_reader_unlock(&thd_caplock);
 		if (thdshoot)
 		{

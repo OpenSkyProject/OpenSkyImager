@@ -21,6 +21,7 @@
  */
 
 gboolean tmr_img_refresh (GtkWidget *widget);
+gboolean tmr_imgstatus_pixmsg (GtkWidget *widget);
 gboolean tmr_adu_check (GtkWidget *widget);
 gboolean tmr_frm_refresh (GtkWidget *widget);
 gboolean tmr_hst_refresh (GtkWidget *widget);
@@ -30,6 +31,8 @@ gboolean tmr_tecpwr (GtkWidget *widget);
 gboolean tmr_tecstatus_write (GtkWidget *widget);
 gboolean tmr_tlrefresh (GtkWidget *widget);
 void imgstatus_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpointer user_data);
+void imgstafit_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpointer user_data);
+void imgstatec_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpointer user_data);
 void cmd_settings_click(GtkWidget *widget, gpointer data);
 void cmd_about_click(GtkWidget *widget, gpointer data);
 gboolean spn_expnum_changed(GtkSpinButton *spinbutton, gpointer user_data);

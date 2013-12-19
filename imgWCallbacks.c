@@ -27,8 +27,18 @@
 gboolean tmr_imgstatus_wipe (GtkWidget *widget)
 {
 	
-	gtk_statusbar_remove_all(GTK_STATUSBAR(imgstatus), 0);
+	gtk_statusbar_remove_all(GTK_STATUSBAR(widget), 0);
 	tmrstatusbar = -1;
+	
+	// Change to TRUE for a recurring timer
+	return FALSE;
+}
+
+gboolean tmr_imgstatus_pixmsg (GtkWidget *widget)
+{
+	
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgpix_get_msg());
+	tmrfrmrefresh = -1;
 	
 	// Change to TRUE for a recurring timer
 	return FALSE;
@@ -117,14 +127,19 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 	tmpfps = fps;
 	g_rw_lock_reader_unlock(&thd_caplock);
 	
-	if (tmpfps > 0.)
+	if (tmpfps < 10)
 	{
-		sprintf(fpsfbk, "Fps:%05.1F", (double)tmpfps);
+		sprintf(fpsfbk, "Fps:%05.1F", (1./ tmpfps));
+	}
+	else if (tmpfps >= 10)
+	{
+		sprintf(fpsfbk, "Fpm:%05.1F", (60. / tmpfps));
 	}
 	else
 	{
 		fpsfbk[0] = '\0';
 	}
+	
 	if (tmprun == 1)
 	{
 	
@@ -140,22 +155,23 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 			if (savefmt == 1)
 			{
 				/// Message on statusbar about last saved frame (%s)
-				sprintf(imgmsg, C_("main","Image: %s saved"), imgfit_get_name());
+				sprintf(imgmsg, C_("main","Image: %s saved"), g_path_get_basename(imgfit_get_name()));
 			}
 			else if (savefmt == 2)
 			{
 				/// Message on statusbar about last frame add to avi (%s)
-				sprintf(imgmsg, C_("main","Frame: add to %s"), imgavi_get_name());
+				sprintf(imgmsg, C_("main","Frame: add to %s"), g_path_get_basename(imgavi_get_name()));
 			}
 			else if (savefmt == 3)
 			{
 				/// Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
-				sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), imgfit_get_name(), imgavi_get_name());
+				sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), g_path_get_basename(imgfit_get_name()), g_path_get_basename(imgavi_get_name()));
 			}
 			// Main image update
 			sprintf(imgfbk, "#%04d", (int)tmpshots);
 			gtk_label_set_text(GTK_LABEL(lbl_fbkimg), (gchar *) imgfbk);	
 			gtk_label_set_text(GTK_LABEL(lbl_fbkfps), (gchar *) fpsfbk);	
+			gtk_statusbar_write(GTK_STATUSBAR(imgstafit), 0, imgmsg);
 		}
 		else
 		{
@@ -210,6 +226,7 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 		{
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), FALSE);
 		}
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 	else
 	{
@@ -234,8 +251,9 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 				/// Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
 				sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), imgfit_get_name(), imgavi_get_name());
 			}
-			/// This goes concat with last saved frame
-			strcat(imgmsg, C_("main",", capture end"));
+			gtk_statusbar_write(GTK_STATUSBAR(imgstafit), 0, imgmsg);
+			sprintf(imgmsg, C_("main","capture end"));
+			gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 			// Main image update
 			sprintf(imgfbk, "#%04d", (int)tmpshots);
 			gtk_label_set_text(GTK_LABEL(lbl_fbkimg), (gchar *) imgfbk);	
@@ -245,6 +263,7 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 			/// Message to confirm end of capture thread in focus mode
 			strcpy(imgmsg, C_("main","Focus end"));
 			gtk_label_set_text(GTK_LABEL(lbl_fbkimg), "");	
+			gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 		}
 		gtk_label_set_text(GTK_LABEL(lbl_fbkfps), (gchar *) fpsfbk);	
 		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)) == TRUE)
@@ -252,7 +271,6 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), FALSE);
 		}
 	}
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	tmrcapprgrefresh = -1;
 	
 	// Change to TRUE for a recurring timer
@@ -343,7 +361,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 		gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
 	}
 	g_rw_lock_reader_unlock(&thd_teclock);
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 1, imgmsg);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatec), 0, imgmsg);
 	tmrtecrefresh = -1;
 	
 	// Change to TRUE for a recurring timer
@@ -374,7 +392,7 @@ gboolean tmr_tlrefresh (GtkWidget *widget)
 		tmrtlrefresh = -1;
 		sprintf(imgmsg, C_("main","TimeLapse mode finished"));	
 	}
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 2, imgmsg);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	
 	if (tmrtlrefresh != -1)
 	{
@@ -392,7 +410,25 @@ void imgstatus_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpo
 	{
 		g_source_remove(tmrstatusbar);
 	}
-	tmrstatusbar = g_timeout_add_seconds(3, (GSourceFunc) tmr_imgstatus_wipe, NULL);
+	tmrstatusbar = g_timeout_add_seconds(3, (GSourceFunc) tmr_imgstatus_wipe, GTK_WIDGET(statusbar));
+}
+
+void imgstafit_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpointer user_data)
+{
+	if (tmrstatusfit != -1)
+	{
+		g_source_remove(tmrstatusfit);
+	}
+	tmrstatusfit = g_timeout_add_seconds(3, (GSourceFunc) tmr_imgstatus_wipe, GTK_WIDGET(statusbar));
+}
+
+void imgstatec_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpointer user_data)
+{
+	if (tmrstatustec != -1)
+	{
+		g_source_remove(tmrstatustec);
+	}
+	tmrstatustec = g_timeout_add_seconds(3, (GSourceFunc) tmr_imgstatus_wipe, GTK_WIDGET(statusbar));
 }
 
 void cmd_settings_click(GtkWidget *widget, gpointer data)
@@ -475,6 +511,16 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 			g_rw_lock_writer_lock(&thd_caplock);
 			capture = (capture == 0)? 1: 0;
 			g_rw_lock_writer_unlock(&thd_caplock);
+			if (tlenable == 1)
+			{
+				// Start recurring timer to refresh the message
+				// Timer will kill itself if !tlenable || !run
+				if (tmrtlrefresh != -1)
+				{
+					g_source_remove(tmrtlrefresh);
+				}
+				tmrtlrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tlrefresh, NULL);			
+			}
 			if (capture)
 			{
 				gtk_button_set_label(GTK_BUTTON(cmd_capture), C_("main","Capture mode"));
@@ -1586,6 +1632,13 @@ void cmd_tlenable_click(GtkWidget *widget, gpointer data)
 	tlenable = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE);
 	if (tlenable)
 	{
+		// Start recurring timer to refresh the message
+		// Timer will kill itself if !tlenable || !run
+		if (tmrtlrefresh != -1)
+		{
+			g_source_remove(tmrtlrefresh);
+		}
+		tmrtlrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tlrefresh, NULL);			
 		gtk_widget_set_sensitive(box_timelapse, 1);
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","Time lapse mode enabled"));
 	}
@@ -1704,7 +1757,7 @@ void cmd_tlcalendar_click(GtkWidget *widget, gpointer data)
 
 	if (tlcalendar == 0)
 	{
-		gtk_button_set_label(GTK_BUTTON(widget), "Simple mode");
+		gtk_button_set_label(GTK_BUTTON(widget), "Full mode");
 		gtk_widget_set_sensitive(rbt_tlstart, 0);
 		gtk_widget_set_sensitive(lbl_tlstart, 0);
 		gtk_widget_set_sensitive(spn_tlhstart, 0);
@@ -1716,11 +1769,11 @@ void cmd_tlcalendar_click(GtkWidget *widget, gpointer data)
 		gtk_widget_set_sensitive(spn_tlmend, 0);
 		gtk_widget_set_sensitive(spn_tlsend, 0);
 		gtk_widget_set_sensitive(cal_tldpick, 0);
-		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","TimeLapse set to use calendar driven start and stop plus interval"));
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","TimeLapse set to use frame count driven start and stop plus interval"));
 	}
 	else
 	{
-		gtk_button_set_label(GTK_BUTTON(widget), "Full mode");
+		gtk_button_set_label(GTK_BUTTON(widget), "Simple mode");
 		gtk_widget_set_sensitive(rbt_tlstart, 1);
 		gtk_widget_set_sensitive(lbl_tlstart, 1);
 		gtk_widget_set_sensitive(spn_tlhstart, 1);
@@ -1732,7 +1785,7 @@ void cmd_tlcalendar_click(GtkWidget *widget, gpointer data)
 		gtk_widget_set_sensitive(spn_tlmend, 1);
 		gtk_widget_set_sensitive(spn_tlsend, 1);
 		gtk_widget_set_sensitive(cal_tldpick, 1);
-		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","TimeLapse set to use frame count driven start and stop plus interval"));
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","TimeLapse set to use calendar driven start and stop plus interval"));
 	}
 }   
 
