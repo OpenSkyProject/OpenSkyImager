@@ -18,6 +18,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Code used to "chase" the brightest point in fwhm_calc is derived and adapted
+ * from lin_guider project. http://sourceforge.net/projects/linguider/
+ * My deepest thanks to "Galaxy Master" for sharing his code under the same 
+ * license.
+ * 
  */
 
 #include "imgWindow.h"
