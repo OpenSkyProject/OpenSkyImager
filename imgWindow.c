@@ -1431,5 +1431,6 @@ void imgwin_build()
 	// Cleanup
 	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), "");
 	g_free(alloc);
+	printf("GTK M: %d, m: %d, u: %d\n", GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION);
 }
 

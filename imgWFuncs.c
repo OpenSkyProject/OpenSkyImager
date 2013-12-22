@@ -771,11 +771,13 @@ void shotsnaming(char *thdfit, int thdshots)
 gpointer thd_capture_run(gpointer thd_data)
 {
 	int thdrun = 1, thderror = 0, thdhold = 0, thdmode = 0, thdshoot = 0;
-	int thdpreshots = shots, thdtimer = 0, thdexp = 0, thdtlmode = 0;
+	int thdpreshots = shots, thdexp = 0, thdtlmode = 0;
+	int thdtimer = 0, thdtimeradd = 0;
 	int avimaxframes = 0;
 	char thdfit[2048];
 	time_t ref, last;
 	struct timeval clks, clke;
+	struct timeval clkws, clkwe;
 	GThread *thd_pixbuf = NULL;
 	GThread *thd_fitsav = NULL;
 	GThread *thd_avisav = NULL;
@@ -808,7 +810,17 @@ gpointer thd_capture_run(gpointer thd_data)
 		// Wait for the start time to arrive
 		while (difftime(mktime(&tlstart), ref) > 0)
 		{
-			usleep(500000);
+			//usleep(500000);
+			// We yeld to other threads until 500ms are passed by
+			thdtimeradd = 0;
+			gettimeofday(&clkws, NULL);
+			while (thdtimeradd < 500)
+			{
+				g_thread_yield();
+				gettimeofday(&clkwe, NULL);
+				// Get elapsed ms
+				thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
+			}
 			// Check if we're still in run condition
 			g_rw_lock_reader_lock(&thd_caplock);
 			thdrun = run;
@@ -889,8 +901,23 @@ gpointer thd_capture_run(gpointer thd_data)
 				tmrexpprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_exp_progress_refresh, NULL);
 				while (thdtimer < (thdexp))
 				{
-					usleep(500000);
-					thdtimer += 500;
+					//usleep(500000);
+					//thdtimer += 500;
+					// We yeld to other threads until 500ms are passed by
+					thdtimeradd = 0;
+					gettimeofday(&clkws, NULL);
+					while (thdtimeradd < 500)
+					{
+						g_thread_yield();
+						gettimeofday(&clkwe, NULL);
+						// Get elapsed ms
+						thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
+					}
+					thdtimer += thdtimeradd;
+					// Reset loop start so we count all time that's yeld to
+					// other thread less explicitly (locks)
+					// Hopefully counting time with better accuracy
+					gettimeofday(&clkws, NULL);
 					expfract = (double)thdtimer / (double)thdexp;
 					tmrexpprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_exp_progress_refresh, NULL);
 					// Check if we're still in run condition
@@ -906,6 +933,10 @@ gpointer thd_capture_run(gpointer thd_data)
 						g_rw_lock_writer_unlock(&thd_caplock);		
 						break;
 					}
+					gettimeofday(&clkwe, NULL);
+					// Get elapsed ms
+					thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
+					thdtimer += thdtimeradd;
 				}
 				expfract = 1.0;
 			}
@@ -989,8 +1020,8 @@ gpointer thd_capture_run(gpointer thd_data)
 
 					//printf("run: %d, runerr: %d, expnum: %d, shots: %d\n", run, runerr, expnum, shots);
 
-					if (cpucores > 1)
-					{
+					//if (cpucores > 1)
+					//{
 						// Threaded
 						if ((thdmode == 1) && (runerr == 0))
 						{
@@ -1027,7 +1058,7 @@ gpointer thd_capture_run(gpointer thd_data)
 						}
 						// Starts backgroung elaboration of pixbuf
 						thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, NULL);
-					}
+					/*}
 					else
 					{
 						// Serialized
@@ -1047,7 +1078,7 @@ gpointer thd_capture_run(gpointer thd_data)
 						}
 						// Pixbuffer for preview
 						thd_pixbuf_run(NULL);
-					}
+					}*/
 					
 					//UI update
 					if (tmrcapprgrefresh != -1)
@@ -1088,7 +1119,16 @@ gpointer thd_capture_run(gpointer thd_data)
 				{
 					// If tec is in auto mode we must leave some room for the 
 					// poor camera cpu to process tec read 0.05s
-					usleep(400000);
+					//usleep(400000);
+					thdtimeradd = 0;
+					gettimeofday(&clkws, NULL);
+					while (thdtimeradd < 400)
+					{
+						g_thread_yield();
+						gettimeofday(&clkwe, NULL);
+						// Get elapsed ms
+						thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
+					}
 				}
 			}
 			// If we are in tlmode, even bare tl mode
@@ -1098,8 +1138,19 @@ gpointer thd_capture_run(gpointer thd_data)
 				thdtimer = 0;
 				while (thdtimer < (tlperiod * 1000))
 				{
-					usleep(500000);
-					thdtimer += 500;
+					//usleep(500000);
+					//thdtimer += 500;
+					// We yeld to other threads until 500ms are passed by
+					thdtimeradd = 0;
+					gettimeofday(&clkws, NULL);
+					while (thdtimeradd < 500)
+					{
+						g_thread_yield();
+						gettimeofday(&clkwe, NULL);
+						// Get elapsed ms
+						thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
+					}
+					thdtimer += thdtimeradd;
 					// Check if we're still in run condition
 					g_rw_lock_reader_lock(&thd_caplock);
 					thdrun = run;
@@ -1115,7 +1166,18 @@ gpointer thd_capture_run(gpointer thd_data)
 			// If we are in pause mode
 			while ((thdhold == 1) && (thdrun == 1))
 			{
-				usleep(100000);
+				//usleep(100000);
+				// We yeld to other threads until 1000ms are passed by
+				thdtimeradd = 0;
+				gettimeofday(&clkws, NULL);
+				while (thdtimeradd < 1000)
+				{
+					g_thread_yield();
+					gettimeofday(&clkwe, NULL);
+					// Get elapsed ms
+					thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
+				}
+				thdtimer += thdtimeradd;
 				g_rw_lock_reader_lock(&thd_caplock);
 				thdhold = hold;
 				thdmode = capture;
@@ -1249,7 +1311,8 @@ gpointer thd_temp_run(gpointer thd_data)
 {
 	double mV = 0;
 	double oldT;
-	int thdrun = 0, setwait = 0, suspect = 0, count = 0;
+	int thdrun = 0, setwait = 0, suspect = 0, count = 0, thdtimeradd = 0;
+	struct timeval clkws, clkwe;
 
 	g_rw_lock_reader_lock(&thd_teclock);
 	oldT = imgcam_get_tecp()->tectemp;
@@ -1265,7 +1328,17 @@ gpointer thd_temp_run(gpointer thd_data)
 		while ((thdrun == 1) && (count < 10))
 		{
 			count++;
-			usleep(500000);
+			//usleep(500000);
+			// We yeld to other threads until 500ms are passed by
+			thdtimeradd = 0;
+			gettimeofday(&clkws, NULL);
+			while (thdtimeradd < 500)
+			{
+				g_thread_yield();
+				gettimeofday(&clkwe, NULL);
+				// Get elapsed ms
+				thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
+			}
 			g_rw_lock_reader_lock(&thd_teclock);
 			thdrun = tecrun;
 			g_rw_lock_reader_unlock(&thd_teclock);

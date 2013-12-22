@@ -949,7 +949,7 @@ gboolean fwhmroi_scroll (GtkWidget *widget, GdkEventScroll *event, gpointer data
 		if (((event->x > roix) && (event->x < (roix + roisize))) && ((event->y > roiy) && (event->y < (roiy + roisize))))
 		{
 			// It's in the ROI
-			#if (GTK_MAJOR_VERSION == 3) && ((GTK_MINOR_VERSION * 10 + GTK_MICRO_VERSION) >= 40)
+			#if GTK_CHECK_VERSION(3,4,2)
 				GdkScrollDirection direction;
 				if (event->delta_y != 0) 
 				{

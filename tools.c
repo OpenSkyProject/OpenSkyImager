@@ -33,10 +33,11 @@ int get_cpu_cores(void)
 	FILE *cmdline = fopen("/proc/cpuinfo", "rb");
 	char *arg = 0;
 	size_t size = 0;
-	int curid = -1, newid = 0, val = 0, retval = 0;
+	int curid = -1, newid = 0, val = 0, cpu = 0, retval = 0;
 	
 	while(getdelim(&arg, &size, '\n', cmdline) != -1)
 	{
+		retval = 1;
 		if (strstr(arg, "physical id") != NULL)
 		{
 			sscanf(arg, "physical id	:%d", &newid);
@@ -47,13 +48,13 @@ int get_cpu_cores(void)
 			{
 				curid = newid;
 				sscanf(arg, "cpu cores	:%d", &val);
-				retval += val;
+				cpu += val;
 			}
 		}
 	}
 	free(arg);
 	fclose(cmdline);
-	return retval;
+	return (retval == 1) ? ((cpu > 0) ? cpu : 1) : 0;
 }
 //
 
