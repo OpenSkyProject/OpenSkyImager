@@ -870,8 +870,10 @@ gpointer thd_capture_run(gpointer thd_data)
 				last = time(NULL);
 			}
 		}
-		g_rw_lock_reader_lock(&thd_caplock);
+		g_rw_lock_writer_lock(&thd_caplock);
 		thdshoot = imgcam_shoot();
+		readout = thdshoot;
+		thdrun = run;
 		thdexp = imgcam_get_shpar()->wtime;
 		//if (thdexp < 1000)
 		//{
@@ -884,14 +886,10 @@ gpointer thd_capture_run(gpointer thd_data)
 		//{
 		//	fps = 0.;
 		//}
-		g_rw_lock_reader_unlock(&thd_caplock);
+		g_rw_lock_writer_unlock(&thd_caplock);
 		if (thdshoot)
 		{
 			// Ok, exposuring
-			g_rw_lock_writer_lock(&thd_caplock);
-			readout = 1;
-			thdrun = run;
-			g_rw_lock_writer_unlock(&thd_caplock);	
 			// Active wait for exp time to elapse, unless user abort	
 			if (thdexp > 1000)
 			{
@@ -945,12 +943,12 @@ gpointer thd_capture_run(gpointer thd_data)
 			if (thdrun)
 			{
 				// Prevent tec readig during frame transfer
-				g_rw_lock_writer_lock(&thd_teclock);
+				g_rw_lock_reader_lock(&thd_teclock);
 				// Unless aborted during exposure time
 				if (imgcam_readout())
 				{
 					// Free tec reading
-					g_rw_lock_writer_unlock(&thd_teclock);
+					g_rw_lock_reader_unlock(&thd_teclock);
 					//printf("Readout ok\n");
 					g_rw_lock_writer_lock(&thd_caplock);
 					readout = 0;
@@ -1091,7 +1089,7 @@ gpointer thd_capture_run(gpointer thd_data)
 				if (thdexp < 500)
 				{
 					// If tec is in auto mode we must leave some room for the 
-					// poor camera cpu to process tec read 0.05s
+					// poor camera cpu to process tec read 
 					thdtimeradd = 0;
 					gettimeofday(&clkws, NULL);
 					while (thdtimeradd < 400)
