@@ -1099,7 +1099,7 @@ void cmb_debayer_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
 {
 	//printf("%s\n", gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
-	float tmp;
+	float tmp = 0;
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%f", &tmp);
@@ -1360,7 +1360,7 @@ gboolean hsc_offset_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 
 void cmb_bin_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1379,7 +1379,7 @@ void cmb_bin_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_csize_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int w, h;
+	int w = 0, h = 0;
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1404,9 +1404,10 @@ void cmb_csize_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
@@ -1428,9 +1429,10 @@ void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_mode_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
@@ -1460,9 +1462,10 @@ void cmb_mode_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_amp_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
@@ -1484,9 +1487,10 @@ void cmb_amp_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_denoise_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
@@ -1508,9 +1512,10 @@ void cmb_denoise_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_depth_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
@@ -1929,9 +1934,10 @@ void cmb_flt_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_fmt_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
 		sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%d-%[^\n]", &tmp, str);
@@ -2110,9 +2116,10 @@ gboolean vsc_tecpwr_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 
 void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 {
+	int tmp = 0;
 	char str[32];
-	int  tmp = 0;
 	
+	str[0] = '\0';
 	sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%d-%[^\n]", &tmp, str);
 	if (imgcfw_set_mode(tmp) == 1)
 	{

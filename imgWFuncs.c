@@ -615,7 +615,7 @@ void combo_setlist(GtkWidget *cmb, char *str)
 	{
 		char *pch;
 		char *saveptr;
-		int val4;
+		int val4 = 0;
 		if (strchr(str, ':') != NULL)
 		{
 			//Format val1|val2|...:active
@@ -642,7 +642,7 @@ void combo_setlist(GtkWidget *cmb, char *str)
 	}
 	else if (strchr(str, ':') != NULL)
 	{
-		int val1, val2, val3 ,val4, i;
+		int val1 = 0, val2 = 0, val3 = 0,val4 = 0, i;
 		//Format start:end:step:active
 		sscanf(str, "%d:%d:%d:%d", &val1, &val2, &val3, &val4);
 		for (i = val1; i <= val2; i+=val3) 
