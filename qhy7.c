@@ -464,15 +464,3 @@ void qhy7_decode(unsigned char *databuffer)
 	return;
 }
 
-int  qhy7_bonjour(qhy_exposure *expar)
-{
-	int retval = 0;
-	
-	if ((retval = qhy7_setregisters(expar)) == 1)
-	{
-		// This is to avoid race on interrupt request
-		usleep(5000);
-		retval = qhy_ccdAbortCapture();
-	}
-	return (retval);
-}

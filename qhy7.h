@@ -28,5 +28,4 @@ int  qhy7_iscamera();
 int  qhy7_reset();
 int  qhy7_setregisters(qhy_exposure *expar);
 void qhy7_decode(unsigned char *databuffer);
-int  qhy7_bonjour();
 

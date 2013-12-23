@@ -510,10 +510,14 @@ int imgcam_shoot()
 			if ((retval = ((shpar.edit) ? qhy7_setregisters(&shpar) : 1)) == 1)
 			{
 				// Shutter trick goes here
-				if ((retval = qhy7_bonjour(&shpar)) == 1)
+				if ((retval = qhy_ccdStartExposure(shpar.time)) == 1)
 				{
-					retval = qhy_ccdStartExposure(shpar.time);
-				}
+					usleep(5000);
+					if ((retval = qhy_ccdAbortCapture() == 1))
+					{
+						retval = qhy_ccdStartExposure(shpar.time);
+					}	
+				}	
 			}
 			break;
 		case 80:
