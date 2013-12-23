@@ -304,9 +304,9 @@ gboolean tmr_tecpwr (GtkWidget *widget)
 	/// Statusbar feedback message about tec power
 	sprintf(imgmsg, C_("main","Tec power set to: %d%%"), (int)gtk_range_get_value(GTK_RANGE(vsc_tecpwr)));
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
-	g_rw_lock_reader_lock(&thd_teclock);
+	g_rw_lock_writer_lock(&thd_teclock);
 	imgcam_settec(imgcam_get_tecp()->tecpwr);
-	g_rw_lock_reader_unlock(&thd_teclock);
+	g_rw_lock_writer_unlock(&thd_teclock);
 	tmrtecpwr = -1;
 	
 	// Change to TRUE for a recurring timer
@@ -315,11 +315,157 @@ gboolean tmr_tecpwr (GtkWidget *widget)
 
 gboolean tmr_tecstatus_write (GtkWidget *widget)
 {
+	static double oldT;
+	double mV = 0;
+	int setwait = 0, suspect = 0;
 	int pct = 0;
 	
-	g_rw_lock_reader_lock(&thd_teclock);
 	if (imgcam_get_tecp()->istec == 1)
 	{	
+		// This is to prevent interrupt read during image readout
+		// The capture thread will lock for write
+		g_rw_lock_reader_lock(&thd_teclock);
+	
+		//Set the loop reference
+		oldT = imgcam_get_tecp()->tectemp;
+
+		if (imgcam_gettec(&imgcam_get_tecp()->tectemp, &mV))
+		{
+			g_rw_lock_reader_unlock(&thd_teclock);
+			//printf("Temp: %f\n", imgcam_get_tecp()->tectemp);
+			if (imgcam_get_tecp()->tecauto)
+			{
+				if (setwait == 0)
+				{
+					if (fabs(oldT - imgcam_get_tecp()->tectemp) == 0 && suspect < 3)
+					{
+						//This is suspect... noop
+						suspect++;
+					}
+					else if (fabs(imgcam_get_tecp()->tectemp - imgcam_get_tecp()->settemp) < 2.)
+					{
+						suspect = 0;
+						// Temp is almost stabilized near to target, we do tiny corrections
+						if ((oldT - imgcam_get_tecp()->tectemp) < 0.03 && imgcam_get_tecp()->tectemp > imgcam_get_tecp()->settemp)
+						{
+							// If temp is not moving or not the right direction
+							if (imgcam_get_tecp()->tectemp > (imgcam_get_tecp()->settemp + 0.7) ) 
+							{
+								imgcam_get_tecp()->tecpwr += 2;
+								imgcam_get_tecp()->tecpwr = MIN(imgcam_get_tecp()->tecpwr, imgcam_get_tecp()->tecmax);
+								if (imgcam_get_tecp()->tectemp > oldT)
+								{
+									//Still going wrong direction
+									setwait = 3;
+								}
+								else
+								{
+									setwait = 6;
+								}
+							}
+							else if (imgcam_get_tecp()->tectemp > (imgcam_get_tecp()->settemp + 0.2)) 
+							{
+								imgcam_get_tecp()->tecpwr += 1;
+								imgcam_get_tecp()->tecpwr = MIN(imgcam_get_tecp()->tecpwr, imgcam_get_tecp()->tecmax);
+								if (imgcam_get_tecp()->tectemp > oldT)
+								{
+									//Still going wrong direction
+									setwait = 1;
+								}
+								else
+								{
+									setwait = 3;
+								}
+							}
+						}
+						else if ((imgcam_get_tecp()->tectemp - oldT) < 0.03 && imgcam_get_tecp()->tectemp < imgcam_get_tecp()->settemp)
+						{
+							// If temp is not moving or not the right direction
+							if (imgcam_get_tecp()->tectemp < (imgcam_get_tecp()->settemp - 0.7) ) 
+							{
+								imgcam_get_tecp()->tecpwr -= 2;
+								imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
+								if (imgcam_get_tecp()->tectemp < oldT)
+								{
+									//Still going wrong direction
+									setwait = 3;
+								}
+								else
+								{
+									setwait = 6;
+								}
+							}
+							else if (imgcam_get_tecp()->tectemp < (imgcam_get_tecp()->settemp - 0.2)) 
+							{
+								imgcam_get_tecp()->tecpwr -= 1;
+								imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
+								if (imgcam_get_tecp()->tectemp < oldT)
+								{
+									//Still going wrong direction
+									setwait = 1;
+								}
+								else
+								{
+									setwait = 3;
+								}
+							}
+						}
+					}
+					else if (imgcam_get_tecp()->settemp < imgcam_get_tecp()->tectemp) 
+					{
+						suspect = 0;
+						if ((oldT - imgcam_get_tecp()->tectemp) < 0.06)
+						{
+							//setTemp is still far. We gently pull tec up or down
+							imgcam_get_tecp()->tecpwr += 6;
+							imgcam_get_tecp()->tecpwr = MIN(imgcam_get_tecp()->tecpwr, imgcam_get_tecp()->tecmax);
+							if (imgcam_get_tecp()->tectemp > oldT)
+							{
+								//Still going wrong direction
+								setwait = 1;
+							}
+							else
+							{
+								setwait = 3;
+							}
+						}
+					}
+					else if (imgcam_get_tecp()->settemp > imgcam_get_tecp()->tectemp) 
+					{
+						suspect = 0;
+						if ((imgcam_get_tecp()->tectemp - oldT) < 0.06)
+						{
+							imgcam_get_tecp()->tecpwr -= 6;
+							imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
+							if (imgcam_get_tecp()->tectemp < oldT)
+							{
+								//Still going wrong direction
+								setwait = 1;
+							}
+							else
+							{
+								setwait = 3;
+							}
+						}
+					}
+					if (setwait)
+					{
+						g_rw_lock_writer_lock(&thd_teclock);
+						imgcam_settec(imgcam_get_tecp()->tecpwr);
+						g_rw_lock_writer_unlock(&thd_teclock);
+					}
+				}
+				else
+				{
+					setwait--;
+				}
+			}
+		}
+		else
+		{
+			g_rw_lock_reader_unlock(&thd_teclock);
+		}
+
 		if (imgcam_get_tecp()->tecerr == 0)
 		{
 			pct = (int)(((double)imgcam_get_tecp()->tecpwr / (double)imgcam_get_tecp()->tecmax) * 100.);
@@ -347,6 +493,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 			imgcam_get_tecp()->tecerr = 0;
 			sprintf(imgmsg, C_("main","Error communicating with tec"));
 		}
+		return TRUE;
 	}
 	else if (imgcam_get_tecp()->istec == 2)
 	{
@@ -360,11 +507,8 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 		// Slider update
 		gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
 	}
-	g_rw_lock_reader_unlock(&thd_teclock);
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatec), 0, imgmsg);
-	tmrtecrefresh = -1;
 	
-	// Change to TRUE for a recurring timer
 	return FALSE;
 }
 
@@ -1967,47 +2111,40 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 			{
 				if (status == 1)
 				{
-					if (tecrun == 0)
+					if (tmrtecrefresh == -1)
 					{
-						if (thd_tec != NULL)
-						{
-							g_thread_unref(thd_tec);
-							thd_tec = NULL;
-						}
-						GError* thd_err = NULL;
-						thd_tec = g_thread_try_new("Tec", thd_temp_run, NULL, &thd_err);
-						tecrun = 1;
-						if (thd_tec == NULL)
-						{
-							// Ui Message
-							sprintf(imgmsg, C_("main","Tec controlling thread failed to start (%s)"), thd_err->message);
-							g_error_free(thd_err);
-							thd_err = NULL;
-							gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
-							// Disengage
-							tecrun = 0;
-							error = 1;
-							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
-						}
-						else
-						{
-							tec_init_graph();
-							gtk_widget_set_sensitive(vsc_tecpwr, 1);
-							gtk_widget_set_sensitive(cmd_tecauto, 1);
-							gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
-						}
+						// If there's no one running, run it
+						tmrtecrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tecstatus_write, NULL);	
+					}
+					if (tmrtecrefresh != -1)
+					{
+						// If it's running
+						tecrun = 1;	
+						tec_init_graph();
+						gtk_widget_set_sensitive(vsc_tecpwr, 1);
+						gtk_widget_set_sensitive(cmd_tecauto, 1);
+						gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
+					}
+					else
+					{
+						// Ui Message
+						sprintf(imgmsg, C_("main","Tec controlling thread failed to start (%s)"), "");
+						gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+						// Disengage
+						tecrun = 0;
+						error = 1;
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
 					}
 				}
 				else
 				{
-					if (tecrun == 1)
+					if (tmrtecrefresh != -1)
 					{
 						// Stop tec
-						g_rw_lock_writer_lock(&thd_teclock);
-						tecrun = 0;
-						g_rw_lock_writer_unlock(&thd_teclock);
-						// Wait for thread to end worst case (must improve this)
-						usleep(500000);
+						g_source_remove(tmrtecrefresh);
+						tmrtecrefresh = -1;
+						tecrun = 0;	
+						// Ui update
 						tec_init_graph();
 						gtk_widget_set_sensitive(vsc_tecpwr, 0);
 						gtk_widget_set_sensitive(cmd_tecauto, 0);

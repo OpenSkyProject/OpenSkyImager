@@ -42,5 +42,4 @@ gpointer thd_capture_run(gpointer thd_data);
 gpointer thd_pixbuf_run(gpointer thd_data);
 gpointer thd_fitsav_run(gpointer thd_data);
 gpointer thd_avisav_run(gpointer thd_data);
-gpointer thd_temp_run(gpointer thd_data);
 

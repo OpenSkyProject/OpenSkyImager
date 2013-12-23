@@ -810,7 +810,6 @@ gpointer thd_capture_run(gpointer thd_data)
 		// Wait for the start time to arrive
 		while (difftime(mktime(&tlstart), ref) > 0)
 		{
-			//usleep(500000);
 			// We yeld to other threads until 500ms are passed by
 			thdtimeradd = 0;
 			gettimeofday(&clkws, NULL);
@@ -901,8 +900,6 @@ gpointer thd_capture_run(gpointer thd_data)
 				tmrexpprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_exp_progress_refresh, NULL);
 				while (thdtimer < (thdexp))
 				{
-					//usleep(500000);
-					//thdtimer += 500;
 					// We yeld to other threads until 500ms are passed by
 					thdtimeradd = 0;
 					gettimeofday(&clkws, NULL);
@@ -942,7 +939,6 @@ gpointer thd_capture_run(gpointer thd_data)
 			}
 			else
 			{
-				//usleep(thdexp * 1000);
 				expfract = -1.0;
 			}
 			tmrexpprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_exp_progress_refresh, NULL);
@@ -1020,65 +1016,42 @@ gpointer thd_capture_run(gpointer thd_data)
 
 					//printf("run: %d, runerr: %d, expnum: %d, shots: %d\n", run, runerr, expnum, shots);
 
-					//if (cpucores > 1)
-					//{
-						// Threaded
-						if ((thdmode == 1) && (runerr == 0))
-						{
-							// Save mode
-							if ((savefmt == 1) || (savefmt == 3))
-							{
-								// Fit
-								if (thd_fitsav != NULL)
-								{
-									g_thread_join(thd_fitsav);							
-									thd_fitsav = NULL;
-								}
-								// Starts background save of fit file
-								thd_fitsav = g_thread_new("Fitsave", thd_fitsav_run, NULL);
-							}
-							if ((savefmt == 2) || (savefmt == 3))
-							{
-								// Avi
-								if (thd_avisav != NULL)
-								{
-									g_thread_join(thd_avisav);
-									thd_avisav = NULL;
-								}
-								// Starts background save of avi frame
-								thd_avisav = g_thread_new("Avisave", thd_avisav_run, NULL);
-							}
-						}
-
-						if (thd_pixbuf != NULL)
-						{
-							// Checks and wait if the pixbuf from previous frame is completed
-							g_thread_join(thd_pixbuf);
-							thd_pixbuf = NULL;
-						}
-						// Starts backgroung elaboration of pixbuf
-						thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, NULL);
-					/*}
-					else
+					// Threaded
+					if ((thdmode == 1) && (runerr == 0))
 					{
-						// Serialized
-						if ((thdmode == 1) && (runerr == 0))
+						// Save mode
+						if ((savefmt == 1) || (savefmt == 3))
 						{
-							// Save mode
-							if ((savefmt == 1) || (savefmt == 3))
+							// Fit
+							if (thd_fitsav != NULL)
 							{
-								// Fit
-								thd_fitsav_run(NULL);
+								g_thread_join(thd_fitsav);							
+								thd_fitsav = NULL;
 							}
-							if ((savefmt == 2) || (savefmt == 3))
-							{
-								// Avi
-								thd_avisav_run(NULL);
-							}
+							// Starts background save of fit file
+							thd_fitsav = g_thread_new("Fitsave", thd_fitsav_run, NULL);
 						}
-						// Pixbuffer for preview
-						thd_pixbuf_run(NULL);
-					}*/
+						if ((savefmt == 2) || (savefmt == 3))
+						{
+							// Avi
+							if (thd_avisav != NULL)
+							{
+								g_thread_join(thd_avisav);
+								thd_avisav = NULL;
+							}
+							// Starts background save of avi frame
+							thd_avisav = g_thread_new("Avisave", thd_avisav_run, NULL);
+						}
+					}
+
+					if (thd_pixbuf != NULL)
+					{
+						// Checks and wait if the pixbuf from previous frame is completed
+						g_thread_join(thd_pixbuf);
+						thd_pixbuf = NULL;
+					}
+					// Starts backgroung elaboration of pixbuf
+					thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, NULL);
 					
 					//UI update
 					if (tmrcapprgrefresh != -1)
@@ -1119,7 +1092,6 @@ gpointer thd_capture_run(gpointer thd_data)
 				{
 					// If tec is in auto mode we must leave some room for the 
 					// poor camera cpu to process tec read 0.05s
-					//usleep(400000);
 					thdtimeradd = 0;
 					gettimeofday(&clkws, NULL);
 					while (thdtimeradd < 400)
@@ -1138,8 +1110,6 @@ gpointer thd_capture_run(gpointer thd_data)
 				thdtimer = 0;
 				while (thdtimer < (tlperiod * 1000))
 				{
-					//usleep(500000);
-					//thdtimer += 500;
 					// We yeld to other threads until 500ms are passed by
 					thdtimeradd = 0;
 					gettimeofday(&clkws, NULL);
@@ -1166,7 +1136,6 @@ gpointer thd_capture_run(gpointer thd_data)
 			// If we are in pause mode
 			while ((thdhold == 1) && (thdrun == 1))
 			{
-				//usleep(100000);
 				// We yeld to other threads until 1000ms are passed by
 				thdtimeradd = 0;
 				gettimeofday(&clkws, NULL);
@@ -1307,192 +1276,4 @@ gpointer thd_avisav_run(gpointer thd_data)
 	return 0;
 }
 
-gpointer thd_temp_run(gpointer thd_data)
-{
-	double mV = 0;
-	double oldT;
-	int thdrun = 0, setwait = 0, suspect = 0, count = 0, thdtimeradd = 0;
-	struct timeval clkws, clkwe;
-
-	g_rw_lock_reader_lock(&thd_teclock);
-	oldT = imgcam_get_tecp()->tectemp;
-	thdrun = tecrun;
-	g_rw_lock_reader_unlock(&thd_teclock);
-	// This tread locks the mutex unless it's in the 5s pause (timer)
-	// Therefore other threads have this time window to change the thread behavior using the public variables
-	while (thdrun == 1)
-	{
-		// This will wait 10 * half a second.
-		// checking for user interrupt.
-		count = 0;
-		while ((thdrun == 1) && (count < 10))
-		{
-			count++;
-			//usleep(500000);
-			// We yeld to other threads until 500ms are passed by
-			thdtimeradd = 0;
-			gettimeofday(&clkws, NULL);
-			while (thdtimeradd < 500)
-			{
-				g_thread_yield();
-				gettimeofday(&clkwe, NULL);
-				// Get elapsed ms
-				thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
-			}
-			g_rw_lock_reader_lock(&thd_teclock);
-			thdrun = tecrun;
-			g_rw_lock_reader_unlock(&thd_teclock);
-		}
-		if (thdrun == 1)
-		{
-			// Not user interrupted
-			g_rw_lock_writer_lock(&thd_teclock);
-			if (imgcam_gettec(&imgcam_get_tecp()->tectemp, &mV))
-			{
-				g_rw_lock_writer_unlock(&thd_teclock);
-				//printf("Temp: %f\n", imgcam_get_tecp()->tectemp);
-				if (imgcam_get_tecp()->tecauto)
-				{
-					if (setwait == 0)
-					{
-						if (fabs(oldT - imgcam_get_tecp()->tectemp) == 0 && suspect < 3)
-						{
-							//This is suspect... noop
-							suspect++;
-						}
-						else if (fabs(imgcam_get_tecp()->tectemp - imgcam_get_tecp()->settemp) < 2.)
-						{
-							suspect = 0;
-							// Temp is almost stabilized near to target, we do tiny corrections
-							if ((oldT - imgcam_get_tecp()->tectemp) < 0.03 && imgcam_get_tecp()->tectemp > imgcam_get_tecp()->settemp)
-							{
-								// If temp is not moving or not the right direction
-								if (imgcam_get_tecp()->tectemp > (imgcam_get_tecp()->settemp + 0.7) ) 
-								{
-									imgcam_get_tecp()->tecpwr += 2;
-									imgcam_get_tecp()->tecpwr = MIN(imgcam_get_tecp()->tecpwr, imgcam_get_tecp()->tecmax);
-									if (imgcam_get_tecp()->tectemp > oldT)
-									{
-										//Still going wrong direction
-										setwait = 3;
-									}
-									else
-									{
-										setwait = 6;
-									}
-								}
-								else if (imgcam_get_tecp()->tectemp > (imgcam_get_tecp()->settemp + 0.2)) 
-								{
-									imgcam_get_tecp()->tecpwr += 1;
-									imgcam_get_tecp()->tecpwr = MIN(imgcam_get_tecp()->tecpwr, imgcam_get_tecp()->tecmax);
-									if (imgcam_get_tecp()->tectemp > oldT)
-									{
-										//Still going wrong direction
-										setwait = 1;
-									}
-									else
-									{
-										setwait = 3;
-									}
-								}
-							}
-							else if ((imgcam_get_tecp()->tectemp - oldT) < 0.03 && imgcam_get_tecp()->tectemp < imgcam_get_tecp()->settemp)
-							{
-								// If temp is not moving or not the right direction
-								if (imgcam_get_tecp()->tectemp < (imgcam_get_tecp()->settemp - 0.7) ) 
-								{
-									imgcam_get_tecp()->tecpwr -= 2;
-									imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
-									if (imgcam_get_tecp()->tectemp < oldT)
-									{
-										//Still going wrong direction
-										setwait = 3;
-									}
-									else
-									{
-										setwait = 6;
-									}
-								}
-								else if (imgcam_get_tecp()->tectemp < (imgcam_get_tecp()->settemp - 0.2)) 
-								{
-									imgcam_get_tecp()->tecpwr -= 1;
-									imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
-									if (imgcam_get_tecp()->tectemp < oldT)
-									{
-										//Still going wrong direction
-										setwait = 1;
-									}
-									else
-									{
-										setwait = 3;
-									}
-								}
-							}
-						}
-						else if (imgcam_get_tecp()->settemp < imgcam_get_tecp()->tectemp) 
-						{
-							suspect = 0;
-							if ((oldT - imgcam_get_tecp()->tectemp) < 0.06)
-							{
-								//setTemp is still far. We gently pull tec up or down
-								imgcam_get_tecp()->tecpwr += 6;
-								imgcam_get_tecp()->tecpwr = MIN(imgcam_get_tecp()->tecpwr, imgcam_get_tecp()->tecmax);
-								if (imgcam_get_tecp()->tectemp > oldT)
-								{
-									//Still going wrong direction
-									setwait = 1;
-								}
-								else
-								{
-									setwait = 3;
-								}
-							}
-						}
-						else if (imgcam_get_tecp()->settemp > imgcam_get_tecp()->tectemp) 
-						{
-							suspect = 0;
-							if ((imgcam_get_tecp()->tectemp - oldT) < 0.06)
-							{
-								imgcam_get_tecp()->tecpwr -= 6;
-								imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
-								if (imgcam_get_tecp()->tectemp < oldT)
-								{
-									//Still going wrong direction
-									setwait = 1;
-								}
-								else
-								{
-									setwait = 3;
-								}
-							}
-						}
-						if (setwait)
-						{
-							g_rw_lock_writer_lock(&thd_teclock);
-							imgcam_settec(imgcam_get_tecp()->tecpwr);
-							g_rw_lock_writer_unlock(&thd_teclock);
-						}
-					}
-					else
-					{
-						setwait--;
-					}
-				}
-				//Set the loop reference
-				oldT = imgcam_get_tecp()->tectemp;
-			}
-			else
-			{
-				g_rw_lock_writer_unlock(&thd_teclock);
-			}
-		}
-		// UI update
-		if (tmrtecrefresh != -1)
-		{
-			g_source_remove(tmrtecrefresh);
-		}
-		tmrtecrefresh = g_timeout_add(1, (GSourceFunc) tmr_tecstatus_write, NULL);			
-	}
-	return 0;
-}
 

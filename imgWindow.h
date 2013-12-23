@@ -87,7 +87,6 @@
 	
 	//Threads
 	GThread *thd_capture = NULL;
-	GThread *thd_tec = NULL;
 	#if GLIB_MINOR_VERSION >= 32
 	GRWLock  thd_caplock;
 	GRWLock  thd_teclock;
@@ -185,7 +184,6 @@
 	
 	//Threads
 	extern GThread *thd_capture;
-	extern GThread *thd_tec;
 	#if GLIB_MINOR_VERSION >= 32
 	extern GRWLock  thd_caplock;
 	extern GRWLock  thd_teclock;
