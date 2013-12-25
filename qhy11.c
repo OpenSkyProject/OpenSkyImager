@@ -75,7 +75,7 @@ void qhy11_init()
 	imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
 	
 	strcpy(imgcam_get_camui()->binstr, "1|2|3|4:0");
-	strcpy(imgcam_get_camui()->roistr, " |512x512|256x256:0");
+	strcpy(imgcam_get_camui()->roistr, "4096x2720|512x512|256x256:0");
 	/// Combo box values list, keep N-<desc> format. Just translate <desc>
 	strcpy(imgcam_get_camui()->spdstr, C_("camio","0-Slow|1-Fast:0"));
 	strcpy(imgcam_get_camui()->ampstr, C_("camio","0-AmpOff|1-AmpOn|2-Auto:2"));
