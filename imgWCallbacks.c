@@ -657,6 +657,9 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 	{
 		if ((strlen(fitfolder) > 0) && (strlen(fitbase) > 0))
 		{
+            /* when in focus mode we need to set REG[15] to get more speed */
+			imgcam_get_expar()->edit = 1;
+
 			g_rw_lock_writer_lock(&thd_caplock);
 			capture = (capture == 0)? 1: 0;
 			g_rw_lock_writer_unlock(&thd_caplock);

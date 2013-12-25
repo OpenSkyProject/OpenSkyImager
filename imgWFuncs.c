@@ -1084,23 +1084,28 @@ gpointer thd_capture_run(gpointer thd_data)
 				thdrun = ((thdrun == 1) && (expnum > (shots - thdpreshots)));
 			}
 			g_rw_lock_reader_unlock(&thd_caplock);
-			if ((tecrun == 1) && (imgcam_get_tecp()->istec == 1))
-			{
-				if (thdexp < 500)
-				{
-					// If tec is in auto mode we must leave some room for the 
-					// poor camera cpu to process tec read 
-					thdtimeradd = 0;
-					gettimeofday(&clkws, NULL);
-					while (thdtimeradd < 400)
-					{
-						g_thread_yield();
-						gettimeofday(&clkwe, NULL);
-						// Get elapsed ms
-						thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
-					}
-				}
-			}
+
+            /* don't need to read temperature here when in focus mode */
+            if (capture - 0) {
+                if ((tecrun == 1) && (imgcam_get_tecp()->istec == 1))
+                {
+                    if (thdexp < 500)
+                    {
+                        // If tec is in auto mode we must leave some room for the 
+                        // poor camera cpu to process tec read 
+                        thdtimeradd = 0;
+                        gettimeofday(&clkws, NULL);
+                        while (thdtimeradd < 400)
+                        {
+                            g_thread_yield();
+                            gettimeofday(&clkwe, NULL);
+                            // Get elapsed ms
+                            thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
+                        }
+                    }
+                }
+            }
+
 			// If we are in tlmode, even bare tl mode
 			if ((thdtlmode > 0) && (thdrun == 1))
 			{
