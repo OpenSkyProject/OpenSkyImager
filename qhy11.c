@@ -34,6 +34,9 @@
 #include "imgCamio.h"
 #include "qhy11.h"
 
+/* when in focus mode we need to set REG[15] to get more speed */
+extern int capture;
+
 static unsigned char REG[64];
 static unsigned char REGBCK[64];
 
@@ -75,7 +78,7 @@ void qhy11_init()
 	imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
 	
 	strcpy(imgcam_get_camui()->binstr, "1|2|3|4:0");
-	strcpy(imgcam_get_camui()->roistr, " |512x512|256x256:0");
+	strcpy(imgcam_get_camui()->roistr, "4096x2720|512x512|256x256:0");
 	/// Combo box values list, keep N-<desc> format. Just translate <desc>
 	strcpy(imgcam_get_camui()->spdstr, C_("camio","0-Slow|1-Fast:0"));
 	strcpy(imgcam_get_camui()->ampstr, C_("camio","0-AmpOff|1-AmpOn|2-Auto:2"));
@@ -240,7 +243,7 @@ int  qhy11_setregisters(qhy_exposure *expar)
 	REG[13]=qhy_MSB(bot_skip);				// use for subframe    Skip lines on Buttom 16Bit
 	REG[14]=qhy_LSB(bot_skip);				// VerticalSize + SKIP_TOP +  SKIP_BOTTOM  should be the actual CCD Y size 
 	
-	REG[15]=0;						// LiveVideo no use for QHY8-9-11   16Bit set to 0
+	REG[15]=(capture == 0);						// LiveVideo no use for QHY8-9-11   16Bit set to 0
 	REG[16]=0;
 
 	REG[17]=qhy_MSB(PatchNumber);			// PatchNumber 16Bit

@@ -290,7 +290,7 @@ void lbl_fbkfwhm_build()
 	PangoFontDescription *fd; 
 	
 	fwhmfbk[0] = '\0';
-	lbl_fbkfwhm = gtk_label_new_with_align(fwhmfbk, 0.0, 0.5, 480, 60);
+	lbl_fbkfwhm = gtk_label_new_with_align(fwhmfbk, 0.0, 0.5, 530, 60);
 	fd = pango_font_description_from_string("Monospace 18"); 
 	#if GTK_MAJOR_VERSION == 3
 	gtk_widget_override_color(lbl_fbkfwhm , GTK_STATE_NORMAL, &clrFbk);

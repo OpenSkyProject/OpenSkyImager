@@ -567,9 +567,9 @@ int imgcam_readout()
 		// Allow for buffering time on buffered camera
 		usleep(((shpar.speed == 0) ?  qhy_core_getcampars()->buftimes : qhy_core_getcampars()->buftimef) / shpar.bin * 1000);	
 		// Check if camera is good and ready thereafter
-		if (qhy_getCameraStatus() == 0)  
+		while (qhy_getCameraStatus() == 0)  
 		{
-			usleep(1000000);  
+			usleep(1000);  
 		}
 	}
 	if ((allocsize != presize[curdataptr]) || (databuffer[curdataptr] == NULL))
