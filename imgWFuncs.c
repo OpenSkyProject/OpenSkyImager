@@ -811,15 +811,7 @@ gpointer thd_capture_run(gpointer thd_data)
 		while (difftime(mktime(&tlstart), ref) > 0)
 		{
 			// We yeld to other threads until 500ms are passed by
-			thdtimeradd = 0;
-			gettimeofday(&clkws, NULL);
-			while (thdtimeradd < 500)
-			{
-				g_thread_yield();
-				gettimeofday(&clkwe, NULL);
-				// Get elapsed ms
-				thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
-			}
+			g_usleep(500000);
 			// Check if we're still in run condition
 			g_rw_lock_reader_lock(&thd_caplock);
 			thdrun = run;
@@ -903,7 +895,8 @@ gpointer thd_capture_run(gpointer thd_data)
 					gettimeofday(&clkws, NULL);
 					while (thdtimeradd < 500)
 					{
-						g_thread_yield();
+						//g_thread_yield();
+						g_usleep(100000);
 						gettimeofday(&clkwe, NULL);
 						// Get elapsed ms
 						thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
@@ -914,6 +907,7 @@ gpointer thd_capture_run(gpointer thd_data)
 					// Hopefully counting time with better accuracy
 					gettimeofday(&clkws, NULL);
 					expfract = (double)thdtimer / (double)thdexp;
+					expfract = (expfract > 1) ? 1 : (expfract < 0) ? 0 : expfract;
 					tmrexpprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_exp_progress_refresh, NULL);
 					// Check if we're still in run condition
 					g_rw_lock_reader_lock(&thd_caplock);
@@ -934,6 +928,11 @@ gpointer thd_capture_run(gpointer thd_data)
 					thdtimer += thdtimeradd;
 				}
 				expfract = 1.0;
+			}
+			else if (thdexp > 100)
+			{
+				g_usleep((thdexp * 1000));
+				expfract = -1.0;
 			}
 			else
 			{
@@ -1084,28 +1083,15 @@ gpointer thd_capture_run(gpointer thd_data)
 				thdrun = ((thdrun == 1) && (expnum > (shots - thdpreshots)));
 			}
 			g_rw_lock_reader_unlock(&thd_caplock);
-
-            /* don't need to read temperature here when in focus mode */
-            if (capture - 0) {
-                if ((tecrun == 1) && (imgcam_get_tecp()->istec == 1))
-                {
-                    if (thdexp < 500)
-                    {
-                        // If tec is in auto mode we must leave some room for the 
-                        // poor camera cpu to process tec read 
-                        thdtimeradd = 0;
-                        gettimeofday(&clkws, NULL);
-                        while (thdtimeradd < 400)
-                        {
-                            g_thread_yield();
-                            gettimeofday(&clkwe, NULL);
-                            // Get elapsed ms
-                            thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
-                        }
-                    }
-                }
-            }
-
+			if ((tecrun == 1) && (imgcam_get_tecp()->istec == 1))
+			{
+				if (thdexp < 500)
+				{
+					// If tec is in auto mode we must leave some room for the 
+					// poor camera cpu to process tec read 
+					g_usleep(400000);
+				}
+			}
 			// If we are in tlmode, even bare tl mode
 			if ((thdtlmode > 0) && (thdrun == 1))
 			{
@@ -1114,16 +1100,8 @@ gpointer thd_capture_run(gpointer thd_data)
 				while (thdtimer < (tlperiod * 1000))
 				{
 					// We yeld to other threads until 500ms are passed by
-					thdtimeradd = 0;
-					gettimeofday(&clkws, NULL);
-					while (thdtimeradd < 500)
-					{
-						g_thread_yield();
-						gettimeofday(&clkwe, NULL);
-						// Get elapsed ms
-						thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
-					}
-					thdtimer += thdtimeradd;
+					g_usleep(500000);
+					thdtimer += 500;
 					// Check if we're still in run condition
 					g_rw_lock_reader_lock(&thd_caplock);
 					thdrun = run;
@@ -1140,16 +1118,7 @@ gpointer thd_capture_run(gpointer thd_data)
 			while ((thdhold == 1) && (thdrun == 1))
 			{
 				// We yeld to other threads until 1000ms are passed by
-				thdtimeradd = 0;
-				gettimeofday(&clkws, NULL);
-				while (thdtimeradd < 1000)
-				{
-					g_thread_yield();
-					gettimeofday(&clkwe, NULL);
-					// Get elapsed ms
-					thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
-				}
-				thdtimer += thdtimeradd;
+				g_usleep(1000000);
 				g_rw_lock_reader_lock(&thd_caplock);
 				thdhold = hold;
 				thdmode = capture;

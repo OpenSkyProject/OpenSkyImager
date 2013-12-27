@@ -136,7 +136,7 @@
 	char fwhmfbk[64];
 	int fwhmx = 0, fwhmy = 0, fwhmv = 0, fwhms = 64, fwhmp = 4096, pfwhm = 1, fwhmlblh = 0, fwhmlblw = 0;
 	double afwhm = 0.;
-	int tecrun = 0;
+	int tecrun = 0, tecprerun = 0;
 	struct tm tlstart, tlend;
 	
 	// Locale definitions
@@ -233,7 +233,7 @@
 	extern char fwhmfbk[64];
 	extern int fwhmx, fwhmy, fwhmv, fwhms, fwhmp, pfwhm, fwhmlblh, fwhmlblw;
 	extern double afwhm;
-	extern int tecrun;
+	extern int tecrun, tecprerun;
 	extern struct tm tlstart, tlend;
 	
 	// Locale definitions

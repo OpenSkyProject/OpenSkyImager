@@ -167,10 +167,10 @@ int  qhy6old_setregisters(qhy_exposure *expar)
 			break;
 		
 		case 2: 
-			H_SIZE =  796; 
+			H_SIZE =  800; 
 			V_SIZE =  298; 
 			RM |= 0x08; 
-			width  =  398; 
+			width  =  400; 
 			height =  298;
 			REG[6] = 2;
 			RM |= 0x48;

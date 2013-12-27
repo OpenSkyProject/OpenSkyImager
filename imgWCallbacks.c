@@ -511,8 +511,8 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 		tec_print_graph();
 		// Slider update
 		gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatec), 0, imgmsg);
 	}
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatec), 0, imgmsg);
 	
 	return FALSE;
 }
@@ -657,12 +657,16 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 	{
 		if ((strlen(fitfolder) > 0) && (strlen(fitbase) > 0))
 		{
-            /* when in focus mode we need to set REG[15] to get more speed */
-			imgcam_get_expar()->edit = 1;
-
 			g_rw_lock_writer_lock(&thd_caplock);
 			capture = (capture == 0)? 1: 0;
+
+			// when in focus mode we need to set REG[15] to get more speed
+			imgcam_get_expar()->preview = (capture == 0)? 1: 0;
+			imgcam_get_expar()->edit = 1;
+			// 
+
 			g_rw_lock_writer_unlock(&thd_caplock);
+
 			if (tlenable == 1)
 			{
 				// Start recurring timer to refresh the message
@@ -675,6 +679,12 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 			}
 			if (capture)
 			{
+				// when in capture mode we restore previous mode (for ccd only, regardless of speed)
+				if ((imgcam_get_tecp()->istec == 1) && (tecprerun == 1))
+				{
+					tecprerun = 0;
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+				}
 				gtk_button_set_label(GTK_BUTTON(cmd_capture), C_("main","Capture mode"));
 				gtk_widget_set_sensitive(box_filename, 0);
 				gtk_widget_set_sensitive(box_cfw, 0);
@@ -682,6 +692,12 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 			}
 			else
 			{
+				// when in focus mode and fast speed we need to stop temp read (for ccd only)
+				if ((imgcam_get_expar()->speed > 0) && (imgcam_get_tecp()->istec == 1) && (tecrun == 1))
+				{
+					tecprerun = 1;
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
+				}
 				gtk_widget_set_sensitive(box_filename, 1);
 				gtk_widget_set_sensitive(box_cfw, 1);
 				gtk_button_set_label(GTK_BUTTON(cmd_capture), C_("main","Focus mode"));
@@ -754,7 +770,8 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 		printf("amp     : %d\n", imgcam_get_shpar()->amp);
 		printf("bytepix : %d\n", imgcam_get_shpar()->bytepix);
 		printf("bitpix  : %d\n", imgcam_get_shpar()->bitpix);
-		printf("tsize   : %d\n", imgcam_get_shpar()->tsize);*/
+		printf("tsize   : %d\n", imgcam_get_shpar()->tsize);
+		printf("preview : %d\n", imgcam_get_shpar()->preview);*/
 		if (imgcam_connected())
 		{
 			g_rw_lock_reader_lock(&thd_caplock);
@@ -1541,13 +1558,14 @@ void cmb_csize_changed (GtkComboBox *widget, gpointer user_data)
 		{
 			imgcam_get_expar()->width  = w;
 			imgcam_get_expar()->height = h;
+			sprintf(imgmsg, C_("main","Capture size set to: %dx%d"), imgcam_get_expar()->width, imgcam_get_expar()->height);
 		}
 		else
 		{
 			imgcam_get_expar()->width  = 0;
 			imgcam_get_expar()->height = 0;
+			sprintf(imgmsg, C_("main","Capture size set to: Full frame"));
 		}
-		sprintf(imgmsg, C_("main","Capture size set to: %dx%d"), imgcam_get_expar()->width, imgcam_get_expar()->height);
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 		imgcam_get_expar()->edit = 1;
 	}
@@ -1571,6 +1589,18 @@ void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 		else
 		{
 			imgcam_get_expar()->speed = 0;
+		}
+		if ((capture == 0) && (imgcam_get_expar()->speed > 0) && (imgcam_get_tecp()->istec == 1) && (tecrun == 1))
+		{
+			// when in focus mode and fast speed we need to stop temp read (for ccd only)
+			tecprerun = 1;
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
+		}
+		else if ((imgcam_get_tecp()->istec == 1) && (tecprerun == 1))
+		{
+			// when in capture mode or slow speed we restore previous mode (for ccd only, regardless of speed)
+			tecprerun = 0;
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
 		}
 		sprintf(imgmsg, C_("main","Download speed set to: %s"), str);
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);

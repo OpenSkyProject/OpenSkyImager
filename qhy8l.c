@@ -75,7 +75,8 @@ void qhy8l_init()
 	imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
 	
 	strcpy(imgcam_get_camui()->binstr, "1x1|2x2|4x4:0");
-	strcpy(imgcam_get_camui()->roistr, " |512x510|256x254:0");
+	/// Capture size values list, just translate "Full" (frame)
+	strcpy(imgcam_get_camui()->roistr, C_("camio","Full|512x512|256x256:0"));
 	/// Combo box values list, keep N-<desc> format. Just translate <desc>
 	strcpy(imgcam_get_camui()->spdstr, C_("camio","0-Slow|1-Fast:0"));
 	strcpy(imgcam_get_camui()->ampstr, C_("camio","0-AmpOff|1-AmpOn|2-Auto:2"));
@@ -247,7 +248,7 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 	REG[13]=qhy_MSB(bot_skip);				// use for subframe    Skip lines on Buttom 16Bit
 	REG[14]=qhy_LSB(bot_skip);				// VerticalSize + SKIP_TOP +  SKIP_BOTTOM  should be the actual CCD Y size 
 	
-	REG[15]=0;						// LiveVideo no use for QHY8-9-11   16Bit set to 0
+	REG[15]=0;						// LiveVideo no use for QHY7-8-9   16Bit set to 0
 	REG[16]=0;
 
 	REG[17]=qhy_MSB(PatchNumber);			// PatchNumber 16Bit

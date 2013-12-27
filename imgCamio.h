@@ -37,6 +37,7 @@ typedef struct
 	int bitpix;   // Bits  x pixel 8, 12, 16
 	int totsize;  // Total size, qhyX_setregisters will compile;
 	int tsize;    // Transfer size as needed for the bulk read, qhyX_setregisters will compile;
+	int preview;  // 1 = Focus, 0 = capture;
 	int edit;
 } qhy_exposure;
 

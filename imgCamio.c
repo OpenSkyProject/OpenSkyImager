@@ -66,6 +66,7 @@ void imgcam_exparcpy(qhy_exposure *copy, qhy_exposure *source)
 	copy->bitpix  = source->bitpix;   // Bits  x pixel 8, 12, 16
 	copy->totsize = source->totsize;
 	copy->tsize   = source->tsize;    // Transfer size as needed for the bulk read, qhyX_setregisters will compile;
+	copy->preview = source->preview;  // 1 = Focus, 0 = capture;
 	copy->edit    = source->edit;
 }
 
@@ -569,7 +570,12 @@ int imgcam_readout()
 		// Check if camera is good and ready thereafter
 		while (qhy_getCameraStatus() == 0)  
 		{
-			usleep(1000);  
+			usleep(1000);
+			if (camid == 9)
+			{
+				// Qhy9 only allow one getCamerStatus call  
+				break;
+			}
 		}
 	}
 	if ((allocsize != presize[curdataptr]) || (databuffer[curdataptr] == NULL))
