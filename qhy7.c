@@ -278,8 +278,8 @@ int  qhy7_setregisters(qhy_exposure *expar)
 	
 	REG[46]=top_skip_null;			// TopSkipNull unit is line.
 	
-	REG[47]=top_skip_pix;			// TopSkipPix no use for QHY9-11 16Bit set to 0 
-	REG[48]=0;
+	REG[47]=qhy_MSB(top_skip_pix);	// TopSkipPix no use for QHY9-11 16Bit set to 0 
+	REG[48]=qhy_LSB(top_skip_pix);
 	
 	REG[51]=0;					// QHY9 0: programme control mechanical shutter automaticly   1: programme will not control shutter. 
 	REG[52]=0;					// DownloadCloseTEC no use for QHY9   set to 0

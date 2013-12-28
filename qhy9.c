@@ -80,8 +80,9 @@ void qhy9_init()
 	/// Combo box values list, keep N-<desc> format. Just translate <desc>
 	strcpy(imgcam_get_camui()->spdstr, C_("camio","0-Slow|1-Fast:0"));
 	strcpy(imgcam_get_camui()->ampstr, C_("camio","0-AmpOff|1-AmpOn|2-Auto:2"));
-	strcpy(imgcam_get_camui()->modstr, "");
-	strcpy(imgcam_get_camui()->moddsc, "");
+	strcpy(imgcam_get_camui()->modstr, C_("camio","0-Light|1-Dark:0"));
+	/// Descriptiopn for "mode" combo box
+	strcpy(imgcam_get_camui()->moddsc, C_("camio","Light/Dark mode"));
 	strcpy(imgcam_get_camui()->snrstr, "");
 	strcpy(imgcam_get_camui()->bppstr, "2-16Bit|:0");
 	strcpy(imgcam_get_camui()->byrstr, "0");
@@ -268,11 +269,11 @@ int  qhy9_setregisters(qhy_exposure *expar)
 	
 	REG[46]=top_skip_null;			// TopSkipNull unit is line.
 	
-	REG[47]=top_skip_pix;			// TopSkipPix no use for QHY9-11 16Bit set to 0 
-	REG[48]=0;
+	REG[47]=qhy_MSB(top_skip_pix);	// TopSkipPix no use for QHY9-11 16Bit set to 0 
+	REG[48]=qhy_LSB(top_skip_pix);
 	
 	//REG[51]=SHUTTER;				// QHY9 0: programme control mechanical shutter automaticly   1: programme will not control shutter. 
-	REG[51]=0;					// QHY9 0: programme control mechanical shutter automaticly   1: programme will not control shutter. 
+	REG[51]=(expar->mode > 0) ? 1 : 0;	// QHY9 0: programme control mechanical shutter automaticly   1: programme will not control shutter. 
 	REG[52]=0;					// DownloadCloseTEC no use for QHY9   set to 0
 	
 	REG[53]=0;					// Unknown: (reg.WindowHeater&~0xf0)*16+(reg.MotorHeating&~0xf0)
