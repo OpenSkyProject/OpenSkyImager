@@ -21,6 +21,7 @@
  */
 
 gboolean tmr_img_refresh (GtkWidget *widget);
+gboolean tmr_imgstatus_pixmsg (GtkWidget *widget);
 gboolean tmr_adu_check (GtkWidget *widget);
 gboolean tmr_frm_refresh (GtkWidget *widget);
 gboolean tmr_hst_refresh (GtkWidget *widget);
@@ -30,6 +31,8 @@ gboolean tmr_tecpwr (GtkWidget *widget);
 gboolean tmr_tecstatus_write (GtkWidget *widget);
 gboolean tmr_tlrefresh (GtkWidget *widget);
 void imgstatus_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpointer user_data);
+void imgstafit_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpointer user_data);
+void imgstatec_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpointer user_data);
 void cmd_settings_click(GtkWidget *widget, gpointer data);
 void cmd_about_click(GtkWidget *widget, gpointer data);
 gboolean spn_expnum_changed(GtkSpinButton *spinbutton, gpointer user_data);
@@ -45,6 +48,8 @@ gboolean hsc_maxadu_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 gboolean hsc_minadu_changed (GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
 gboolean frm_histogram_allocate(GtkWidget *widget, GdkRectangle *alloc, gpointer data);
 gboolean swindow_allocate(GtkWidget *widget, GdkRectangle *alloc, gpointer data);
+gboolean fwhmroi_scroll (GtkWidget *widget, GdkEventScroll *event, gpointer data);
+gboolean image_button_press (GtkWidget *widget, GdkEventButton *event, gpointer data);
 void mainw_destroy( GtkWidget *widget, gpointer   data );
 gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data);
 void cmb_debayer_changed (GtkComboBox *widget, gpointer user_data);
@@ -87,6 +92,7 @@ void cmd_dateadd_click(GtkWidget *widget, gpointer data);
 void cmd_timeadd_click(GtkWidget *widget, gpointer data);
 void cmd_fltadd_click(GtkWidget *widget, gpointer data);
 void cmb_flt_changed (GtkComboBox *widget, gpointer user_data);
+void cmb_fmt_changed (GtkComboBox *widget, gpointer user_data);
 void cmd_tecenable_click(GtkWidget *widget, gpointer data);
 void cmd_tecauto_click(GtkWidget *widget, gpointer data);
 gboolean spn_tectgt_changed(GtkSpinButton *spinbutton, gpointer user_data);

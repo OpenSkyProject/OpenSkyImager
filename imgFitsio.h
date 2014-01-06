@@ -21,6 +21,8 @@
  */
 
 // imgFitsio "class" methods
+char           *imgfit_get_name();
+void            imgfit_set_name(char *filename);
 int             imgfit_get_width();
 void            imgfit_set_width(int val);
 int             imgfit_get_height();

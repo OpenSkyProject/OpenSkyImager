@@ -25,18 +25,31 @@
 
 int main(int argc, char* argv[])
 {
+	// Read cpuinfo
+	cpucores = get_cpu_cores();
+	printf("Detected %d cpu cores\n", cpucores);
+	
+	// Set Locale
 	setlocale(LC_ALL,"en_US");
 	bindtextdomain(APPNAM,".");
 	textdomain(APPNAM);
+	
 	#if GLIB_MINOR_VERSION < 32
 	if(!g_thread_supported())
 	{
 	    g_thread_init( NULL );
 	}
 	#endif
-	gtk_init(&argc, &argv);
-	imgwin_build();
-	gtk_main();
 	
+	// Init gtk env
+	gtk_init(&argc, &argv);
+	
+	// Build window(s)
+	imgwin_build();
+	
+	// Main loop start
+	gtk_main();
+
+	// Return value	
 	return EXIT_SUCCESS;
 }

@@ -20,6 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+int get_cpu_cores(void);
 int isdir(char* path);
 int isfile(char* path);
 int isfifo(char* path);

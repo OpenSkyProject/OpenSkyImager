@@ -158,7 +158,7 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 		width   = expar->width;
 		height  = expar->height;
 		usbspd  = expar->mode;
-		exptime = expar->time;
+		exptime = (expar->time > 1000) ? expar->time / 1.3 : expar->time; // Temporary fix for clock inaccuracy
 		gain    = expar->gain;
 		bin     = expar->bin;
 		speed   = expar->speed;

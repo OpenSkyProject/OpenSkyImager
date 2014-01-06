@@ -1,11 +1,8 @@
 /*
- * qhy7.h
+ * imgAvi.c
  *
  *  Created on: 01.09.2013
  *      Author: Giampiero Spezzano (gspezzano@gmail.com)
- *
- * Device access code is based on original QHY code from https://github.com/qhyccd-lzr
- *
  *
  * This file is part of "OpenSkyImager".
  *
@@ -23,9 +20,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void qhy7_init();
-int  qhy7_iscamera();
-int  qhy7_reset();
-int  qhy7_setregisters(qhy_exposure *expar);
-void qhy7_decode(unsigned char *databuffer);
+unsigned int   imgavi_get_maxsize();
+char           *imgavi_get_name();
+void            imgavi_set_name(char *filename);
+char           *imgavi_get_msg();
+unsigned char *imgavi_get_data();
+void            imgavi_set_data(unsigned char *data);
+int             imgavi_get_width();
+void            imgavi_set_width(int val);
+int             imgavi_get_height();
+void            imgavi_set_height(int val);
+int             imgavi_get_bytepix();
+void            imgavi_set_bytepix(int val);
+int             imgavi_isopen();
+void            imgavi_init();
+int             imgavi_open();
+int             imgavi_add();
+int             imgavi_close();
 

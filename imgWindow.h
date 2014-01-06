@@ -27,6 +27,7 @@
 #include "gtkTools.h"
 #include "imgPixbuf.h"
 #include "imgFitsio.h"
+#include "imgAvi.h"
 #include "imgCamio.h"
 #include "imgCFWio.h"
 #include "gtkversions.h"
@@ -59,12 +60,12 @@
 	#endif
 
 	// Widgets
-	GtkWidget *window, *swindow, *fixed;
-	GtkWidget *image, *histogram;
+	GtkWidget *window, *swindow, *fixed, *imgevent;
+	GtkWidget *image, *histogram, *fwhmroi;
 	GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
 	GtkWidget *hsc_maxadu, *hsc_minadu;
 	GtkWidget *box_main, *pnd_main, *pnd_left, *box_top_left, *box_bot_left, *tab_right, *tab_settings;
-	GtkWidget *imgstatus;
+	GtkWidget *imgstatus, *imgstatec, *imgstafit;
 	GtkWidget *frm_histogram;
 	GtkWidget *spn_histogram;
 	GtkWidget *box_ccd, *box_cooling, *box_filename, *box_scripting, *box_timelapse, *box_header, *box_cfw, *box_calc;
@@ -72,21 +73,20 @@
 	GtkWidget *cmb_camera, *cmb_bin, *cmb_csize, *cmb_dspeed, *cmb_mode, *lbl_mode, *cmb_amp, *cmb_denoise, *cmb_depth, *cmb_debayer;
 	GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
 	GtkWidget *cmd_tecenable, *cmd_tecauto, *spn_tectgt, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
-	GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd;
+	GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd, *cmb_fmt;
 	GtkWidget *txt_fitfolder, *txt_fitbase;
 	GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	GtkWidget *cmd_tlenable;
 	GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
 	GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmd_cfwrst, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS], *cfwmsg;
 	GtkWidget *hsc_offset, *hsc_gain;
-	GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps;
+	GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps, *lbl_fbkfwhm;
 	GdkCursor* watchCursor;
 	GdkPixbuf *tecpixbuf = NULL;
 	GdkPixbuf *icopixbuf = NULL;
 	
 	//Threads
 	GThread *thd_capture = NULL;
-	GThread *thd_tec = NULL;
 	#if GLIB_MINOR_VERSION >= 32
 	GRWLock  thd_caplock;
 	GRWLock  thd_teclock;
@@ -99,6 +99,7 @@
 
 	// Flags
 	int fit = 0, hst = 0;
+	double imgratio = 1., icoratio = 1.;
 	int capture = 0;
 	int run = 0, hold = 0, readout = 0, runerr = 0;
 	int expnum = 0, shots = 0;
@@ -108,7 +109,11 @@
 	int scrmaxadu = 255;
 	int scrminadu = 0;
 	char *fltstr = " |L|R|G|B|Dk|Ff|Bs|IR|UV|CLS|Ha|S2|O3|Hb|CH4|KaK|Kont|:0";
+	char *fmtstr = "1-.fit|2-.avi|3-.fit + .avi|:0";
+	int  savefmt = 1;
 	guint tmrstatusbar = -1;
+	guint tmrstatusfit = -1;
+	guint tmrstatustec = -1;
 	guint tmrimgrefresh = -1;
 	guint tmraducheck = -1;
 	guint tmrfrmrefresh = -1;
@@ -119,7 +124,6 @@
 	guint tmrtecpwr = -1;
 	char fitfolder[1024];
 	char fitbase[1024];
-	char fitfile[2048];
 	char fitflt[16];
 	double fps = 0.;
 	int fitdateadd = 0, fittimeadd = 0, audelanaming = 0, irisnaming = 0, zerofc = 0, tlenable = 0, tlcalendar = 0;
@@ -129,11 +133,17 @@
 	char imgfbk[16];
 	char tecfbk[16];
 	char fpsfbk[16];
-	int tecrun = 0;
+	char fwhmfbk[64];
+	int fwhmx = 0, fwhmy = 0, fwhmv = 0, fwhms = 64, fwhmp = 4096, pfwhm = 1, fwhmlblh = 0, fwhmlblw = 0;
+	double afwhm = 0.;
+	int tecrun = 0, tecprerun = 0;
 	struct tm tlstart, tlend;
 	
 	// Locale definitions
 	struct lconv *sysloc;
+	
+	// Cpu
+	int cpucores = 1;
 #else
 	// Decorations
 	#if GTK_MAJOR_VERSION == 3
@@ -147,12 +157,12 @@
 	#endif
 
 	// Widgets
-	extern GtkWidget *window, *swindow, *fixed;
-	extern GtkWidget *image, *histogram;
+	extern GtkWidget *window, *swindow, *fixed, *imgevent;
+	extern GtkWidget *image, *histogram, *fwhmroi;
 	extern GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
 	extern GtkWidget *hsc_maxadu, *hsc_minadu;
 	extern GtkWidget *box_main, *pnd_main, *pnd_left, *box_top_left, *box_bot_left, *tab_right, *tab_settings;
-	extern GtkWidget *imgstatus;
+	extern GtkWidget *imgstatus, *imgstatec, *imgstafit;
 	extern GtkWidget *frm_histogram;
 	extern GtkWidget *spn_histogram;
 	extern GtkWidget *box_ccd, *box_cooling, *box_filename, *box_scripting, *box_timelapse, *box_header, *box_cfw, *box_calc;
@@ -161,20 +171,19 @@
 	extern GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
 	extern GtkWidget *cmd_tecenable, *cmd_tecauto, *spn_tectgt, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
 	extern GtkWidget *hsc_offset, *hsc_gain;
-	extern GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd;
+	extern GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd, *cmb_fmt;
 	extern GtkWidget *txt_fitfolder, *txt_fitbase;
 	extern GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	extern GtkWidget *cmd_tlenable;
 	extern GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
 	extern GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmd_cfwrst, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS], *cfwmsg;
-	extern GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps;
+	extern GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps, *lbl_fbkfwhm;
 	extern GdkCursor* watchCursor;
 	extern GdkPixbuf *tecpixbuf;
 	extern GdkPixbuf *icopixbuf;
 	
 	//Threads
 	extern GThread *thd_capture;
-	extern GThread *thd_tec;
 	#if GLIB_MINOR_VERSION >= 32
 	extern GRWLock  thd_caplock;
 	extern GRWLock  thd_teclock;
@@ -187,6 +196,7 @@
 
 	// Flags
 	extern int fit, hst;
+	extern double imgratio, icoratio;
 	extern int capture;
 	extern int run, hold, readout, runerr;
 	extern int expnum, shots;
@@ -196,7 +206,11 @@
 	extern int scrmaxadu;
 	extern int scrminadu;
 	extern char *fltstr;
+	extern char *fmtstr;
+	extern int  savefmt;
 	extern guint tmrstatusbar;
+	extern guint tmrstatusfit;
+	extern guint tmrstatustec;
 	extern guint tmrimgrefresh;
 	extern guint tmraducheck;
 	extern guint tmrfrmrefresh;
@@ -207,7 +221,6 @@
 	extern guint tmrtecpwr;
 	extern char fitfolder[1024];
 	extern char fitbase[1024];
-	extern char fitfile[2048];
 	extern char fitflt[16];
 	extern double fps;
 	extern int fitdateadd, fittimeadd, audelanaming, irisnaming, zerofc, tlenable, tlcalendar;
@@ -217,11 +230,17 @@
 	extern char imgfbk[16];
 	extern char tecfbk[16];
 	extern char fpsfbk[16];
-	extern int tecrun;
+	extern char fwhmfbk[64];
+	extern int fwhmx, fwhmy, fwhmv, fwhms, fwhmp, pfwhm, fwhmlblh, fwhmlblw;
+	extern double afwhm;
+	extern int tecrun, tecprerun;
 	extern struct tm tlstart, tlend;
 	
 	// Locale definitions
 	extern struct lconv *sysloc;
+
+	// Cpu
+	extern int cpucores;
 #endif
 	
 void imgwin_build();

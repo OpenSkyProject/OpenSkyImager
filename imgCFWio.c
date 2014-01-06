@@ -34,7 +34,7 @@
 #include <sys/stat.h>
 #include "imgCamio.h"
 #include "imgCFWio.h"
-#include "gtkversions.h"
+#include "glibversions.h"
 
 #define READ_TIME   5
 

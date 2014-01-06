@@ -66,6 +66,7 @@ void imgcam_exparcpy(qhy_exposure *copy, qhy_exposure *source)
 	copy->bitpix  = source->bitpix;   // Bits  x pixel 8, 12, 16
 	copy->totsize = source->totsize;
 	copy->tsize   = source->tsize;    // Transfer size as needed for the bulk read, qhyX_setregisters will compile;
+	copy->preview = source->preview;  // 1 = Focus, 0 = capture;
 	copy->edit    = source->edit;
 }
 
@@ -510,10 +511,14 @@ int imgcam_shoot()
 			if ((retval = ((shpar.edit) ? qhy7_setregisters(&shpar) : 1)) == 1)
 			{
 				// Shutter trick goes here
-				if ((retval = qhy7_bonjour(&shpar)) == 1)
+				if ((retval = qhy_ccdStartExposure(shpar.time)) == 1)
 				{
-					retval = qhy_ccdStartExposure(shpar.time);
-				}
+					usleep(5000);
+					if ((retval = qhy_ccdAbortCapture() == 1))
+					{
+						retval = qhy_ccdStartExposure(shpar.time);
+					}	
+				}	
 			}
 			break;
 		case 80:
@@ -532,7 +537,12 @@ int imgcam_shoot()
 		case 9:
 			if ((retval = ((shpar.edit) ? qhy9_setregisters(&shpar) : 1)) == 1)
 			{
-				retval = qhy_ccdStartExposure(shpar.time);
+				// In dark mode
+				// Close the shutter, otherwise noop
+				if ((retval = ((shpar.mode > 0) ? imgcam_shutter(1) : 1)) == 1)
+				{
+					retval = qhy_ccdStartExposure(shpar.time);
+				}
 			}
 			break;
 		case 11:
@@ -563,9 +573,14 @@ int imgcam_readout()
 		// Allow for buffering time on buffered camera
 		usleep(((shpar.speed == 0) ?  qhy_core_getcampars()->buftimes : qhy_core_getcampars()->buftimef) / shpar.bin * 1000);	
 		// Check if camera is good and ready thereafter
-		if (qhy_getCameraStatus() == 0)  
+		while (qhy_getCameraStatus() == 0)  
 		{
-			usleep(1000000);  
+			usleep(1000);
+			/*if (camid == 9)
+			{
+				// Qhy9 only allow one getCamerStatus call  
+				break;
+			}*/
 		}
 	}
 	if ((allocsize != presize[curdataptr]) || (databuffer[curdataptr] == NULL))
@@ -605,6 +620,12 @@ int imgcam_readout()
 				qhy8l_decode(databuffer[curdataptr]);	
 				break;
 			case 9:
+				if (shpar.mode > 0)
+				{
+					// In dark mode
+					// Release shutter go avoid excess strain
+					imgcam_shutter(2);
+				}
 				qhy9_decode(databuffer[curdataptr]);	
 				break;
 			case 11:
@@ -628,8 +649,8 @@ int imgcam_abort()
 	switch (camid)
 	{
 		case 5:
-			retval = qhy_cmosAbortCapture(shpar.tsize);
-			break;
+		//	retval = qhy_cmosAbortCapture(shpar.tsize);
+		//	break;
 		case 20:
 		case 60:
 		case 80:

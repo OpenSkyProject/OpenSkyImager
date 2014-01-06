@@ -75,7 +75,8 @@ void qhy8l_init()
 	imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
 	
 	strcpy(imgcam_get_camui()->binstr, "1x1|2x2|4x4:0");
-	strcpy(imgcam_get_camui()->roistr, " |512x510|256x254:0");
+	/// Capture size values list, just translate "Full" (frame)
+	strcpy(imgcam_get_camui()->roistr, C_("camio","Full|512x512|256x256:0"));
 	/// Combo box values list, keep N-<desc> format. Just translate <desc>
 	strcpy(imgcam_get_camui()->spdstr, C_("camio","0-Slow|1-Fast:0"));
 	strcpy(imgcam_get_camui()->ampstr, C_("camio","0-AmpOff|1-AmpOn|2-Auto:2"));
@@ -127,6 +128,7 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 {
 	int retval = 1;	
 	int time, Vbin, Hbin, ShortExp, antiamp, vbe, PatchNumber;
+	int P_Size, Total_P;
 	int top_skip = 0, bot_skip = 0;	
 	int top_skip_pix = 0, top_skip_null = 100;
 	unsigned char time_H,time_M,time_L;
@@ -171,13 +173,13 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 	switch ( bin ) 
 	{
 		case 1: 
-			i_width = 3328; height = 2030; width = i_width; Vbin = bin; Hbin = bin; top_skip_pix = 1200; //P_Size=26624;
+			i_width = 3328; height = 2030; width = i_width; Vbin = bin; Hbin = bin; top_skip_pix = 1200; P_Size=26624;
 			break;
 		case 2: 
-			i_width = 1664; height = 1664; width = i_width; Vbin = bin; Hbin = bin; top_skip_pix = 1200;
+			i_width = 1664; height = 1015; width = i_width; Vbin = bin; Hbin = bin; top_skip_pix = 1120; P_Size=26624;
 			break;
 		case 4: 
-			i_width = 1664; height =  508; Vbin = bin; Hbin = 2; width = i_width / 2; top_skip_pix = 0;
+			i_width = 1664; height =  508; Vbin = 4; Hbin = 2; width = i_width / 2; top_skip_pix = 0; P_Size=1651*1024;
 			break;
 		default:
 			printf( "Error: Registers NOT set (bin)!\n");
@@ -209,16 +211,27 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 	}
 	//printf("x: %d, y %d, tops %d, bots %d fx %d\n", i_width, height, top_skip, bot_skip, width);
 
-	totalsize = i_width * 2 * height;
+	totalsize = (i_width * 2 * height) + (top_skip_pix * 2);
 	expar->totsize = totalsize;
 	
 	// Looks like the actual transfer size is a multiple of 1024 or 512 (Camera dependent. QHY7=1024, QHY9=512)
 	// Either is the nearest (round) or is the floor value (Again camera dependent QHY6=512 round)
-	transfer_size = 512 * lround(totalsize / 512);
+	//transfer_size = 512 * lround(totalsize / 512);
+	//expar->tsize = transfer_size;
+
+	//PatchNumber = qhy_getPatch(totalsize, 512, 0);
+	if (fmod(totalsize, P_Size) != 0.) 
+	{
+		Total_P = totalsize / P_Size + 1;
+		PatchNumber = Total_P * P_Size - totalsize;
+	}
+	else
+	{
+		PatchNumber = 0;
+	}
+	transfer_size = totalsize + PatchNumber;
 	expar->tsize = transfer_size;
 
-	PatchNumber = qhy_getPatch(totalsize, 512, 0);
-	
 	time_L=fmod(time,256);
 	time_M=(time-time_L)/256;
 	time_H=(time-time_L-time_M*256)/65536;
@@ -226,7 +239,7 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 
 	REG[0]=(int)((expar->gain * 63) / 100);  	//Camera gain   range 0-63  
 	
-	REG[1]=expar->offset;					//Offset : range 0-255 default is 120
+	REG[1]=expar->offset;			//Offset : range 0-255 default is 120
 	
 	REG[2]=time_H;  				//unit is ms       24bit
 	REG[3]=time_M;
@@ -235,56 +248,56 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 	REG[5]=Hbin;					// Horizonal BINNING    0 = 1= No bin
 	REG[6]=Vbin;					// Vertical Binning     0 = 1= No bin
 	
-	REG[7]=qhy_MSB(i_width);				// The readout X  Unit is pixel 16Bit
+	REG[7]=qhy_MSB(i_width);			// The readout X  Unit is pixel 16Bit
 	REG[8]=qhy_LSB(i_width);
 	
-	REG[9]= qhy_MSB(height);				// The readout Y  unit is line 16Bit
+	REG[9]= qhy_MSB(height);			// The readout Y  unit is line 16Bit
 	REG[10]=qhy_LSB(height);
 	
-	REG[11]=qhy_MSB(top_skip);				// use for subframe    Skip lines on top 16Bit
+	REG[11]=qhy_MSB(top_skip);		// use for subframe    Skip lines on top 16Bit
 	REG[12]=qhy_LSB(top_skip);
 	
-	REG[13]=qhy_MSB(bot_skip);				// use for subframe    Skip lines on Buttom 16Bit
-	REG[14]=qhy_LSB(bot_skip);				// VerticalSize + SKIP_TOP +  SKIP_BOTTOM  should be the actual CCD Y size 
+	REG[13]=qhy_MSB(bot_skip);		// use for subframe    Skip lines on Buttom 16Bit
+	REG[14]=qhy_LSB(bot_skip);		// VerticalSize + SKIP_TOP +  SKIP_BOTTOM  should be the actual CCD Y size 
 	
-	REG[15]=0;						// LiveVideo no use for QHY8-9-11   16Bit set to 0
+	REG[15]=0;					// LiveVideo no use for QHY7-8-9   16Bit set to 0
 	REG[16]=0;
 
-	REG[17]=qhy_MSB(PatchNumber);			// PatchNumber 16Bit
+	REG[17]=qhy_MSB(PatchNumber);		// PatchNumber 16Bit
 	REG[18]=qhy_LSB(PatchNumber);
 
-	REG[19]=1;						// AnitInterlace no use for QHY8-9-11  16Bit set to 0
-	REG[20]=0;
+	REG[19]=qhy_MSB(1);				// AnitInterlace no use for QHY8-9-11  16Bit set to 0
+	REG[20]=qhy_LSB(1);
 	
-	REG[22]=0;						// MultiFieldBIN no use for QHY9  set to 0
+	REG[22]=0;					// MultiFieldBIN no use for QHY9  set to 0
 	
-	REG[29]=0x0000;					// ClockADJ no use for QHY9-11  16Bit set to 0
+	REG[29]=0x0000;				// ClockADJ no use for QHY9-11  16Bit set to 0
 	REG[30]=0;
 	
 	REG[32]=antiamp;				// 1: anti-amp light mode 
 	
-	REG[33]=expar->speed;					// 0: low speed     1: high speed
+	REG[33]=expar->speed;			// 0: low speed     1: high speed
 	
-	REG[35]=0; 						// TgateMode if set to 1 , the camera will exposure forever, till the ForceStop command coming
+	REG[35]=0; 					// TgateMode if set to 1 , the camera will exposure forever, till the ForceStop command coming
 	REG[36]=ShortExp;				// ShortExposure no use for QHY9 set to 0
-	REG[37]=0;						// VSUB no use for QHY8-9-11   set to 0
-	REG[38]=0;						// Unknown reg.CLAMP
+	REG[37]=0;					// VSUB no use for QHY8-9-11   set to 0
+	REG[38]=0;					// Unknown reg.CLAMP
 	
-	REG[42]=0;						// TransferBIT no use for QHY8-9-11 set to 0
+	REG[42]=0;					// TransferBIT no use for QHY8-9-11 set to 0
 	
 	REG[46]=top_skip_null;			// TopSkipNull unit is line.
 	
-	REG[47]=top_skip_pix;			// TopSkipPix no use for QHY9-11 16Bit set to 0 
-	REG[48]=0;
+	REG[47]=qhy_MSB(top_skip_pix);	// TopSkipPix no use for QHY9-11 16Bit set to 0 
+	REG[48]=qhy_LSB(top_skip_pix);
 	
-	REG[51]=0;						// QHY9 0: programme control mechanical shutter automaticly   1: programme will not control shutter. 
-	REG[52]=0;						// DownloadCloseTEC no use for QHY9   set to 0
+	REG[51]=0;					// QHY9 0: programme control mechanical shutter automaticly   1: programme will not control shutter. 
+	REG[52]=0;					// DownloadCloseTEC no use for QHY9   set to 0
 	
-	REG[53]=0;						// Unknown: (reg.WindowHeater&~0xf0)*16+(reg.MotorHeating&~0xf0)
+	REG[53]=0;					// Unknown: (reg.WindowHeater&~0xf0)*16+(reg.MotorHeating&~0xf0)
 	
 	
-	REG[58]=100;				    // SDRAM_MAXSIZE no use for QHY8-9-11   set to 0
-	REG[63]=0;						// Unknown reg.Trig
+	REG[58]=100;					// SDRAM_MAXSIZE no use for QHY8-9-11   set to 0
+	REG[63]=0;					// Unknown reg.Trig
 		  
 	if (memcmp(REG, REGBCK, sizeof(REG)) || expar->edit)
 	{

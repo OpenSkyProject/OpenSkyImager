@@ -26,6 +26,7 @@ int         imgpix_get_width();
 int         imgpix_get_height();
 GdkPixbuf   *imgpix_get_data();
 GdkPixbuf   *imgpix_get_histogram(int scale);
+GdkPixbuf   *imgpix_get_roi(int size);
 int         imgpix_loaded();
 void        imgpix_init();
 void        imgpix_init_histogram();

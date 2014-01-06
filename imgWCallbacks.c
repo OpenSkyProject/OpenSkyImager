@@ -27,8 +27,18 @@
 gboolean tmr_imgstatus_wipe (GtkWidget *widget)
 {
 	
-	gtk_statusbar_remove_all(GTK_STATUSBAR(imgstatus), 0);
+	gtk_statusbar_remove_all(GTK_STATUSBAR(widget), 0);
 	tmrstatusbar = -1;
+	
+	// Change to TRUE for a recurring timer
+	return FALSE;
+}
+
+gboolean tmr_imgstatus_pixmsg (GtkWidget *widget)
+{
+	
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgpix_get_msg());
+	tmrfrmrefresh = -1;
 	
 	// Change to TRUE for a recurring timer
 	return FALSE;
@@ -117,26 +127,51 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 	tmpfps = fps;
 	g_rw_lock_reader_unlock(&thd_caplock);
 	
-	if (tmpfps > 0.)
+	if (tmpfps < 10)
 	{
-		sprintf(fpsfbk, "Fps:%05.1F", (double)tmpfps);
+		sprintf(fpsfbk, "Fps:%05.1F", (1./ tmpfps));
+	}
+	else if (tmpfps >= 10)
+	{
+		sprintf(fpsfbk, "Fpm:%05.1F", (60. / tmpfps));
 	}
 	else
 	{
 		fpsfbk[0] = '\0';
 	}
+	
 	if (tmprun == 1)
 	{
+	
+		if (fwhmv == 1)
+		{
+			fwhm_show();
+		}
+		
 		if (capture)
 		{
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_shots), (int)tmpshots);
 			gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbr_expnum), tmpfract);
-			/// Message on statusbar about last saved frame (%s)
-			sprintf(imgmsg, C_("main","Image: %s saved"), fitfile);
+			if (savefmt == 1)
+			{
+				/// Message on statusbar about last saved frame (%s)
+				sprintf(imgmsg, C_("main","Image: %s saved"), g_path_get_basename(imgfit_get_name()));
+			}
+			else if (savefmt == 2)
+			{
+				/// Message on statusbar about last frame add to avi (%s)
+				sprintf(imgmsg, C_("main","Frame: add to %s"), g_path_get_basename(imgavi_get_name()));
+			}
+			else if (savefmt == 3)
+			{
+				/// Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
+				sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), g_path_get_basename(imgfit_get_name()), g_path_get_basename(imgavi_get_name()));
+			}
 			// Main image update
 			sprintf(imgfbk, "#%04d", (int)tmpshots);
 			gtk_label_set_text(GTK_LABEL(lbl_fbkimg), (gchar *) imgfbk);	
 			gtk_label_set_text(GTK_LABEL(lbl_fbkfps), (gchar *) fpsfbk);	
+			gtk_statusbar_write(GTK_STATUSBAR(imgstafit), 0, imgmsg);
 		}
 		else
 		{
@@ -172,6 +207,10 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 		{ 
 			sprintf(imgmsg, "%s", imgfit_get_msg());
 		}
+		else if (strlen(imgavi_get_msg()) > 0)
+		{ 
+			sprintf(imgmsg, "%s", imgavi_get_msg());
+		}
 		else if (strlen(imgcam_get_msg()) > 0)
 		{
 			sprintf(imgmsg, "%s", imgcam_get_msg());
@@ -187,6 +226,7 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 		{
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), FALSE);
 		}
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 	else
 	{
@@ -195,11 +235,25 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbr_expnum), tmpfract);
 		if (capture)
 		{
-			/// Message to confirm end of capture thread in capture mode
-			/// Message on statusbar about last saved frame (%s)
-			sprintf(imgmsg, C_("main","Image: %s saved"), fitfile);
-			/// This goes concat with last saved frame
-			strcat(imgmsg, C_("main",", capture end"));
+			// Message to confirm end of capture thread in capture mode
+			if (savefmt == 1)
+			{
+				/// Message on statusbar about last saved frame (%s)
+				sprintf(imgmsg, C_("main","Image: %s saved"), imgfit_get_name());
+			}
+			else if (savefmt == 2)
+			{
+				/// Message on statusbar about last frame add to avi (%s)
+				sprintf(imgmsg, C_("main","Frame: add to %s"), imgavi_get_name());
+			}
+			else if (savefmt == 3)
+			{
+				/// Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
+				sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), imgfit_get_name(), imgavi_get_name());
+			}
+			gtk_statusbar_write(GTK_STATUSBAR(imgstafit), 0, imgmsg);
+			sprintf(imgmsg, C_("main","capture end"));
+			gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 			// Main image update
 			sprintf(imgfbk, "#%04d", (int)tmpshots);
 			gtk_label_set_text(GTK_LABEL(lbl_fbkimg), (gchar *) imgfbk);	
@@ -209,6 +263,7 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 			/// Message to confirm end of capture thread in focus mode
 			strcpy(imgmsg, C_("main","Focus end"));
 			gtk_label_set_text(GTK_LABEL(lbl_fbkimg), "");	
+			gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 		}
 		gtk_label_set_text(GTK_LABEL(lbl_fbkfps), (gchar *) fpsfbk);	
 		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)) == TRUE)
@@ -216,7 +271,6 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), FALSE);
 		}
 	}
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	tmrcapprgrefresh = -1;
 	
 	// Change to TRUE for a recurring timer
@@ -250,9 +304,9 @@ gboolean tmr_tecpwr (GtkWidget *widget)
 	/// Statusbar feedback message about tec power
 	sprintf(imgmsg, C_("main","Tec power set to: %d%%"), (int)gtk_range_get_value(GTK_RANGE(vsc_tecpwr)));
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
-	g_rw_lock_reader_lock(&thd_teclock);
+	g_rw_lock_writer_lock(&thd_teclock);
 	imgcam_settec(imgcam_get_tecp()->tecpwr);
-	g_rw_lock_reader_unlock(&thd_teclock);
+	g_rw_lock_writer_unlock(&thd_teclock);
 	tmrtecpwr = -1;
 	
 	// Change to TRUE for a recurring timer
@@ -261,38 +315,190 @@ gboolean tmr_tecpwr (GtkWidget *widget)
 
 gboolean tmr_tecstatus_write (GtkWidget *widget)
 {
+	static double oldT;
+	double mV = 0;
+	int setwait = 0, suspect = 0;
 	int pct = 0;
 	
-	g_rw_lock_reader_lock(&thd_teclock);
 	if (imgcam_get_tecp()->istec == 1)
 	{	
-		if (imgcam_get_tecp()->tecerr == 0)
-		{
-			pct = (int)(((double)imgcam_get_tecp()->tecpwr / (double)imgcam_get_tecp()->tecmax) * 100.);
-			if (imgcam_get_tecp()->tecauto)
+		// This is to prevent interrupt read during image readout
+		// The capture thread will lock for write
+		if (g_rw_lock_writer_trylock(&thd_teclock) == TRUE)
+		{	
+			//Set the loop reference
+			oldT = imgcam_get_tecp()->tectemp;
+
+			if (imgcam_gettec(&imgcam_get_tecp()->tectemp, &mV))
 			{
-				/// Statusbar feedback message about cooling status in automatic mode
-				sprintf(imgmsg, C_("main","Tec: %+06.2FC, Target: %+06.2FC, Power: %d%%"), imgcam_get_tecp()->tectemp, imgcam_get_tecp()->settemp, pct);
+				//printf("Temp: %f\n", imgcam_get_tecp()->tectemp);
+				if (imgcam_get_tecp()->tecauto)
+				{
+					if (setwait == 0)
+					{
+						if (fabs(oldT - imgcam_get_tecp()->tectemp) == 0 && suspect < 3)
+						{
+							//This is suspect... noop
+							suspect++;
+						}
+						else if (fabs(imgcam_get_tecp()->tectemp - imgcam_get_tecp()->settemp) < 2.)
+						{
+							suspect = 0;
+							// Temp is almost stabilized near to target, we do tiny corrections
+							if ((oldT - imgcam_get_tecp()->tectemp) < 0.03 && imgcam_get_tecp()->tectemp > imgcam_get_tecp()->settemp)
+							{
+								// If temp is not moving or not the right direction
+								if (imgcam_get_tecp()->tectemp > (imgcam_get_tecp()->settemp + 0.7) ) 
+								{
+									imgcam_get_tecp()->tecpwr += 2;
+									imgcam_get_tecp()->tecpwr = MIN(imgcam_get_tecp()->tecpwr, imgcam_get_tecp()->tecmax);
+									if (imgcam_get_tecp()->tectemp > oldT)
+									{
+										//Still going wrong direction
+										setwait = 3;
+									}
+									else
+									{
+										setwait = 6;
+									}
+								}
+								else if (imgcam_get_tecp()->tectemp > (imgcam_get_tecp()->settemp + 0.2)) 
+								{
+									imgcam_get_tecp()->tecpwr += 1;
+									imgcam_get_tecp()->tecpwr = MIN(imgcam_get_tecp()->tecpwr, imgcam_get_tecp()->tecmax);
+									if (imgcam_get_tecp()->tectemp > oldT)
+									{
+										//Still going wrong direction
+										setwait = 1;
+									}
+									else
+									{
+										setwait = 3;
+									}
+								}
+							}
+							else if ((imgcam_get_tecp()->tectemp - oldT) < 0.03 && imgcam_get_tecp()->tectemp < imgcam_get_tecp()->settemp)
+							{
+								// If temp is not moving or not the right direction
+								if (imgcam_get_tecp()->tectemp < (imgcam_get_tecp()->settemp - 0.7) ) 
+								{
+									imgcam_get_tecp()->tecpwr -= 2;
+									imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
+									if (imgcam_get_tecp()->tectemp < oldT)
+									{
+										//Still going wrong direction
+										setwait = 3;
+									}
+									else
+									{
+										setwait = 6;
+									}
+								}
+								else if (imgcam_get_tecp()->tectemp < (imgcam_get_tecp()->settemp - 0.2)) 
+								{
+									imgcam_get_tecp()->tecpwr -= 1;
+									imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
+									if (imgcam_get_tecp()->tectemp < oldT)
+									{
+										//Still going wrong direction
+										setwait = 1;
+									}
+									else
+									{
+										setwait = 3;
+									}
+								}
+							}
+						}
+						else if (imgcam_get_tecp()->settemp < imgcam_get_tecp()->tectemp) 
+						{
+							suspect = 0;
+							if ((oldT - imgcam_get_tecp()->tectemp) < 0.06)
+							{
+								//setTemp is still far. We gently pull tec up or down
+								imgcam_get_tecp()->tecpwr += 6;
+								imgcam_get_tecp()->tecpwr = MIN(imgcam_get_tecp()->tecpwr, imgcam_get_tecp()->tecmax);
+								if (imgcam_get_tecp()->tectemp > oldT)
+								{
+									//Still going wrong direction
+									setwait = 1;
+								}
+								else
+								{
+									setwait = 3;
+								}
+							}
+						}
+						else if (imgcam_get_tecp()->settemp > imgcam_get_tecp()->tectemp) 
+						{
+							suspect = 0;
+							if ((imgcam_get_tecp()->tectemp - oldT) < 0.06)
+							{
+								imgcam_get_tecp()->tecpwr -= 6;
+								imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
+								if (imgcam_get_tecp()->tectemp < oldT)
+								{
+									//Still going wrong direction
+									setwait = 1;
+								}
+								else
+								{
+									setwait = 3;
+								}
+							}
+						}
+						if (setwait)
+						{
+							imgcam_settec(imgcam_get_tecp()->tecpwr);
+						}
+					}
+					else
+					{
+						setwait--;
+					}
+				}
+			}
+			g_rw_lock_writer_unlock(&thd_teclock);
+			if (imgcam_get_tecp()->tecerr == 0)
+			{
+				pct = (int)(((double)imgcam_get_tecp()->tecpwr / (double)imgcam_get_tecp()->tecmax) * 100.);
+				if (imgcam_get_tecp()->tecauto)
+				{
+					/// Statusbar feedback message about cooling status in automatic mode
+					sprintf(imgmsg, C_("main","Tec: %+06.2FC, Target: %+06.2FC, Power: %d%%"), imgcam_get_tecp()->tectemp, imgcam_get_tecp()->settemp, pct);
+				}
+				else
+				{
+					/// Satusbar feedback message about cooling in manual mode
+					sprintf(imgmsg, C_("main","Tec: %+06.2fC, Power: %d%%"), imgcam_get_tecp()->tectemp, pct);
+				}
+				// Main image update
+				sprintf(tecfbk, "%+06.2fC", imgcam_get_tecp()->tectemp);
+				gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
+				// Graph update
+				tec_print_graph();
+				// Slider update
+				gtk_range_set_value(GTK_RANGE(vsc_tecpwr), pct);
+				gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
 			}
 			else
 			{
-				/// Satusbar feedback message about cooling in manual mode
-				sprintf(imgmsg, C_("main","Tec: %+06.2fC, Power: %d%%"), imgcam_get_tecp()->tectemp, pct);
+				imgcam_get_tecp()->tecerr = 0;
+				sprintf(imgmsg, C_("main","Error communicating with tec"));
 			}
-			// Main image update
-			sprintf(tecfbk, "%+06.2fC", imgcam_get_tecp()->tectemp);
-			gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
-			// Graph update
-			tec_print_graph();
-			// Slider update
-			gtk_range_set_value(GTK_RANGE(vsc_tecpwr), pct);
-			gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
+			gtk_statusbar_write(GTK_STATUSBAR(imgstatec), 0, imgmsg);
 		}
 		else
 		{
-			imgcam_get_tecp()->tecerr = 0;
-			sprintf(imgmsg, C_("main","Error communicating with tec"));
+			// 50ms retry
+			g_source_remove(tmrtecrefresh);
+			tmrtecrefresh = g_timeout_add(50, (GSourceFunc) tmr_tecstatus_write, NULL);	
+			return TRUE;
 		}
+		// Virtual recurring
+		g_source_remove(tmrtecrefresh);
+		tmrtecrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tecstatus_write, NULL);	
+		return TRUE;
 	}
 	else if (imgcam_get_tecp()->istec == 2)
 	{
@@ -305,12 +511,9 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 		tec_print_graph();
 		// Slider update
 		gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatec), 0, imgmsg);
 	}
-	g_rw_lock_reader_unlock(&thd_teclock);
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 1, imgmsg);
-	tmrtecrefresh = -1;
 	
-	// Change to TRUE for a recurring timer
 	return FALSE;
 }
 
@@ -338,7 +541,7 @@ gboolean tmr_tlrefresh (GtkWidget *widget)
 		tmrtlrefresh = -1;
 		sprintf(imgmsg, C_("main","TimeLapse mode finished"));	
 	}
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 2, imgmsg);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	
 	if (tmrtlrefresh != -1)
 	{
@@ -356,7 +559,25 @@ void imgstatus_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpo
 	{
 		g_source_remove(tmrstatusbar);
 	}
-	tmrstatusbar = g_timeout_add_seconds(3, (GSourceFunc) tmr_imgstatus_wipe, NULL);
+	tmrstatusbar = g_timeout_add_seconds(3, (GSourceFunc) tmr_imgstatus_wipe, GTK_WIDGET(statusbar));
+}
+
+void imgstafit_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpointer user_data)
+{
+	if (tmrstatusfit != -1)
+	{
+		g_source_remove(tmrstatusfit);
+	}
+	tmrstatusfit = g_timeout_add_seconds(3, (GSourceFunc) tmr_imgstatus_wipe, GTK_WIDGET(statusbar));
+}
+
+void imgstatec_push (GtkStatusbar *statusbar, guint context_id, gchar *text, gpointer user_data)
+{
+	if (tmrstatustec != -1)
+	{
+		g_source_remove(tmrstatustec);
+	}
+	tmrstatustec = g_timeout_add_seconds(3, (GSourceFunc) tmr_imgstatus_wipe, GTK_WIDGET(statusbar));
 }
 
 void cmd_settings_click(GtkWidget *widget, gpointer data)
@@ -438,15 +659,47 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 		{
 			g_rw_lock_writer_lock(&thd_caplock);
 			capture = (capture == 0)? 1: 0;
+
+			// when in focus mode we need to set REG[15] to get more speed
+			imgcam_get_expar()->preview = (capture == 0)? 1: 0;
+			imgcam_get_expar()->edit = 1;
+			// 
+
 			g_rw_lock_writer_unlock(&thd_caplock);
+
+			if (tlenable == 1)
+			{
+				// Start recurring timer to refresh the message
+				// Timer will kill itself if !tlenable || !run
+				if (tmrtlrefresh != -1)
+				{
+					g_source_remove(tmrtlrefresh);
+				}
+				tmrtlrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tlrefresh, NULL);			
+			}
 			if (capture)
 			{
+				// when in capture mode we restore previous mode (for ccd only, regardless of speed)
+				if ((imgcam_get_tecp()->istec == 1) && (tecprerun == 1))
+				{
+					tecprerun = 0;
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+				}
 				gtk_button_set_label(GTK_BUTTON(cmd_capture), C_("main","Capture mode"));
 				gtk_widget_set_sensitive(box_filename, 0);
+				gtk_widget_set_sensitive(box_cfw, 0);
+				fwhm_hide();
 			}
 			else
 			{
+				// when in focus mode and fast speed we need to stop temp read (for ccd only)
+				if ((imgcam_get_expar()->speed > 0) && (imgcam_get_tecp()->istec == 1) && (tecrun == 1))
+				{
+					tecprerun = 1;
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
+				}
 				gtk_widget_set_sensitive(box_filename, 1);
+				gtk_widget_set_sensitive(box_cfw, 1);
 				gtk_button_set_label(GTK_BUTTON(cmd_capture), C_("main","Focus mode"));
 			}
 		}
@@ -517,7 +770,8 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 		printf("amp     : %d\n", imgcam_get_shpar()->amp);
 		printf("bytepix : %d\n", imgcam_get_shpar()->bytepix);
 		printf("bitpix  : %d\n", imgcam_get_shpar()->bitpix);
-		printf("tsize   : %d\n", imgcam_get_shpar()->tsize);*/
+		printf("tsize   : %d\n", imgcam_get_shpar()->tsize);
+		printf("preview : %d\n", imgcam_get_shpar()->preview);*/
 		if (imgcam_connected())
 		{
 			g_rw_lock_reader_lock(&thd_caplock);
@@ -643,7 +897,7 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 				else
 				{
 					g_rw_lock_writer_lock(&thd_caplock);
-					run  = 0;
+					run  = 2;
 					g_rw_lock_writer_unlock(&thd_caplock);
 					if (kill == 1)
 					{
@@ -667,6 +921,13 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 					gtk_widget_set_sensitive(cmd_hold, 0);
 				}
 			}
+		}
+		else
+		{
+			kill = 0;
+			gtk_button_set_label(GTK_BUTTON(widget), C_("main","Start"));
+			gtk_widget_modify_bkg(widget, GTK_STATE_ACTIVE, &clrSelected);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_hold), FALSE);
 		}
 	}
 	else
@@ -846,6 +1107,121 @@ gboolean swindow_allocate(GtkWidget *widget, GdkRectangle *alloc, gpointer data)
 	return FALSE;
 }
 
+gboolean fwhmroi_scroll (GtkWidget *widget, GdkEventScroll *event, gpointer data)
+{
+	int roisize = fwhms / imgratio;
+	int roix = ((fwhmx - (fwhms / 2)) / imgratio), roiy = ((fwhmy - (fwhms / 2)) / imgratio);
+
+	if ((event->type == GDK_SCROLL) && (fwhmv == 1))
+	{
+		// It's a scroll event and the fwhm is visible 
+		if (((event->x > roix) && (event->x < (roix + roisize))) && ((event->y > roiy) && (event->y < (roiy + roisize))))
+		{
+			// It's in the ROI
+			#if GTK_CHECK_VERSION(3,4,2)
+				GdkScrollDirection direction;
+				if (event->delta_y != 0) 
+				{
+					direction = (event->delta_y >= 0) ? GDK_SCROLL_UP : GDK_SCROLL_DOWN;
+				}
+				else
+				{
+					direction = event->direction;
+				}
+			#else
+				GdkScrollDirection direction = event->direction;
+			#endif
+		
+			if (direction == GDK_SCROLL_UP)
+			{
+				fwhmp *= (fwhms < 64) ? 4 : 1;
+				fwhms *= (fwhms < 64) ? 2 : 1;
+			}
+			else if (direction == GDK_SCROLL_DOWN)
+			{
+				fwhmp /= (fwhms > 8) ? 4 : 1;
+				fwhms /= (fwhms > 8) ? 2 : 1;
+			}
+		
+			// Draw roi
+			fwhm_show();
+			// Calc
+			fwhm_calc();
+			// Draw roi after possible calc move
+			fwhm_show();
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+gboolean image_button_press (GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+	int roisize = fwhms / imgratio;
+	int roix, roiy;
+	
+	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1))
+	{
+		// Left click
+		roix = ((fwhmx - (fwhms / 2)) / imgratio);
+		roiy = ((fwhmy - (fwhms / 2)) / imgratio);
+
+		if (((event->x > roix) && (event->x < (roix + roisize))) && ((event->y > roiy) && (event->y < (roiy + roisize))) && (fwhmv == 1))
+		{
+			fwhm_hide();
+		}
+		else
+		{
+			g_rw_lock_reader_lock(&thd_caplock);
+			int width = (imgpix_get_width() / imgratio), height = (imgpix_get_height() / imgratio);
+
+			// Center on image data regardless of "fit to screen"
+			fwhmx = event->x * imgratio;
+			fwhmy = event->y * imgratio;
+
+			// Roi position depending on "fit to screen"
+			roix = ((fwhmx - (fwhms / 2)) / imgratio);
+			roiy = ((fwhmy - (fwhms / 2)) / imgratio);
+
+			// check ROI is fully inside frame and fix if needed
+			// Move centroid position relative to ROI accordingly
+			if( roix <= 0 )
+			{
+				roix = 1;
+			}
+			if( roiy <= 0 )
+			{
+				roiy = 1;
+			}
+			if( roix + fwhms >= width )
+			{
+				roix = width - roisize - 1;
+			}
+			if( roiy + fwhms >= height )
+			{
+				roiy = height - roisize - 1;
+			}	
+		
+			// Center on image data regardless of "fit to screen"
+			fwhmx = (roix * imgratio) + (fwhms / 2);
+			fwhmy = (roiy * imgratio) + (fwhms / 2);
+
+			// Draw roi
+			fwhm_show();
+			// Calc
+			fwhm_calc();
+			// Draw roi after possible calc move
+			fwhm_show();
+			g_rw_lock_reader_unlock(&thd_caplock);
+		}
+	}
+	/*else if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
+	{
+		// Right click
+	}*/
+	return FALSE;
+}
+
 void mainw_destroy( GtkWidget *widget, gpointer   data )
 {
 	gtk_main_quit ();
@@ -892,7 +1268,7 @@ void cmb_debayer_changed (GtkComboBox *widget, gpointer user_data)
 void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
 {
 	//printf("%s\n", gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
-	float tmp;
+	float tmp = 0;
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%f", &tmp);
@@ -964,6 +1340,19 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 		if (imgcam_connected())
 		{
 			//Disconnect
+			if (run)
+			{
+				// Brute force thread end
+				g_rw_lock_writer_lock(&thd_caplock);
+				run  = 0;
+				runerr = 1;
+				if (readout)
+				{
+					imgcam_abort();
+				}
+				readout = 0;
+				g_rw_lock_writer_unlock(&thd_caplock);
+			}
 			if ((imgcam_get_tecp()->istec != 0))
 			{
 				// Terminates the tec thread and disable choice
@@ -1140,7 +1529,7 @@ gboolean hsc_offset_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 
 void cmb_bin_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1159,7 +1548,7 @@ void cmb_bin_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_csize_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int w, h;
+	int w = 0, h = 0;
 	
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
@@ -1169,13 +1558,14 @@ void cmb_csize_changed (GtkComboBox *widget, gpointer user_data)
 		{
 			imgcam_get_expar()->width  = w;
 			imgcam_get_expar()->height = h;
+			sprintf(imgmsg, C_("main","Capture size set to: %dx%d"), imgcam_get_expar()->width, imgcam_get_expar()->height);
 		}
 		else
 		{
 			imgcam_get_expar()->width  = 0;
 			imgcam_get_expar()->height = 0;
+			sprintf(imgmsg, C_("main","Capture size set to: Full frame"));
 		}
-		sprintf(imgmsg, C_("main","Capture size set to: %dx%d"), imgcam_get_expar()->width, imgcam_get_expar()->height);
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 		imgcam_get_expar()->edit = 1;
 	}
@@ -1184,9 +1574,10 @@ void cmb_csize_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
@@ -1199,6 +1590,18 @@ void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 		{
 			imgcam_get_expar()->speed = 0;
 		}
+		if ((capture == 0) && (imgcam_get_expar()->speed > 0) && (imgcam_get_tecp()->istec == 1) && (tecrun == 1))
+		{
+			// when in focus mode and fast speed we need to stop temp read (for ccd only)
+			tecprerun = 1;
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
+		}
+		else if ((imgcam_get_tecp()->istec == 1) && (tecprerun == 1))
+		{
+			// when in capture mode or slow speed we restore previous mode (for ccd only, regardless of speed)
+			tecprerun = 0;
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+		}
 		sprintf(imgmsg, C_("main","Download speed set to: %s"), str);
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 		imgcam_get_expar()->edit = 1;
@@ -1208,9 +1611,10 @@ void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_mode_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
@@ -1240,9 +1644,10 @@ void cmb_mode_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_amp_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
@@ -1264,9 +1669,10 @@ void cmb_amp_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_denoise_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
@@ -1288,9 +1694,10 @@ void cmb_denoise_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmb_depth_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int tmp;
+	int tmp = 0;
 	char str[32];
 	
+	str[0] = '\0';
 	g_rw_lock_writer_lock(&thd_caplock);
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
@@ -1412,6 +1819,13 @@ void cmd_tlenable_click(GtkWidget *widget, gpointer data)
 	tlenable = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE);
 	if (tlenable)
 	{
+		// Start recurring timer to refresh the message
+		// Timer will kill itself if !tlenable || !run
+		if (tmrtlrefresh != -1)
+		{
+			g_source_remove(tmrtlrefresh);
+		}
+		tmrtlrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tlrefresh, NULL);			
 		gtk_widget_set_sensitive(box_timelapse, 1);
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","Time lapse mode enabled"));
 	}
@@ -1530,7 +1944,7 @@ void cmd_tlcalendar_click(GtkWidget *widget, gpointer data)
 
 	if (tlcalendar == 0)
 	{
-		gtk_button_set_label(GTK_BUTTON(widget), "Simple mode");
+		gtk_button_set_label(GTK_BUTTON(widget), "Full mode");
 		gtk_widget_set_sensitive(rbt_tlstart, 0);
 		gtk_widget_set_sensitive(lbl_tlstart, 0);
 		gtk_widget_set_sensitive(spn_tlhstart, 0);
@@ -1542,11 +1956,11 @@ void cmd_tlcalendar_click(GtkWidget *widget, gpointer data)
 		gtk_widget_set_sensitive(spn_tlmend, 0);
 		gtk_widget_set_sensitive(spn_tlsend, 0);
 		gtk_widget_set_sensitive(cal_tldpick, 0);
-		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","TimeLapse set to use calendar driven start and stop plus interval"));
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","TimeLapse set to use frame count driven start and stop plus interval"));
 	}
 	else
 	{
-		gtk_button_set_label(GTK_BUTTON(widget), "Full mode");
+		gtk_button_set_label(GTK_BUTTON(widget), "Simple mode");
 		gtk_widget_set_sensitive(rbt_tlstart, 1);
 		gtk_widget_set_sensitive(lbl_tlstart, 1);
 		gtk_widget_set_sensitive(spn_tlhstart, 1);
@@ -1558,7 +1972,7 @@ void cmd_tlcalendar_click(GtkWidget *widget, gpointer data)
 		gtk_widget_set_sensitive(spn_tlmend, 1);
 		gtk_widget_set_sensitive(spn_tlsend, 1);
 		gtk_widget_set_sensitive(cal_tldpick, 1);
-		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","TimeLapse set to use frame count driven start and stop plus interval"));
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","TimeLapse set to use calendar driven start and stop plus interval"));
 	}
 }   
 
@@ -1700,6 +2114,28 @@ void cmb_flt_changed (GtkComboBox *widget, gpointer user_data)
 	}
 }
 
+void cmb_fmt_changed (GtkComboBox *widget, gpointer user_data)
+{
+	int tmp = 0;
+	char str[32];
+	
+	str[0] = '\0';
+	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
+	{
+		sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%d-%[^\n]", &tmp, str);
+		if ((tmp >= 1) && (tmp <= 3))
+		{
+			savefmt = tmp;
+		}
+		else
+		{
+			savefmt = 1;
+		}
+		sprintf(imgmsg, C_("main","Save format set to: %s"), str);
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
+}
+
 void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 {	
 	static int error = 0, status = 0;
@@ -1713,47 +2149,40 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 			{
 				if (status == 1)
 				{
-					if (tecrun == 0)
+					if (tmrtecrefresh == -1)
 					{
-						if (thd_tec != NULL)
-						{
-							g_thread_unref(thd_tec);
-							thd_tec = NULL;
-						}
-						GError* thd_err = NULL;
-						thd_tec = g_thread_try_new("Tec", thd_temp_run, NULL, &thd_err);
-						tecrun = 1;
-						if (thd_tec == NULL)
-						{
-							// Ui Message
-							sprintf(imgmsg, C_("main","Tec controlling thread failed to start (%s)"), thd_err->message);
-							g_error_free(thd_err);
-							thd_err = NULL;
-							gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
-							// Disengage
-							tecrun = 0;
-							error = 1;
-							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
-						}
-						else
-						{
-							tec_init_graph();
-							gtk_widget_set_sensitive(vsc_tecpwr, 1);
-							gtk_widget_set_sensitive(cmd_tecauto, 1);
-							gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
-						}
+						// If there's no one running, run it
+						tmrtecrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tecstatus_write, NULL);	
+					}
+					if (tmrtecrefresh != -1)
+					{
+						// If it's running
+						tecrun = 1;	
+						tec_init_graph();
+						gtk_widget_set_sensitive(vsc_tecpwr, 1);
+						gtk_widget_set_sensitive(cmd_tecauto, 1);
+						gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
+					}
+					else
+					{
+						// Ui Message
+						sprintf(imgmsg, C_("main","Tec controlling thread failed to start (%s)"), "");
+						gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+						// Disengage
+						tecrun = 0;
+						error = 1;
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
 					}
 				}
 				else
 				{
-					if (tecrun == 1)
+					if (tmrtecrefresh != -1)
 					{
 						// Stop tec
-						g_rw_lock_writer_lock(&thd_teclock);
-						tecrun = 0;
-						g_rw_lock_writer_unlock(&thd_teclock);
-						// Wait for thread to end worst case (must improve this)
-						usleep(500000);
+						g_source_remove(tmrtecrefresh);
+						tmrtecrefresh = -1;
+						tecrun = 0;	
+						// Ui update
 						tec_init_graph();
 						gtk_widget_set_sensitive(vsc_tecpwr, 0);
 						gtk_widget_set_sensitive(cmd_tecauto, 0);
@@ -1816,20 +2245,20 @@ void cmd_tecauto_click(GtkWidget *widget, gpointer data)
 	{
 		gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Auto mode"));
 		gtk_widget_set_sensitive(spn_tectgt, 1);
-		g_rw_lock_writer_lock(&thd_teclock);
+		g_rw_lock_reader_lock(&thd_teclock);
 		imgcam_get_tecp()->tecauto = status;
 		imgcam_get_tecp()->settemp = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_tectgt));
 		sprintf(imgmsg, C_("main","Tec set auto to: %+06.2FC"), imgcam_get_tecp()->settemp);
-		g_rw_lock_writer_unlock(&thd_teclock);		
+		g_rw_lock_reader_unlock(&thd_teclock);		
 		gtk_widget_set_sensitive(spn_tectgt, 1);
 	}
 	else
 	{
 		gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Manual mode"));
 		gtk_widget_set_sensitive(spn_tectgt, 0);
-		g_rw_lock_writer_lock(&thd_teclock);
+		g_rw_lock_reader_lock(&thd_teclock);
 		imgcam_get_tecp()->tecauto = status;
-		g_rw_lock_writer_unlock(&thd_teclock);
+		g_rw_lock_reader_unlock(&thd_teclock);
 		sprintf(imgmsg, C_("main","Tec set manual"));
 		gtk_widget_set_sensitive(spn_tectgt, 0);
 	}
@@ -1838,19 +2267,19 @@ void cmd_tecauto_click(GtkWidget *widget, gpointer data)
 
 gboolean spn_tectgt_changed(GtkSpinButton *spinbutton, gpointer user_data)
 {
-	g_rw_lock_writer_lock(&thd_teclock);
+	g_rw_lock_reader_lock(&thd_teclock);
 	imgcam_get_tecp()->settemp = gtk_spin_button_get_value(spinbutton);
 	sprintf(imgmsg, C_("main","Tec set auto to: %+06.2FC"), imgcam_get_tecp()->settemp);
-	g_rw_lock_writer_unlock(&thd_teclock);
+	g_rw_lock_reader_unlock(&thd_teclock);
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	return FALSE;
 }
 
 gboolean vsc_tecpwr_changed (GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data)
 {
-	g_rw_lock_writer_lock(&thd_teclock);
+	g_rw_lock_reader_lock(&thd_teclock);
 	imgcam_get_tecp()->tecpwr = 255. * (gtk_range_get_value(range) / 100.);
-	g_rw_lock_writer_unlock(&thd_teclock);
+	g_rw_lock_reader_unlock(&thd_teclock);
 
 	if (tmrtecpwr != -1)
 	{
@@ -1862,9 +2291,10 @@ gboolean vsc_tecpwr_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 
 void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 {
+	int tmp = 0;
 	char str[32];
-	int  tmp = 0;
 	
+	str[0] = '\0';
 	sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%d-%[^\n]", &tmp, str);
 	if (imgcfw_set_mode(tmp) == 1)
 	{

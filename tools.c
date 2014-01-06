@@ -27,6 +27,37 @@
 #include <sys/stat.h>
 #include "tools.h"
 
+// Hints got from: http://stackoverflow.com/questions/9629850/how-to-get-cpu-info-in-c-on-linux-such-as-number-of-cores
+int get_cpu_cores(void)
+{
+	FILE *cmdline = fopen("/proc/cpuinfo", "rb");
+	char *arg = 0;
+	size_t size = 0;
+	int curid = -1, newid = 0, val = 0, cpu = 0, retval = 0;
+	
+	while(getdelim(&arg, &size, '\n', cmdline) != -1)
+	{
+		retval = 1;
+		if (strstr(arg, "physical id") != NULL)
+		{
+			sscanf(arg, "physical id	:%d", &newid);
+		}
+		else if(strstr(arg, "cpu cores") != NULL)
+		{
+			if (curid != newid)
+			{
+				curid = newid;
+				sscanf(arg, "cpu cores	:%d", &val);
+				cpu += val;
+			}
+		}
+	}
+	free(arg);
+	fclose(cmdline);
+	return (retval == 1) ? ((cpu > 0) ? cpu : 1) : 0;
+}
+//
+
 int isdir(char* path)
 {
 	int retval = 0;

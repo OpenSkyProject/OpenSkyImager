@@ -27,11 +27,11 @@
 
 static GdkPixbuf *pixbuf = NULL;
 static GdkPixbuf *hstbuf = NULL;
+static GdkPixbuf *roibuf = NULL;
 int pwidth, pheight, pdebayer;
 static char     *pixmsg;
 static int       loaded;
 static double hst[256];
-
 
 char *imgpix_get_msg()
 {
@@ -45,12 +45,14 @@ GdkPixbuf *imgpix_get_data()
 
 int imgpix_get_width()
 {
-	return (pwidth / ((pdebayer > 0) ? 2 : 1));
+	//return (pwidth / ((pdebayer > 0) ? 2 : 1));
+	return pwidth;
 }
 
 int imgpix_get_height()
 {
-	return (pheight / ((pdebayer > 0) ? 2 : 1));
+	//return (pheight / ((pdebayer > 0) ? 2 : 1));
+	return pheight;
 }
 
 GdkPixbuf *imgpix_get_histogram(int scale)
@@ -103,6 +105,30 @@ void imgpix_init_histogram()
 			p[2] = 200;
 		}
 	}
+}
+
+GdkPixbuf *imgpix_get_roi(int size)
+{
+	int rowstride;
+	int row, col;
+	guchar *pixels, *p;
+	
+	roibuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, size, size);
+	rowstride = gdk_pixbuf_get_rowstride (roibuf);
+	pixels    = gdk_pixbuf_get_pixels (roibuf);
+	
+	for (row = 0; row < size; row++)
+	{
+		for (col = 0; col < size; col++)
+		{
+			p = pixels + row * rowstride + col * 4;
+			p[0] = ((row == 0) || (row == (size - 1)) || (col == 0) || (col == (size - 1))) ? 150 : 0;
+			p[1] = 0;
+			p[2] = 0;
+			p[3] = ((row == 0) || (row == (size - 1)) || (col == 0) || (col == (size - 1))) ? 255 : 0;
+		}
+	}
+	return roibuf;
 }
 
 int imgpix_loaded()
@@ -224,13 +250,13 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 		char mask[4];
 		int endh = (height / 2), endw = (width / 2);
 		int pixH, pixR, pixG, pixB;
-		//GdkPixbuf *pixtmp;
+		GdkPixbuf *pixtmp;
 		
 		// Creates an empty pixbuf using appropriate geometry
-		pixbuf    = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, endw, endh);
-		rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-		pixels    = gdk_pixbuf_get_pixels (pixbuf);
-		bpp       = gdk_pixbuf_get_n_channels (pixbuf);
+		pixtmp    = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, endw, endh);
+		rowstride = gdk_pixbuf_get_rowstride (pixtmp);
+		pixels    = gdk_pixbuf_get_pixels (pixtmp);
+		bpp       = gdk_pixbuf_get_n_channels (pixtmp);
 
 		switch (debayer)
 		{
@@ -328,8 +354,8 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 				p[1] = 0; //G
 				p[2] = 0; //B
 			}
-			//pixbuf = gdk_pixbuf_scale_simple(pixtmp, width, height, GDK_INTERP_BILINEAR);
-			//g_object_unref(pixtmp);
+			pixbuf = gdk_pixbuf_scale_simple(pixtmp, width, height, GDK_INTERP_BILINEAR);
+			g_object_unref(pixtmp);
 		}
 		else if (bytepix == 2)
 		{
@@ -409,8 +435,8 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 				p[1] = 0; //G
 				p[2] = 0; //B
 			}
-			//pixbuf = gdk_pixbuf_scale_simple(pixtmp, width, height, GDK_INTERP_BILINEAR);
-			//g_object_unref(pixtmp);
+			pixbuf = gdk_pixbuf_scale_simple(pixtmp, width, height, GDK_INTERP_BILINEAR);
+			g_object_unref(pixtmp);
 		}
 		else
 		{
@@ -430,5 +456,4 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 	loaded = retval;
 	return (retval);
 }
-
 

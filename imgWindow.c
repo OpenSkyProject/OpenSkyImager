@@ -29,7 +29,22 @@
 void imgstatus_build()
 {
 	imgstatus = gtk_statusbar_new();
+	#if GTK_MAJOR_VERSION == 2
+	gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(imgstatus), FALSE);
+	#endif
 	g_signal_connect(G_OBJECT(imgstatus), "text-pushed", G_CALLBACK(imgstatus_push), NULL);
+	
+	imgstatec = gtk_statusbar_new();
+	#if GTK_MAJOR_VERSION == 2
+	gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(imgstatec), FALSE);
+	#endif
+	g_signal_connect(G_OBJECT(imgstatec), "text-pushed", G_CALLBACK(imgstatec_push), NULL);
+
+	imgstafit = gtk_statusbar_new();
+	#if GTK_MAJOR_VERSION == 2
+	gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(imgstafit), FALSE);
+	#endif
+	g_signal_connect(G_OBJECT(imgstafit), "text-pushed", G_CALLBACK(imgstafit_push), NULL);
 }
 
 void cmd_settings_build()
@@ -133,7 +148,7 @@ void cmb_exptime_build()
 
 void spn_expnum_build()
 {
-	spn_expnum = gtk_spin_button_new_with_range (1.0, 900.0, 1.0);
+	spn_expnum = gtk_spin_button_new_with_range (1.0, 9999.0, 1.0);
 	gtk_widget_set_size_request(spn_expnum, 40, 25);
 	expnum = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_expnum));
 	//Callbacks
@@ -142,7 +157,7 @@ void spn_expnum_build()
 
 void spn_shots_build()
 {
-	spn_shots = gtk_spin_button_new_with_range (0.0, 900.0, 1.0);
+	spn_shots = gtk_spin_button_new_with_range (0.0, 99999.0, 1.0);
 	gtk_widget_set_size_request(spn_shots, 40, 25);
 	shots = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_shots));
 	
@@ -270,6 +285,23 @@ void lbl_fbkfps_build()
 	pango_font_description_free(fd);
 }
 
+void lbl_fbkfwhm_build()
+{
+	PangoFontDescription *fd; 
+	
+	fwhmfbk[0] = '\0';
+	lbl_fbkfwhm = gtk_label_new_with_align(fwhmfbk, 0.0, 0.5, 530, 60);
+	fd = pango_font_description_from_string("Monospace 18"); 
+	#if GTK_MAJOR_VERSION == 3
+	gtk_widget_override_color(lbl_fbkfwhm , GTK_STATE_NORMAL, &clrFbk);
+	gtk_widget_override_font(lbl_fbkfwhm, fd);
+	#else
+	gtk_widget_modify_fg(lbl_fbkfwhm, GTK_STATE_NORMAL, &clrFbk);
+	gtk_widget_modify_font(lbl_fbkfwhm, fd);
+	#endif
+	pango_font_description_free(fd);
+}
+
 void cmd_histogram_build()
 {
 	cmd_histogram = gtk_toggle_button_new_with_label_color(C_("main","Show graph"), 90, 25, &clrSelected);	
@@ -332,6 +364,7 @@ void frm_histogram_build()
 	frm_histogram = gtk_frame_new(NULL);
 	gtk_widget_set_size_request(frm_histogram, 180, 70);
 	gtk_container_add(GTK_CONTAINER(frm_histogram), histogram);
+	gtk_frame_set_shadow_type(GTK_FRAME(frm_histogram), GTK_SHADOW_IN);
 	#endif
 		
 	// Callback
@@ -341,7 +374,19 @@ void frm_histogram_build()
 void image_build()
 {
 	// Image
-	image = gtk_image_new();	
+	image    = gtk_image_new();	
+	fwhmroi  = gtk_image_new();	
+	imgevent = gtk_event_box_new();
+	gtk_event_box_set_visible_window(GTK_EVENT_BOX(imgevent), FALSE);
+	
+	gtk_container_add(GTK_CONTAINER(imgevent), image);
+	
+	//Callbacks
+	gtk_widget_add_events(fwhmroi, GDK_BUTTON_PRESS_MASK);
+	g_signal_connect(G_OBJECT(imgevent), "scroll-event", G_CALLBACK(fwhmroi_scroll),  NULL);
+
+	gtk_widget_add_events(imgevent, GDK_BUTTON_PRESS_MASK);
+	g_signal_connect(G_OBJECT(imgevent), "button-press-event", G_CALLBACK(image_button_press),  NULL);
 	
 	// Initialize pixbuf RW lock for the capture thread
 	g_rw_lock_init(&pixbuf_lock);
@@ -356,13 +401,16 @@ void swindow_build()
 	lbl_fbkimg_build();
 	lbl_fbktec_build();
 	lbl_fbkfps_build();
+	lbl_fbkfwhm_build();
 	image_build();
 
 	// Pack image into scrolled window
-	gtk_fixed_put(GTK_FIXED(fixed), image, 0, 0);
+	gtk_fixed_put(GTK_FIXED(fixed), imgevent, 0, 0);
+	gtk_fixed_put(GTK_FIXED(fixed), fwhmroi, 0, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbkimg,  10, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbktec, 100, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbkfps, 230, 0);
+	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbkfwhm, 10, 30);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(swindow), GTK_WIDGET(fixed));
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swindow), GTK_POLICY_ALWAYS, GTK_POLICY_ALWAYS);
 	
@@ -619,6 +667,17 @@ void cmb_flt_build()
 	combo_setlist(cmb_flt, fltstr);
 }
 
+void cmb_fmt_build()
+{
+	cmb_fmt = gtk_combo_box_text_new();
+	gtk_widget_set_size_request(cmb_fmt, 80, 30);
+	//gtk_widget_set_sensitive(cmb_fmt, 0);
+	
+	g_signal_connect(G_OBJECT(cmb_fmt), "changed", G_CALLBACK(cmb_fmt_changed),  NULL);
+	// Also set initial value for the char variable ;-)
+	combo_setlist(cmb_fmt, fmtstr);
+}
+
 void cmd_tecenable_build()
 {
 	cmd_tecenable = gtk_toggle_button_new_with_label_color(C_("cooling","Enable tec read"), 140, 30, &clrSelected);
@@ -721,7 +780,7 @@ void vsc_tecpwr_build()
 
 void cmd_tlcalendar_build()
 {
-	cmd_tlcalendar = gtk_toggle_button_new_with_label_color(C_("timelapse","Simple mode"), 140, 30, &clrSelected);
+	cmd_tlcalendar = gtk_toggle_button_new_with_label_color(C_("timelapse","Full mode"), 140, 30, &clrSelected);
 	// Callbacks
 	g_signal_connect(G_OBJECT(cmd_tlcalendar), "clicked", G_CALLBACK(cmd_tlcalendar_click), NULL);
 }
@@ -960,29 +1019,31 @@ void box_filename_build()
 	gtk_container_set_border_width(GTK_CONTAINER(box_filename), 4);
 	
 	cmd_saveas_build();
+	cmd_audela_build();
+	cmd_iris_build();
+	cmb_fmt_build();
+	txt_fitfolder_build();
+	txt_fitbase_build();
 	cmd_dateadd_build();
 	cmd_timeadd_build();
 	cmd_fltadd_build();
 	cmb_flt_build();
-	txt_fitfolder_build();
-	txt_fitbase_build();
-	cmd_audela_build();
-	cmd_iris_build();
 	cmd_zerofc_build();
 	cmd_tlenable_build();
 	
 	//gtk_table_attach(GTK_TABLE(box_filename), gtk_label_new_with_align("", 0.5, 0.5), 0, 1, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_filename),    cmd_saveas,  0,  2,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),   cmd_dateadd,  2,  4,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),   cmd_timeadd,  4,  6,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_fltadd,  6,  8,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_audela,  2,  4,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),      cmd_iris,  4,  6,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),       cmb_fmt,  6,  8,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_filename), txt_fitfolder,  0,  8,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_filename),   txt_fitbase,  0,  8,  3,  4, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_audela,  0,  2,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),      cmd_iris,  2,  4,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_zerofc,  4,  6,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),   cmd_dateadd,  0,  2,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),   cmd_timeadd,  2,  4,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_fltadd,  4,  6,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_filename),       cmb_flt,  6,  8,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),  cmd_tlenable,  0,  2,  5,  6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_zerofc,  0,  2,  5,  6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),  cmd_tlenable,  0,  2,  6,  7, GTK_FILL, GTK_FILL, 0, 0);
 }
 
 void box_timelapse_build()
@@ -1276,13 +1337,17 @@ void pnd_main_build()
 
 void box_main_build()
 {
-	box_main = gtk_table_new(10, 5, FALSE);
+	box_main = gtk_table_new(100, 10, FALSE);
 	
 	imgstatus_build();
 	pnd_main_build();
 	
-	gtk_table_attach(GTK_TABLE(box_main), pnd_main,  0, 5, 0,  9, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_main), imgstatus, 0, 5, 9, 10, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), imgstatec,   0,  26,  0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), gtk_vseparator_new(),  26,  27, 0,  1, GTK_SHRINK, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), imgstatus,  27,  75,  0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), gtk_vseparator_new(),  75,  76, 0,  1, GTK_SHRINK, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), imgstafit,  76, 100,  0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_main), pnd_main ,   0, 100,  1, 10, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
 }
 
 void window_build()
@@ -1356,5 +1421,16 @@ void imgwin_build()
 	window_build();	
 	// Draw all
 	gtk_widget_show_all(window);
+
+	// Get fwhm lablel max allocated size
+	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), "FWHM=05.20, Peak=65535, FWHM/Peak=05.20");
+	GtkAllocation *alloc = g_new0 (GtkAllocation, 1);
+	gtk_widget_get_allocation(GTK_WIDGET(lbl_fbkfwhm), alloc);
+	fwhmlblw = alloc->width;
+	fwhmlblh = alloc->height;
+	// Cleanup
+	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), "");
+	g_free(alloc);
+	printf("GTK M: %d, m: %d, u: %d\n", GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION);
 }
 
