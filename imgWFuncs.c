@@ -31,6 +31,131 @@
 #include "imgWCallbacks.h"
 #include <sys/time.h>
 
+void fithdr_init(fit_rowhdr *hdr, int hdrsz)
+{
+	int i;
+	
+	// Blank all
+	for (i = 0; i < hdrsz; i++)
+	{
+		hdr[i].name[0]    = '\0'; 
+		hdr[i].dtype      = '\0'; 
+		hdr[i].svalue[0]  = '\0'; 
+		hdr[i].ivalue     = 0; 
+		hdr[i].dvalue     = 0.; 
+		hdr[i].unit[0]    = '\0'; 
+		hdr[i].comment[0] = '\0'; 
+	}
+	// Default values
+	//SWCREATE
+	strcpy(hdr[HDR_SWCREATE].name, "SWCREATE"); 
+	strcpy(hdr[HDR_SWCREATE].svalue, APPNAM); 
+	strcat(hdr[HDR_SWCREATE].svalue, " ("); 
+	strcat(hdr[HDR_SWCREATE].svalue, APPVER); 
+	strcat(hdr[HDR_SWCREATE].svalue, ")"); 
+	hdr[HDR_SWCREATE].dtype = 'S'; 
+	//INSTRUME
+	strcpy(hdr[HDR_INSTRUME].name, "INSTRUME"); 
+	hdr[HDR_INSTRUME].dtype = 'S'; 
+	strcpy(hdr[HDR_INSTRUME].comment, "Name of instrument (camera)"); 
+	//EXPTIME
+	strcpy(hdr[HDR_EXPTIME].name, "EXPTIME"); 
+	hdr[HDR_EXPTIME].dtype = 'F'; 
+	strcpy(hdr[HDR_EXPTIME].unit, "s"); 
+	strcpy(hdr[HDR_EXPTIME].comment, "Total integration time"); 
+	//GAIN
+	strcpy(hdr[HDR_GAIN].name, "GAIN"); 
+	hdr[HDR_GAIN].dtype = 'I'; 
+	strcpy(hdr[HDR_GAIN].comment, "Program value (0-100)"); 
+	//OFFSET
+	strcpy(hdr[HDR_OFFSET].name, "OFFSET"); 
+	hdr[HDR_OFFSET].dtype = 'I'; 
+	strcpy(hdr[HDR_OFFSET].comment, "Program value (0-255)"); 
+	//XBINNING
+	strcpy(hdr[HDR_XBINNING].name, "XBINNING"); 
+	hdr[HDR_XBINNING].dtype = 'I'; 
+	strcpy(hdr[HDR_XBINNING].comment, "Pixel binned in X direction"); 
+	//YBINNING
+	strcpy(hdr[HDR_YBINNING].name, "YBINNING"); 
+	hdr[HDR_YBINNING].dtype = 'I'; 
+	strcpy(hdr[HDR_YBINNING].comment, "Pixel binned in Y direction"); 
+	//CCD-TEMP
+	strcpy(hdr[HDR_CCDTEMP].name, "CCD-TEMP"); 
+	hdr[HDR_CCDTEMP].dtype = '\0'; // This will be activated if the ccd temp is read 
+	strcpy(hdr[HDR_CCDTEMP].comment, "Sensor temperature"); 
+	//PSZX
+	strcpy(hdr[HDR_PSZX].name, "PSZX"); 
+	hdr[HDR_PSZX].dtype = '\0'; //'F'; 
+	strcpy(hdr[HDR_PSZX].unit, "um"); 
+	strcpy(hdr[HDR_PSZX].comment, "Size of a pixel in X direction"); 
+	//PSZY
+	strcpy(hdr[HDR_PSZY].name, "PSZY"); 
+	hdr[HDR_PSZY].dtype = '\0'; //'F'; 
+	strcpy(hdr[HDR_PSZY].unit, "um"); 
+	strcpy(hdr[HDR_PSZY].comment, "Size of a pixel in Y direction"); 
+	//FILTER
+	strcpy(hdr[HDR_FILTER].name, "FILTER"); 
+	hdr[HDR_FILTER].dtype = 'S'; 
+	strcpy(hdr[HDR_FILTER].comment, "Name of light filter used"); 
+	//TELESCOP
+	strcpy(hdr[HDR_TELESCOP].name, "TELESCOP"); 
+	hdr[HDR_TELESCOP].dtype = '\0'; //'S'; 
+	strcpy(hdr[HDR_TELESCOP].comment, "Data acquisition telescope"); 
+	//FOCALLEN
+	strcpy(hdr[HDR_FOCALLEN].name, "FOCALLEN"); 
+	hdr[HDR_FOCALLEN].dtype = '\0'; //'I'; 
+	strcpy(hdr[HDR_FOCALLEN].unit, "mm"); 
+	strcpy(hdr[HDR_FOCALLEN].comment, "Telescope focal length"); 
+	//APTDIA
+	strcpy(hdr[HDR_APTDIA].name, "APTDIA"); 
+	hdr[HDR_APTDIA].dtype = '\0'; //'I'; 
+	strcpy(hdr[HDR_APTDIA].unit, "mm"); 
+	strcpy(hdr[HDR_APTDIA].comment, "Telescope aperture diameter"); 
+	//IPANGX
+	strcpy(hdr[HDR_IPANGX].name, "IPANGX"); 
+	hdr[HDR_IPANGX].dtype = '\0'; //'F'; 
+	strcpy(hdr[HDR_IPANGX].unit, "arcsec/pix"); 
+	strcpy(hdr[HDR_IPANGX].comment, "Sky sampling rate X"); 
+	//IPANGY
+	strcpy(hdr[HDR_IPANGY].name, "IPANGY"); 
+	hdr[HDR_IPANGY].dtype = '\0'; //'F'; 
+	strcpy(hdr[HDR_IPANGY].unit, "arcsec/pix"); 
+	strcpy(hdr[HDR_IPANGY].comment, "Sky sampling rate Y"); 
+	//IMAGETYP
+	strcpy(hdr[HDR_IMAGETYP].name, "IMAGETYP"); 
+	hdr[HDR_IMAGETYP].dtype = '\0'; //'S'; 
+	strcpy(hdr[HDR_IMAGETYP].unit, "L|B|D|F"); 
+	strcpy(hdr[HDR_IMAGETYP].comment, "Type of image"); 
+	//FRAMENO
+	strcpy(hdr[HDR_FRAMENO].name, "FRAMENO"); 
+	hdr[HDR_FRAMENO].dtype = 'I'; 
+	strcpy(hdr[HDR_FRAMENO].comment, "Frame sequence number"); 
+	//SITELAT
+	strcpy(hdr[HDR_SITELAT].name, "SITELAT"); 
+	hdr[HDR_SITELAT].dtype = '\0'; //'S'; 
+	strcpy(hdr[HDR_SITELAT].comment, "Site latitude"); 
+	//SITELONG
+	strcpy(hdr[HDR_SITELONG].name, "SITELONG"); 
+	hdr[HDR_SITELONG].dtype = '\0'; //'S'; 
+	strcpy(hdr[HDR_SITELONG].comment, "Site longitude"); 
+	//DATE-OBS
+	strcpy(hdr[HDR_DATEOBS].name, "DATE-OBS"); 
+	hdr[HDR_DATEOBS].dtype = 'S'; 
+	strcpy(hdr[HDR_DATEOBS].unit, "UTC"); 
+	strcpy(hdr[HDR_DATEOBS].comment, "Date/Time at the start of the exposure"); 
+	//DATE-OBS
+	strcpy(hdr[HDR_DATE].name, "DATE"); 
+	hdr[HDR_DATE].dtype = 'D'; 
+	//OBSERVER
+	strcpy(hdr[HDR_OBSERVER].name, "OBSERVER"); 
+	hdr[HDR_OBSERVER].dtype = '\0'; //'S'; 
+	strcpy(hdr[HDR_OBSERVER].comment, "Observer name"); 
+	//OBJECT
+	strcpy(hdr[HDR_OBJECT].name, "OBJECT"); 
+	hdr[HDR_OBJECT].dtype = '\0'; //'S'; 
+	strcpy(hdr[HDR_OBJECT].comment, "Object name"); 
+}
+
 void get_filename(char **filename, int mode, char* flt)
 {
 	GtkWidget *dialog = gtk_file_chooser_dialog_new(C_("dialog-open","Open File"), (GtkWindow *) window, GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, ((mode == 1) ? GTK_STOCK_SAVE : GTK_STOCK_OPEN), GTK_RESPONSE_ACCEPT, NULL);
@@ -691,7 +816,6 @@ void filenaming(char *thdfit)
 	if ((fitdateadd == 1) || (fittimeadd == 1))
 	{
 		strcpy(thdfit, g_build_path(G_DIR_SEPARATOR_S, fitfolder, fitbase, NULL));
-		localt = time(NULL);
 		now    = *(localtime(&localt));
 		if (fitdateadd == 1)
 		{
@@ -766,6 +890,7 @@ void shotsnaming(char *thdfit, int thdshots)
 		sprintf(thdsuffix, "_%04d", thdshots);
 	}
 	strcat(thdfit, thdsuffix);
+	fithdr[HDR_FRAMENO].ivalue = thdshots;
 }
 
 gpointer thd_capture_run(gpointer thd_data)
@@ -775,7 +900,9 @@ gpointer thd_capture_run(gpointer thd_data)
 	int thdtimer = 0, thdtimeradd = 0;
 	int avimaxframes = 0;
 	char thdfit[2048];
+	char thdtdmark[32];
 	time_t ref, last;
+	struct tm now;
 	struct timeval clks, clke;
 	struct timeval clkws, clkwe;
 	GThread *thd_pixbuf = NULL;
@@ -863,6 +990,14 @@ gpointer thd_capture_run(gpointer thd_data)
 			}
 		}
 		g_rw_lock_writer_lock(&thd_caplock);
+		// Fit header date-obs (date of exposure start)
+		ref  = time(NULL);
+		now  = *(gmtime(&ref));
+		if (strftime(thdtdmark, 32, "%FT%T" ,&now) > 0)
+		{
+			strcpy(fithdr[HDR_DATEOBS].svalue , thdtdmark);
+		}
+		// Shoot
 		thdshoot = imgcam_shoot();
 		readout = thdshoot;
 		thdrun = run;
@@ -1221,7 +1356,7 @@ gpointer thd_fitsav_run(gpointer thd_data)
 {
 	// Save fit goes here
 	g_rw_lock_reader_lock(&thd_caplock);
-	int retval = imgfit_save_file(NULL);
+	int retval = imgfit_save_file(NULL, fithdr, FITHDR_SLOTS);
 	g_rw_lock_reader_unlock(&thd_caplock);
 
 	if (retval == 0)

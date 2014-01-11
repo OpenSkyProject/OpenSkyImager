@@ -19,6 +19,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+typedef struct
+{
+	char   name[9];
+	char   dtype;      // S = string, I/F = number, D = CurrentDate (name/value fields unused), B = boolean (use ivalue), '\0' = unused
+	char   svalue[71];
+	double dvalue;
+	int    ivalue;
+	char   unit[16];
+	char   comment[71];
+} fit_rowhdr;
 
 // imgFitsio "class" methods
 char           *imgfit_get_name();
@@ -37,5 +47,5 @@ int             imgfit_loaded();
 char           *imgfit_get_msg();
 void            imgfit_init();
 int             imgfit_load_file(char *filename);
-int             imgfit_save_file(char *filename);
+int             imgfit_save_file(char *filename, fit_rowhdr *hdr, int hdrsz);
 

@@ -485,6 +485,7 @@ void hsc_offset_build()
 	g_signal_connect(G_OBJECT(hsc_offset), "change-value", G_CALLBACK(hsc_offset_changed),  NULL);
 	gtk_range_set_value(GTK_RANGE(hsc_offset), 120);
 	imgcam_get_expar()->offset = 120;
+	fithdr[HDR_OFFSET].ivalue = imgcam_get_expar()->offset;
 }
 
 void hsc_gain_build()
@@ -497,6 +498,7 @@ void hsc_gain_build()
 	g_signal_connect(G_OBJECT(hsc_gain), "change-value", G_CALLBACK(hsc_gain_changed),  NULL);
 	gtk_range_set_value(GTK_RANGE(hsc_gain), 20);
 	imgcam_get_expar()->gain = 20;
+	fithdr[HDR_GAIN].ivalue = imgcam_get_expar()->gain;
 }
 
 void cmb_csize_build()
@@ -1414,6 +1416,7 @@ void imgwin_build()
 	// Code Init
 	imgfit_init();
 	imgcfw_init();
+	fithdr_init(fithdr, FITHDR_SLOTS);
 	/// Value "No cam" of the models combo
 	imgcam_set_model(C_("camio","None"));
 

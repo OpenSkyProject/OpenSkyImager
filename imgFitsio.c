@@ -221,9 +221,10 @@ int imgfit_load_file(char *filename)
 	return (retval);
 }
 
-int imgfit_save_file(char *filename)
+int imgfit_save_file(char *filename, fit_rowhdr *hdr, int hdrsz)
 {
-	int retval = 1;
+	int retval = 1, i;
+	
 	fitsfile *ofptr;   
 	char fname[2048] = "!";	// ! for deleting existing file and create new
 
@@ -258,14 +259,44 @@ int imgfit_save_file(char *filename)
 		{
 			fits_create_img(ofptr, bitpix, naxes, naxis, &status);
 			// Header update must go here
-			//fits_update_key(fptr, TSTRING, "SOFTWARE", PROGNAME,"", &status);
-			//fits_update_key(fptr, TSTRING, "CAMERA", CAMERANAME,"", &status);
-			//fits_update_key(fptr, TLONG,   "GAIN", &gain,"", &status);
-			//fits_update_key(fptr, TLONG,   "OFFSET", &offset,"", &status);
-			//fits_update_key(fptr, TLONG,   "AMP", &amp,"", &status);
-			//fits_update_key(fptr, TLONG,   "EXPOSURE", &exposuretime, "Total Exposure Time", &status);
-			//fits_update_key(fptr, TDOUBLE, "SENSTEMP", &temp, "Sensor temperature", &status);
-			//
+			if (hdr != NULL)
+			{
+				for (i = 0; i < hdrsz; i++)
+				{
+					if (hdr[i].dtype != '\0')
+					{
+						// If hdr[i].dtype == '\0' key is ignored
+						switch ((int)hdr[i].dtype)
+						{
+							case (int)'S':
+								fits_update_key(ofptr, TSTRING, hdr[i].name, hdr[i].svalue, hdr[i].comment, &status);
+								break;
+							case 'I':
+								fits_update_key(ofptr, TLONG, hdr[i].name, &hdr[i].ivalue, hdr[i].comment, &status);
+								break;
+							case 'F':
+								fits_update_key(ofptr, TDOUBLE, hdr[i].name, &hdr[i].dvalue, hdr[i].comment, &status);
+								break;
+							case 'D':
+								fits_write_date(ofptr, &status);
+								if (strlen(hdr[i].comment) > 0)
+								{
+									fits_modify_comment(ofptr,"DATE", hdr[i].comment, &status);
+								}
+								break;
+							case 'B':
+								fits_update_key(ofptr, TLOGICAL, hdr[i].name, &hdr[i].ivalue, hdr[i].comment, &status);
+								break;
+						}
+						//if (strlen(hdr[i].unit) > 0)
+						//{
+							// Update comment with data unit if needed
+						//	fits_write_key_unit(ofptr, hdr[i].name, hdr[i].unit, &status);
+						//}
+					}
+				}
+			}
+			// Write image data
 			fits_write_img(ofptr, datatype, 1, (naxis[0] * naxis[1]), databuffer, &status);
 			fits_close_file(ofptr, &status);
 		}

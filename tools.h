@@ -21,6 +21,7 @@
  */
 
 int get_cpu_cores(void);
+char *rtrim(char *instr); 
 int isdir(char* path);
 int isfile(char* path);
 int isfifo(char* path);

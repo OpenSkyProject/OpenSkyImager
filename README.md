@@ -157,4 +157,8 @@ Version 0.7.0
   restored when slow speed mode or capture is set
 - New "dark / light" frame feature for QHY9
 
+Version 0.7.1
+============
+- Add save image header info for fit files
+
 

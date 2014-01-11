@@ -480,6 +480,8 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 				// Slider update
 				gtk_range_set_value(GTK_RANGE(vsc_tecpwr), pct);
 				gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
+				// Header update
+				fithdr[HDR_CCDTEMP].dvalue = round(imgcam_get_tecp()->tectemp * 100) / 100;
 			}
 			else
 			{
@@ -512,6 +514,8 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 		// Slider update
 		gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatec), 0, imgmsg);
+		// Header update
+		fithdr[HDR_CCDTEMP].dvalue = round(imgcam_get_tecp()->tectemp * 100) / 100;
 	}
 	
 	return FALSE;
@@ -1275,10 +1279,12 @@ void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
 	if (tmp > 0) 
 	{
 		imgcam_get_expar()->time = (int) (tmp * 1000);
+		fithdr[HDR_EXPTIME].dvalue = (double)imgcam_get_expar()->time/1000;
 	}
 	else
 	{
 		imgcam_get_expar()->time = 1;
+		fithdr[HDR_EXPTIME].dvalue = 0.001;
 	}
 	imgcam_get_expar()->edit = 1;
 	g_rw_lock_writer_unlock(&thd_caplock);
@@ -1411,6 +1417,7 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 			{
 				// Update camera model/type related UI 
 				// some choices can only be made after connection
+				strcpy(fithdr[HDR_INSTRUME].svalue, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cmb_camera)));
 				int tmp = 0;
 				combo_setlist(cmb_bin, imgcam_get_camui()->binstr);
 				combo_setlist(cmb_csize, imgcam_get_camui()->roistr);
@@ -1509,6 +1516,7 @@ gboolean hsc_gain_changed (GtkRange *range, GtkScrollType scroll, gdouble value,
 {
 	g_rw_lock_writer_lock(&thd_caplock);
 	imgcam_get_expar()->gain = gtk_range_get_value(range);
+	fithdr[HDR_GAIN].ivalue = imgcam_get_expar()->gain;
 	imgcam_get_expar()->edit = 1;
 	sprintf(imgmsg, C_("main","Gain set to: %d"), imgcam_get_expar()->gain);
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
@@ -1520,6 +1528,7 @@ gboolean hsc_offset_changed (GtkRange *range, GtkScrollType scroll, gdouble valu
 {
 	g_rw_lock_writer_lock(&thd_caplock);
 	imgcam_get_expar()->offset = gtk_range_get_value(range);
+	fithdr[HDR_OFFSET].ivalue = imgcam_get_expar()->offset;
 	imgcam_get_expar()->edit = 1;
 	sprintf(imgmsg, C_("main","Offset set to: %d"), imgcam_get_expar()->offset);
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
@@ -1538,6 +1547,8 @@ void cmb_bin_changed (GtkComboBox *widget, gpointer user_data)
 		if (tmp >= 0) 
 		{
 			imgcam_get_expar()->bin = tmp;
+			fithdr[HDR_XBINNING].ivalue = tmp;
+			fithdr[HDR_YBINNING].ivalue = tmp;
 			imgcam_get_expar()->edit = 1;
 			sprintf(imgmsg, C_("main","Binning mode set to: %dx%d"), imgcam_get_expar()->bin, imgcam_get_expar()->bin);
 			gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
@@ -2110,6 +2121,7 @@ void cmb_flt_changed (GtkComboBox *widget, gpointer user_data)
 			fitflt[0] = '\0';	
 			sprintf(imgmsg, C_("main","Filter name removed from naming convention"));
 		}
+		strcpy(fithdr[HDR_FILTER].svalue,fitflt);
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 }
@@ -2149,6 +2161,8 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 			{
 				if (status == 1)
 				{
+					// Activate ccdtemp header entry
+					fithdr[HDR_CCDTEMP].dtype = 'F';
 					if (tmrtecrefresh == -1)
 					{
 						// If there's no one running, run it
@@ -2176,6 +2190,8 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 				}
 				else
 				{
+					// De-activate ccdtemp header entry
+					fithdr[HDR_CCDTEMP].dtype = '\0';
 					if (tmrtecrefresh != -1)
 					{
 						// Stop tec
@@ -2205,6 +2221,8 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 					tecrun = 1;
 					imgcam_get_tecp()->tecerr = 0;
 					gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
+					// Activate ccdtemp header entry
+					fithdr[HDR_CCDTEMP].dtype = 'F';
 				}
 				else
 				{
@@ -2214,6 +2232,8 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 					tecfbk[0] = '\0';
 					gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
 					gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Enable tec read"));
+					// De-activate ccdtemp header entry
+					fithdr[HDR_CCDTEMP].dtype = '\0';
 				}
 			}
 			else

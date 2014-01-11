@@ -20,6 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+void fithdr_init(fit_rowhdr *hdr, int hdrsz);
 void get_filename(char **filename, int mode, char* flt);
 void set_img_fit();
 void set_img_full();

@@ -58,6 +58,21 @@ int get_cpu_cores(void)
 }
 //
 
+char *rtrim(char *instr) 
+{
+	if (instr != NULL)
+	{
+		if (strlen(instr) > 0) 
+		{
+			while ((instr[strlen(instr)-1] == '\t') || (instr[strlen(instr)-1] == '\n') || (instr[strlen(instr)-1] == ' ')) 
+			{
+				instr[strlen(instr)-1] = '\0';
+			}
+		}
+	}
+	return instr; 
+}
+
 int isdir(char* path)
 {
 	int retval = 0;
