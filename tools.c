@@ -25,6 +25,8 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include "tools.h"
 
 // Hints got from: http://stackoverflow.com/questions/9629850/how-to-get-cpu-info-in-c-on-linux-such-as-number-of-cores
@@ -141,5 +143,42 @@ int mkpath(char* file_path, mode_t mode)
 		}
 	}
 	return (retval);
+}
+
+char *getusername()
+{
+	struct passwd *pwd;
+	char *loginname = getenv("USER");
+	char *retval = NULL;
+
+	if (loginname != NULL)
+	{
+		pwd = getpwnam(loginname);
+		if (pwd != NULL)
+		{
+			#ifndef HAVE_NO_PASSWD_PW_GECOS
+				// Some implentations don't feature the pw_gecos field.
+				// If such and not yet fixed in lib usiong the above macro
+				// just add it here.
+				retval = (strlen(pwd->pw_gecos) > 0) ? pwd->pw_gecos : loginname;
+				if (strchr(retval, ',') != NULL)
+				{
+					retval[strcspn(retval, ",")] = '\0';
+				}
+			#else
+				retval = loginname;
+			#endif
+		}
+		else
+		{
+			retval = loginname;
+		}
+	}
+	return retval;
+}
+
+char *getloginname()
+{
+	return getenv("USER");
 }
 

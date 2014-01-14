@@ -26,7 +26,6 @@ typedef struct
 	char   svalue[71];
 	double dvalue;
 	int    ivalue;
-	char   unit[16];
 	char   comment[71];
 } fit_rowhdr;
 

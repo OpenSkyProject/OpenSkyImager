@@ -75,26 +75,36 @@ then
 	if [ "$dev" == "$bdir/" ] 
 	then
 		bd=$( lsusb | grep 1618:1002 | cut -d ' ' -f 2,4 | sed -e 's/ /\//' -e 's/://' )
+		dev="$bdir/$bd"
 	fi
 	if [ "$dev" == "$bdir/" ] 
 	then
 		bd=$( lsusb | grep 0547:1002 | cut -d ' ' -f 2,4 | sed -e 's/ /\//' -e 's/://' )
+		dev="$bdir/$bd"
 	fi
 	if [ "$dev" == "$bdir/" ] 
 	then
 		bd=$( lsusb | grep 04b4:8613 | cut -d ' ' -f 2,4 | sed -e 's/ /\//' -e 's/://' )
+		dev="$bdir/$bd"
 	fi
 	if [ "$dev" == "$bdir/" ] 
 	then
 		bd=$( lsusb | grep 16c0:081a | cut -d ' ' -f 2,4 | sed -e 's/ /\//' -e 's/://' )
+		dev="$bdir/$bd"
 	fi
+
+	if [ "$dev" == "$bdir/" ] 
+	then
+		bd=$( lsusb | grep 1856:0011 | cut -d ' ' -f 2,4 | sed -e 's/ /\//' -e 's/://' )
+		dev="$bdir/$bd"
+	fi	
 fi
 
 # if we have found a camera, lets reprogram it.
 if [ "$dev" != "$bdir/" ] 
 then
 	echo "Loading firmware for $dev (3 sec delay)" 
-	if [ "$src2" == "16c0:296d" ]
+	if [ "$src2" != "16c0:296d" ]
 	then
 		#This is not QHY5
 		/sbin/fxload -t fx2 -I $fwfl -D $dev
@@ -109,7 +119,7 @@ else
 	if [ "$dev" != "$bdir/" ] 
 	then
 		echo "Resetting $dev..."
-		if [ "$src2" == "16c0:296d" ]
+		if [ "$src2" != "16c0:296d" ]
 		then
 			#This is not QHY5
 			/sbin/fxload -t fx2 -I $fwfl -D $dev

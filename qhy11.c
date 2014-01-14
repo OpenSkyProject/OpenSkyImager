@@ -87,6 +87,9 @@ void qhy11_init()
 	strcpy(imgcam_get_camui()->byrstr, "0");
 	strcpy(imgcam_get_camui()->tecstr, "0:255:1:2");
 	strcpy(imgcam_get_camui()->whlstr, C_("camio","5-Positions|6-Positions|7-Positions|8-Positions:0"));
+	// Header values
+	imgcam_get_camui()->pszx = 9.00;
+	imgcam_get_camui()->pszy = 9.00;
 	
 	imgcam_get_expar()->bitpix  = 16;	
 	imgcam_get_expar()->bytepix = 2;	

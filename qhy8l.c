@@ -38,7 +38,7 @@ static unsigned char REG[64];
 static unsigned char REGBCK[64];
 
 // These are shared with decode
-static int bin, i_width, width, height, totalsize, transfer_size;
+static int bin, i_width, width, height, totalsize, transfer_size, top_skip_pix;
 
 void qhy8l_init()
 {
@@ -87,6 +87,9 @@ void qhy8l_init()
 	strcpy(imgcam_get_camui()->byrstr, "1");
 	strcpy(imgcam_get_camui()->tecstr, "0:255:1:2");
 	strcpy(imgcam_get_camui()->whlstr, "");
+	// Header values
+	imgcam_get_camui()->pszx = 7.80;
+	imgcam_get_camui()->pszy = 7.80;
 	
 	imgcam_get_expar()->bitpix  = 16;	
 	imgcam_get_expar()->bytepix = 2;	
@@ -128,9 +131,8 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 {
 	int retval = 1;	
 	int time, Vbin, Hbin, ShortExp, antiamp, vbe, PatchNumber;
-	int P_Size, Total_P;
 	int top_skip = 0, bot_skip = 0;	
-	int top_skip_pix = 0, top_skip_null = 100;
+	int top_skip_null = 100;
 	unsigned char time_H,time_M,time_L;
 	
 	expar->wtime = (expar->mode == 2) ? expar->time * 2 : expar->time;
@@ -173,13 +175,13 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 	switch ( bin ) 
 	{
 		case 1: 
-			i_width = 3328; height = 2030; width = i_width; Vbin = bin; Hbin = bin; top_skip_pix = 1200; P_Size=26624;
+			i_width = 3328; height = 2030; width = i_width; Vbin = bin; Hbin = bin; top_skip_pix = 1200; //P_Size=26624;
 			break;
 		case 2: 
-			i_width = 1664; height = 1015; width = i_width; Vbin = bin; Hbin = bin; top_skip_pix = 1120; P_Size=26624;
+			i_width = 1664; height = 1015; width = i_width; Vbin = bin; Hbin = bin; top_skip_pix = 1120; //P_Size=26624;
 			break;
 		case 4: 
-			i_width = 1664; height =  508; Vbin = 4; Hbin = 2; width = i_width / 2; top_skip_pix = 0; P_Size=1651*1024;
+			i_width = 1664; height =  508; Vbin = 4; Hbin = 2; width = i_width / 2; top_skip_pix = 0; //P_Size=1651*1024;
 			break;
 		default:
 			printf( "Error: Registers NOT set (bin)!\n");
@@ -216,21 +218,10 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 	
 	// Looks like the actual transfer size is a multiple of 1024 or 512 (Camera dependent. QHY7=1024, QHY9=512)
 	// Either is the nearest (round) or is the floor value (Again camera dependent QHY6=512 round)
-	//transfer_size = 512 * lround(totalsize / 512);
-	//expar->tsize = transfer_size;
-
-	//PatchNumber = qhy_getPatch(totalsize, 512, 0);
-	if (fmod(totalsize, P_Size) != 0.) 
-	{
-		Total_P = totalsize / P_Size + 1;
-		PatchNumber = Total_P * P_Size - totalsize;
-	}
-	else
-	{
-		PatchNumber = 0;
-	}
-	transfer_size = totalsize + PatchNumber;
+	transfer_size = 512 * lround(totalsize / 512);
 	expar->tsize = transfer_size;
+
+	PatchNumber = qhy_getPatch(totalsize, 512, 0);
 
 	time_L=fmod(time,256);
 	time_M=(time-time_L)/256;
@@ -335,10 +326,11 @@ void qhy8l_decode(unsigned char *databuffer)
 		case 1:  //1X1 binning
 			// Reorder lines of interlaced readout
 			processed = (unsigned char*)realloc(processed, allocsize);
-			src1 = databuffer;
-			src2 = (databuffer + i_width * (height>>1) * 2);
-			tgt = processed;
+			// This should mimic what cccd does...
 			t = height>>1;
+			src1 = (databuffer + top_skip_pix);
+			src2 = (databuffer + (i_width * t * 2) + top_skip_pix);
+			tgt = processed;
 			while (t--) 
 			{
 				memcpy( tgt , src1 , i_width * 2); 
@@ -382,6 +374,10 @@ void qhy8l_decode(unsigned char *databuffer)
 			free(processed);
 			break;
 		case 2:  //2X2 binning
+			// This should mimic what cccd does...
+			src1 = databuffer + top_skip_pix;
+			tgt  = databuffer;
+			memcpy(tgt, src1, (i_width * height * 2));  
 		case 4:  //4X4 binning
 			if (width < i_width)
 			{

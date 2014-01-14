@@ -268,7 +268,7 @@ int imgfit_save_file(char *filename, fit_rowhdr *hdr, int hdrsz)
 						// If hdr[i].dtype == '\0' key is ignored
 						switch ((int)hdr[i].dtype)
 						{
-							case (int)'S':
+							case 'S':
 								fits_update_key(ofptr, TSTRING, hdr[i].name, hdr[i].svalue, hdr[i].comment, &status);
 								break;
 							case 'I':
@@ -288,11 +288,6 @@ int imgfit_save_file(char *filename, fit_rowhdr *hdr, int hdrsz)
 								fits_update_key(ofptr, TLOGICAL, hdr[i].name, &hdr[i].ivalue, hdr[i].comment, &status);
 								break;
 						}
-						//if (strlen(hdr[i].unit) > 0)
-						//{
-							// Update comment with data unit if needed
-						//	fits_write_key_unit(ofptr, hdr[i].name, hdr[i].unit, &status);
-						//}
 					}
 				}
 			}

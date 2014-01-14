@@ -1446,6 +1446,19 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 					gtk_widget_set_sensitive(cmb_debayer, 1);
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_debayer), 0);
 				}
+				// Header values
+				if (imgcam_get_camui()->pszx > 0)
+				{
+					fithdr[HDR_PSZX].dtype  = 'F';
+					fithdr[HDR_PSZX].dvalue = imgcam_get_camui()->pszx;
+					fithdr[HDR_PSZY].dtype  = 'F';
+					fithdr[HDR_PSZY].dvalue = imgcam_get_camui()->pszy;
+				}
+				else
+				{
+					fithdr[HDR_PSZX].dtype  = '\0';
+					fithdr[HDR_PSZY].dtype  = '\0';
+				}
 				//Disable choice list
 				gtk_widget_set_sensitive(cmb_camera, 0);
 				gtk_widget_set_sensitive(cmd_setcamlst, 0);

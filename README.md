@@ -124,8 +124,10 @@ The program can be run from any other location, proven that the above
 Sincerely
 *The OpenSkyProject team*
 
-Version 0.6.2
-============
+Versions
+=======
+
+*Version 0.6.2*
 - Minor fix to allow seamless compiling on fedora (cfitsio lib in different 
   location) and some optimizing on conditional compiling
 - Fixed a bug in conditional code not allowing GTK2 clean compile
@@ -140,8 +142,7 @@ Version 0.6.2
 - Solved CFW disconnect requiring 2 clicks in tty mode
 - Update language file (Italian / French finalized) to let translators
 
-Version 0.7.0
-============
+*Version 0.7.0*
 - Adding Avi save feature (8Bit data into RGB24 raw, registax compatible)
 - Add split avi file > 2Gb, max counters to 9999
 - Fixed crash when image save folder does not exist
@@ -157,8 +158,11 @@ Version 0.7.0
   restored when slow speed mode or capture is set
 - New "dark / light" frame feature for QHY9
 
-Version 0.7.1
-============
+*Version 0.7.1*
 - Add save image header info for fit files
 
+*Version 0.7.2*
+- Add save image header info for avi files (in a txt file)
+- Image header info extended (camera pixel size x/y and observer)
+- Vid/Pid of raw "Orion StarShooter" add to the list of QHY5 raw devices
 

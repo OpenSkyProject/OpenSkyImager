@@ -100,6 +100,9 @@ void qhy5ii_init()
 	strcpy(imgcam_get_camui()->byrstr, "-1");
 	strcpy(imgcam_get_camui()->tecstr, "");
 	strcpy(imgcam_get_camui()->whlstr, "");
+	// Header values
+	imgcam_get_camui()->pszx = 0;
+	imgcam_get_camui()->pszy = 0;
 	
 	imgcam_get_expar()->bitpix  = 8;	
 	imgcam_get_expar()->bytepix = 1;	
@@ -318,6 +321,9 @@ int qhy5ii_bonjour()
 				strcpy(imgcam_get_camui()->roistr, "1280x960|1024x768|800x600|640x480|320x240:0");
 				strcpy(imgcam_get_camui()->snrstr, "");
 				strcpy(imgcam_get_camui()->bppstr, "1-8Bit|2-12Bit|3-Hdr:0");
+				// Header values
+				imgcam_get_camui()->pszx = 3.75;
+				imgcam_get_camui()->pszy = 3.75;
 				width   = 1280;
 				height  = 960;
 				bytepix = 1;
@@ -334,6 +340,9 @@ int qhy5ii_bonjour()
 				/// Combo box values list, keep N-<desc> format. Just translate <desc>
 				strcpy(imgcam_get_camui()->snrstr, C_("camio","0-Off|1-On:0"));
 				strcpy(imgcam_get_camui()->bppstr, "1-8Bit|:0");
+				// Header values
+				imgcam_get_camui()->pszx = 5.20;
+				imgcam_get_camui()->pszy = 5.20;
 				width   = 1280;
 				height  = 1024;
 				bytepix = 1;

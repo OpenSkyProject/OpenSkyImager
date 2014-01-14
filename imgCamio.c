@@ -265,6 +265,8 @@ void imgcam_init()
 	strcpy(imgcam_get_camui()->byrstr, "0");
 	strcpy(imgcam_get_camui()->tecstr, "");
 	strcpy(imgcam_get_camui()->whlstr, "");
+	imgcam_get_camui()->pszx = 0;
+	imgcam_get_camui()->pszy = 0;
 
 	// Positively no tec
 	imgcam_get_tecp()->istec      = 0;      // 0 = Not driveable tec or no tec 1 = Driveable tec

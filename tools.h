@@ -20,10 +20,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-int get_cpu_cores(void);
+int   get_cpu_cores(void);
 char *rtrim(char *instr); 
-int isdir(char* path);
-int isfile(char* path);
-int isfifo(char* path);
-int mkpath(char* file_path, mode_t mode);
+int   isdir(char* path);
+int   isfile(char* path);
+int   isfifo(char* path);
+int   mkpath(char* file_path, mode_t mode);
+char *getusername();
+char *getloginname();
 

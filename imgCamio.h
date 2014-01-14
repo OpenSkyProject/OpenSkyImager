@@ -66,6 +66,8 @@ typedef struct
 	char byrstr[256];
 	char tecstr[256];
 	char whlstr[256];
+	double pszx; // Pixel size x direction
+	double pszy; // Pixel size y direction
 } qhy_camui;
 
 // imgcamio "class" methods

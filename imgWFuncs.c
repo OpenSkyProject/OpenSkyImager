@@ -43,7 +43,6 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 		hdr[i].svalue[0]  = '\0'; 
 		hdr[i].ivalue     = 0; 
 		hdr[i].dvalue     = 0.; 
-		hdr[i].unit[0]    = '\0'; 
 		hdr[i].comment[0] = '\0'; 
 	}
 	// Default values
@@ -61,8 +60,7 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 	//EXPTIME
 	strcpy(hdr[HDR_EXPTIME].name, "EXPTIME"); 
 	hdr[HDR_EXPTIME].dtype = 'F'; 
-	strcpy(hdr[HDR_EXPTIME].unit, "s"); 
-	strcpy(hdr[HDR_EXPTIME].comment, "Total integration time"); 
+	strcpy(hdr[HDR_EXPTIME].comment, "[s] Total integration time"); 
 	//GAIN
 	strcpy(hdr[HDR_GAIN].name, "GAIN"); 
 	hdr[HDR_GAIN].dtype = 'I'; 
@@ -82,17 +80,15 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 	//CCD-TEMP
 	strcpy(hdr[HDR_CCDTEMP].name, "CCD-TEMP"); 
 	hdr[HDR_CCDTEMP].dtype = '\0'; // This will be activated if the ccd temp is read 
-	strcpy(hdr[HDR_CCDTEMP].comment, "Sensor temperature"); 
+	strcpy(hdr[HDR_CCDTEMP].comment, "[C] Sensor temperature"); 
 	//PSZX
 	strcpy(hdr[HDR_PSZX].name, "PSZX"); 
 	hdr[HDR_PSZX].dtype = '\0'; //'F'; 
-	strcpy(hdr[HDR_PSZX].unit, "um"); 
-	strcpy(hdr[HDR_PSZX].comment, "Size of a pixel in X direction"); 
+	strcpy(hdr[HDR_PSZX].comment, "[um] Size of a pixel in X direction"); 
 	//PSZY
 	strcpy(hdr[HDR_PSZY].name, "PSZY"); 
 	hdr[HDR_PSZY].dtype = '\0'; //'F'; 
-	strcpy(hdr[HDR_PSZY].unit, "um"); 
-	strcpy(hdr[HDR_PSZY].comment, "Size of a pixel in Y direction"); 
+	strcpy(hdr[HDR_PSZY].comment, "[um] Size of a pixel in Y direction"); 
 	//FILTER
 	strcpy(hdr[HDR_FILTER].name, "FILTER"); 
 	hdr[HDR_FILTER].dtype = 'S'; 
@@ -104,28 +100,23 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 	//FOCALLEN
 	strcpy(hdr[HDR_FOCALLEN].name, "FOCALLEN"); 
 	hdr[HDR_FOCALLEN].dtype = '\0'; //'I'; 
-	strcpy(hdr[HDR_FOCALLEN].unit, "mm"); 
-	strcpy(hdr[HDR_FOCALLEN].comment, "Telescope focal length"); 
+	strcpy(hdr[HDR_FOCALLEN].comment, "[mm] Telescope focal length"); 
 	//APTDIA
 	strcpy(hdr[HDR_APTDIA].name, "APTDIA"); 
 	hdr[HDR_APTDIA].dtype = '\0'; //'I'; 
-	strcpy(hdr[HDR_APTDIA].unit, "mm"); 
-	strcpy(hdr[HDR_APTDIA].comment, "Telescope aperture diameter"); 
+	strcpy(hdr[HDR_APTDIA].comment, "[mm] Telescope aperture diameter"); 
 	//IPANGX
 	strcpy(hdr[HDR_IPANGX].name, "IPANGX"); 
 	hdr[HDR_IPANGX].dtype = '\0'; //'F'; 
-	strcpy(hdr[HDR_IPANGX].unit, "arcsec/pix"); 
-	strcpy(hdr[HDR_IPANGX].comment, "Sky sampling rate X"); 
+	strcpy(hdr[HDR_IPANGX].comment, "[arcsec/pix] Sky sampling rate X"); 
 	//IPANGY
 	strcpy(hdr[HDR_IPANGY].name, "IPANGY"); 
 	hdr[HDR_IPANGY].dtype = '\0'; //'F'; 
-	strcpy(hdr[HDR_IPANGY].unit, "arcsec/pix"); 
-	strcpy(hdr[HDR_IPANGY].comment, "Sky sampling rate Y"); 
+	strcpy(hdr[HDR_IPANGY].comment, "[arcsec/pix] Sky sampling rate Y"); 
 	//IMAGETYP
 	strcpy(hdr[HDR_IMAGETYP].name, "IMAGETYP"); 
 	hdr[HDR_IMAGETYP].dtype = '\0'; //'S'; 
-	strcpy(hdr[HDR_IMAGETYP].unit, "L|B|D|F"); 
-	strcpy(hdr[HDR_IMAGETYP].comment, "Type of image"); 
+	strcpy(hdr[HDR_IMAGETYP].comment, "[L|B|D|F] Type of image"); 
 	//FRAMENO
 	strcpy(hdr[HDR_FRAMENO].name, "FRAMENO"); 
 	hdr[HDR_FRAMENO].dtype = 'I'; 
@@ -141,14 +132,21 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 	//DATE-OBS
 	strcpy(hdr[HDR_DATEOBS].name, "DATE-OBS"); 
 	hdr[HDR_DATEOBS].dtype = 'S'; 
-	strcpy(hdr[HDR_DATEOBS].unit, "UTC"); 
-	strcpy(hdr[HDR_DATEOBS].comment, "Date/Time at the start of the exposure"); 
+	strcpy(hdr[HDR_DATEOBS].comment, "[UTC] Date/Time at the start of the exposure"); 
 	//DATE-OBS
 	strcpy(hdr[HDR_DATE].name, "DATE"); 
 	hdr[HDR_DATE].dtype = 'D'; 
 	//OBSERVER
 	strcpy(hdr[HDR_OBSERVER].name, "OBSERVER"); 
-	hdr[HDR_OBSERVER].dtype = '\0'; //'S'; 
+	if (getusername() != NULL)
+	{
+		hdr[HDR_OBSERVER].dtype = 'S'; 
+		strcpy(hdr[HDR_OBSERVER].svalue, getusername());
+	}
+	else
+	{
+		hdr[HDR_OBSERVER].dtype = '\0'; 
+	}
 	strcpy(hdr[HDR_OBSERVER].comment, "Observer name"); 
 	//OBJECT
 	strcpy(hdr[HDR_OBJECT].name, "OBJECT"); 
@@ -893,12 +891,100 @@ void shotsnaming(char *thdfit, int thdshots)
 	fithdr[HDR_FRAMENO].ivalue = thdshots;
 }
 
+int wrtavihdr(char *filename, fit_rowhdr *hdr, int hdrsz)
+{
+	int i, retval = 1;
+	FILE *pfile = NULL;
+	char row[256], num[32];
+	
+	if (strstr(filename, ".avi") != NULL)
+	{
+		filename[strcspn(filename, ".avi")] = '\0';
+	}
+	strcat(filename, ".txt");
+	
+	// Folder structure is already there due to filenaming
+	if ((retval = ((pfile = fopen(filename, "w")) != NULL)) == 1)
+	{
+		if (hdr != NULL)
+		{
+			for (i = 0; i < hdrsz; i++)
+			{
+				if ((hdr[i].dtype != '\0') && (hdr[i].dtype != 'D'))
+				{
+					// If hdr[i].dtype == '\0' key is ignored
+					strcpy(row, hdr[i].name);
+					strcat(row, "=");
+					switch ((int)hdr[i].dtype)
+					{
+						case 'S':
+							strcat(row, "'");
+							strcat(row, hdr[i].svalue);
+							strcat(row, "'");
+							if (strlen(hdr[i].comment) > 0)
+							{
+								strcat(row, " /");
+								strcat(row, hdr[i].comment);
+							}
+							break;
+						case 'I':
+							sprintf(num, "%d", hdr[i].ivalue);
+							strcat(row, num);
+							if (strlen(hdr[i].comment) > 0)
+							{
+								strcat(row, " /");
+								strcat(row, hdr[i].comment);
+							}
+							break;
+						case 'F':
+							sprintf(num, "%1.3f", hdr[i].dvalue);
+							strcat(row, num);
+							if (strlen(hdr[i].comment) > 0)
+							{
+								strcat(row, " /");
+								strcat(row, hdr[i].comment);
+							}
+							break;
+						case 'D':
+							// Date is a nonsense here
+							break;
+						case 'B':
+							if (hdr[i].ivalue == 0)
+							{
+								strcat(row, "F");
+							}
+							else
+							{
+								strcat(row, "T");
+							}
+							if (strlen(hdr[i].comment) > 0)
+							{
+								strcat(row, " /");
+								strcat(row, hdr[i].comment);
+							}
+							break;
+					}
+					strcat(row, "\n");
+					// Write into file
+					if ((retval = (fputs(row, pfile) != EOF)) == 0)
+					{
+						// On error exit loop
+						break;
+					}
+				}
+			}
+		}
+		retval = (fclose(pfile) != EOF);
+	}
+	return (retval);	
+}
+
 gpointer thd_capture_run(gpointer thd_data)
 {
 	int thdrun = 1, thderror = 0, thdhold = 0, thdmode = 0, thdshoot = 0;
 	int thdpreshots = shots, thdexp = 0, thdtlmode = 0;
 	int thdtimer = 0, thdtimeradd = 0;
-	int avimaxframes = 0;
+	int avimaxframes = 0, writeavih = 0;
 	char thdfit[2048];
 	char thdtdmark[32];
 	time_t ref, last;
@@ -998,6 +1084,7 @@ gpointer thd_capture_run(gpointer thd_data)
 			strcpy(fithdr[HDR_DATEOBS].svalue , thdtdmark);
 		}
 		// Shoot
+		writeavih = imgcam_get_expar()->edit;
 		thdshoot = imgcam_shoot();
 		readout = thdshoot;
 		thdrun = run;
@@ -1111,6 +1198,7 @@ gpointer thd_capture_run(gpointer thd_data)
 							// Avi
 							if ((imgcam_get_shpar()->width != imgavi_get_width()) || (imgcam_get_shpar()->height != imgavi_get_height()) || (imgcam_get_shpar()->bytepix != imgavi_get_bytepix()) || (shots > avimaxframes))
 							{
+								writeavih = 2;
 								// Close current and create a new one
 								imgavi_set_width(imgcam_get_shpar()->width);
 								imgavi_set_height(imgcam_get_shpar()->height);
@@ -1121,6 +1209,15 @@ gpointer thd_capture_run(gpointer thd_data)
 								imgavi_set_name(thdfit);
 								run = imgavi_open();
 								runerr = (run == 0);
+							}
+							if (writeavih > 0)
+							{
+								// Write avi header file
+								if (writeavih == 1)
+								{
+									shotsnaming(thdfit, shots);
+								}
+								wrtavihdr(thdfit, fithdr, FITHDR_SLOTS);
 							}
 							imgavi_set_data(imgcam_get_data());
 						}

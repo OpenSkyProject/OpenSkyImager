@@ -92,6 +92,9 @@ void qhy6old_init()
 	strcpy(imgcam_get_camui()->byrstr, "-1");
 	strcpy(imgcam_get_camui()->tecstr, "");
 	strcpy(imgcam_get_camui()->whlstr, "");
+	// Header values
+	imgcam_get_camui()->pszx = 6.50;
+	imgcam_get_camui()->pszy = 6.25;
 	
 	imgcam_get_expar()->bitpix  = 16;	
 	imgcam_get_expar()->bytepix = 2;	
