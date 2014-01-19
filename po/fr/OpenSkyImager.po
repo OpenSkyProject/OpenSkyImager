@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: OpenSkyImager 0.7.3\n"
 "Report-Msgid-Bugs-To: gspezzano@gmail.com\n"
 "POT-Creation-Date: 2014-01-19 16:42+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2014-01-19 22:32+0100\n"
 "Last-Translator: fphg <fabrice@phung.fr>\n"
 "Language: fr_FR\n"
 "Language-Team: fr_FR <fabrice@phung.fr>\n"
@@ -21,19 +21,20 @@ msgstr ""
 #, c-format
 msgctxt "avi"
 msgid "Unable to write file %s. Check permissions"
-msgstr ""
+msgstr "Ne peut écrire dans fichier %s. Vérifiez permissions"
 
 #: ../imgAvi.c:180
 #, c-format
 msgctxt "avi"
 msgid "A component of the file path %s is not a folder"
-msgstr ""
+msgstr "Un élément du chemin fichier %s n'est pas un répertoire"
 
 #: ../imgAvi.c:186
 #, c-format
 msgctxt "avi"
 msgid "A component of the file path %s could not be created, check permissions"
 msgstr ""
+"Un élément du chemin fichier %s n'a pas pu être créé, vérifiez permissions"
 
 #: ../imgCFWio.c:142 ../imgCFWio.c:236
 msgctxt "cfw"
@@ -110,8 +111,10 @@ msgstr "Déplacement roue à filtre sur slot: %d"
 
 #: ../imgCFWio.c:440
 msgctxt "cfw"
-msgid "Could not start notification thread, btw slot selection command was sent ok."
-msgstr "N'a pas pu démarrer la notification, mais la commande de sélection slot a "
+msgid ""
+"Could not start notification thread, btw slot selection command was sent ok."
+msgstr ""
+"N'a pas pu démarrer la notification, mais la commande de sélection slot a "
 "bien été envoyée."
 
 #: ../imgCFWio.c:453
@@ -152,6 +155,7 @@ msgstr "Erreur cfitsio: %d"
 msgctxt "fitsio"
 msgid "A component of the file path %s could not be created, check permissions"
 msgstr ""
+"Un élément du chemin fichier %s n'a pas pu être créé, vérifiez permissions"
 
 #: ../imgPixbuf.c:242 ../imgPixbuf.c:443
 msgctxt "pixbuf"
@@ -170,14 +174,14 @@ msgstr "Image: %s sauvegardée"
 #, c-format
 msgctxt "main"
 msgid "Frame: add to %s"
-msgstr ""
+msgstr "Trame: ajouter à %s"
 
 #. / Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
 #: ../imgWCallbacks.c:168 ../imgWCallbacks.c:252
 #, c-format
 msgctxt "main"
 msgid "Image: %s saved, Frame: add to %s"
-msgstr ""
+msgstr "Image: %s sauvegardée, Trame: ajouter à %s"
 
 #: ../imgWCallbacks.c:220
 msgctxt "main"
@@ -258,7 +262,8 @@ msgstr "Afficher paramètres"
 
 #: ../imgWCallbacks.c:612
 msgctxt "about"
-msgid "OpenSkyImager is a capture program written for Astronomy camera operation"
+msgid ""
+"OpenSkyImager is a capture program written for Astronomy camera operation"
 msgstr "OpenSkyImager est un programme de capture pour caméras astro"
 
 #: ../imgWCallbacks.c:613
@@ -338,8 +343,10 @@ msgstr "Exposition en cours interrompue"
 
 #: ../imgWCallbacks.c:880
 msgctxt "main"
-msgid "Abort capture failed or not supported, please wait end of current exposure"
-msgstr "L'interruption de capture a échoué ou est non supportée, merci d'attendre la "
+msgid ""
+"Abort capture failed or not supported, please wait end of current exposure"
+msgstr ""
+"L'interruption de capture a échoué ou est non supportée, merci d'attendre la "
 "fin de l'exposition en cours"
 
 #. / Start / Stop / Kill button state message
@@ -523,7 +530,7 @@ msgstr "Taille capture sur: %dx%d"
 #: ../imgWCallbacks.c:1599
 msgctxt "main"
 msgid "Capture size set to: Full frame"
-msgstr ""
+msgstr "Taille capture sur: Full frame"
 
 #: ../imgWCallbacks.c:1637
 #, c-format
@@ -608,7 +615,7 @@ msgstr "Mode 'timelapse' désactivé"
 #, c-format
 msgctxt "main"
 msgid "Time lapse date start set to: %s"
-msgstr "Date de démarrage 'timelapse' sur: %s"
+msgstr "Date de début 'timelapse' sur: %s"
 
 #: ../imgWCallbacks.c:1938 ../imgWCallbacks.c:1952 ../imgWCallbacks.c:1966
 #: ../imgWCallbacks.c:2039
@@ -617,18 +624,19 @@ msgctxt "main"
 msgid "Time lapse date end set to: %s"
 msgstr "Date de fin 'timelapse' sur: %s"
 
-
 #: ../imgWCallbacks.c:1991
 msgctxt "main"
 msgid "TimeLapse set to use frame count driven start and stop plus interval"
-msgstr "Modo 'timelapse' paramétré pour démarrage et arrêt pilotés par le nombre de "
+msgstr ""
+"Modo 'timelapse' paramétré pour début et fin pilotés par le nombre de "
 "trames, plus intervalle"
 
 #: ../imgWCallbacks.c:2007
 msgctxt "main"
 msgid "TimeLapse set to use calendar driven start and stop plus interval"
-msgstr "Mode 'timelapse' paramétré pour démarrage et arrêt pilotés par calendrier, "
-"plus intervalles"
+msgstr ""
+"Mode 'timelapse' paramétré pour début et fin pilotés par calendrier, plus "
+"intervalles"
 
 #: ../imgWCallbacks.c:2051
 #, c-format
@@ -670,18 +678,18 @@ msgstr "Ajouter filtre à convention de nommage supprimé"
 #, c-format
 msgctxt "main"
 msgid "Filter name: %s add to naming convention"
-msgstr ""
+msgstr "Nom de filtre %s ajouté à la convention de nommage"
 
 #: ../imgWCallbacks.c:2143
 msgctxt "main"
 msgid "Filter name removed from naming convention"
-msgstr ""
+msgstr "Nom de filtre supprimé de la convention de nommage"
 
 #: ../imgWCallbacks.c:2167
 #, c-format
 msgctxt "main"
 msgid "Save format set to: %s"
-msgstr ""
+msgstr "Format d'enregistrement sur: %s"
 
 #: ../imgWCallbacks.c:2199 ../imgWCallbacks.c:2244
 msgctxt "cooling"
@@ -692,7 +700,7 @@ msgstr "Lecture temp."
 #, c-format
 msgctxt "main"
 msgid "Tec controlling thread failed to start (%s)"
-msgstr ""
+msgstr "Le contrôle température n'a pas démarré (%s)"
 
 #: ../imgWCallbacks.c:2227 ../imgWCallbacks.c:2255 ../imgWCallbacks.c:2269
 #: ../imgWindow.c:691
@@ -804,12 +812,12 @@ msgstr "La roue à filtre à rapporté l'erreur"
 #: ../imgWindow.c:76
 msgctxt "main"
 msgid "Focus"
-msgstr ""
+msgstr "Focus"
 
 #: ../imgWindow.c:77
 msgctxt "main"
 msgid "Capture"
-msgstr ""
+msgstr "Capture"
 
 #: ../imgWindow.c:229
 msgctxt "main"
@@ -988,7 +996,7 @@ msgstr "Puissance %"
 #: ../imgWindow.c:1073
 msgctxt "timelapse"
 msgid "Start"
-msgstr "Démarrage"
+msgstr "Début"
 
 #: ../imgWindow.c:1094
 msgctxt "timelapse"
@@ -1074,7 +1082,7 @@ msgstr "Erreur: Caméra NON trouvée!"
 #: ../qhy11.c:79 ../qhy7.c:80 ../qhy8l.c:79 ../qhy9.c:79
 msgctxt "camio"
 msgid "Full|512x512|256x256:0"
-msgstr ""
+msgstr "Full|512x512|256x256:0"
 
 #. / Combo box values list, keep N-<desc> format. Just translate <desc>
 #: ../qhy11.c:81 ../qhy2old.c:85 ../qhy5ii.c:93 ../qhy6.c:81 ../qhy6old.c:85
@@ -1148,7 +1156,7 @@ msgstr "0-Eteint|1-Allumé:0"
 #: ../qhy6.c:79
 msgctxt "camio"
 msgid "Full|288x288|144x144:0"
-msgstr ""
+msgstr "Full|288x288|144x144:0"
 
 #: ../qhy6old.c:87
 msgctxt "camio"
@@ -1158,13 +1166,13 @@ msgstr "1-Single|2-Double|3-Vbe Sampling|4-Vbe Timing:0"
 #: ../qhy9.c:83
 msgctxt "camio"
 msgid "0-Light|1-Dark:0"
-msgstr ""
+msgstr "0-Clair|1-Sombre:0"
 
 #. / Descriptiopn for "mode" combo box
 #: ../qhy9.c:85
 msgctxt "camio"
 msgid "Light/Dark mode"
-msgstr ""
+msgstr "mode Clair/Sombre"
 
 #: ../qhycore.c:179
 #, c-format
