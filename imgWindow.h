@@ -88,7 +88,7 @@
 	// Widgets
 	GtkWidget *window, *swindow, *fixed, *imgevent;
 	GtkWidget *image, *histogram, *fwhmroi;
-	GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
+	GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_focus, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
 	GtkWidget *hsc_maxadu, *hsc_minadu;
 	GtkWidget *box_main, *pnd_main, *pnd_left, *box_top_left, *box_bot_left, *tab_right, *tab_settings;
 	GtkWidget *imgstatus, *imgstatec, *imgstafit;
@@ -188,7 +188,7 @@
 	// Widgets
 	extern GtkWidget *window, *swindow, *fixed, *imgevent;
 	extern GtkWidget *image, *histogram, *fwhmroi;
-	extern GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
+	extern GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_focus, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
 	extern GtkWidget *hsc_maxadu, *hsc_minadu;
 	extern GtkWidget *box_main, *pnd_main, *pnd_left, *box_top_left, *box_bot_left, *tab_right, *tab_settings;
 	extern GtkWidget *imgstatus, *imgstatec, *imgstafit;

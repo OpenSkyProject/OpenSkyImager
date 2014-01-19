@@ -73,12 +73,18 @@ void cmd_about_build()
 
 void cmd_capture_build()
 {
-	cmd_capture = gtk_toggle_button_new_with_label_color(C_("main","Focus mode"), 140, 25, &clrSelected);	
+	cmd_focus   = gtk_toggle_button_new_with_label_color(C_("main","Focus"), 90, 25, &clrSelected);	
+	cmd_capture = gtk_toggle_button_new_with_label_color(C_("main","Capture"), 90, 25, &clrSelected);	
 	#if GTK_MAJOR_VERSION == 3
+	gtk_widget_set_hexpand(cmd_focus, TRUE);
+	gtk_widget_set_vexpand(cmd_focus, TRUE);
 	gtk_widget_set_hexpand(cmd_capture, TRUE);
 	gtk_widget_set_vexpand(cmd_capture, TRUE);
 	#endif	
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_focus), TRUE);
+	gtk_widget_set_sensitive(cmd_focus, 0);
 	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_focus), "clicked", G_CALLBACK(cmd_capture_click), NULL);
 	g_signal_connect(G_OBJECT(cmd_capture), "clicked", G_CALLBACK(cmd_capture_click), NULL);
 }
 
@@ -1257,13 +1263,14 @@ void box_top_left_build()
 	// Pack into box_top_left
 	gtk_table_attach(GTK_TABLE(box_top_left), cmd_about   , 0, 1, 0,  1, GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_top_left), cmd_settings, 1, 6, 0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_top_left), cmd_capture,  0, 6, 1,  2, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_top_left), gtk_label_new_with_align(C_("main","Exp. time (s)"), 0.0, 0.5, 90, 30), 0, 4, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_top_left), cmb_exptime,  4, 6, 2,  3, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_top_left), gtk_label_new_with_align(C_("main","Total shots"), 0.0, 0.5, 90, 30), 0, 4, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_top_left), spn_expnum ,  4, 6, 3,  4, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_top_left), gtk_label_new_with_align(C_("main","Saved shots"), 0.0, 0.5, 90, 30), 0, 4, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_top_left), spn_shots ,   4, 6, 4,  5, GTK_EXPAND |GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), cmd_focus,    0, 3, 1,  2, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), cmd_capture,  3, 6, 1,  2, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), gtk_label_new_with_align(C_("main","Exp. time (s)"), 0.0, 0.5, 90, 30), 0, 3, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), cmb_exptime,  3, 6, 2,  3, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), gtk_label_new_with_align(C_("main","Total shots"), 0.0, 0.5, 90, 30), 0, 3, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), spn_expnum ,  3, 6, 3,  4, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), gtk_label_new_with_align(C_("main","Saved shots"), 0.0, 0.5, 90, 30), 0, 3, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), spn_shots ,   3, 6, 4,  5, GTK_EXPAND |GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_top_left), pbr_expnum,   0, 6, 5,  6, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_SHRINK | GTK_FILL, 0, 5);
 	gtk_table_attach(GTK_TABLE(box_top_left), cmd_run,      0, 6, 6,  7, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_top_left), pbr_exptime,  0, 6, 7,  8, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_SHRINK | GTK_FILL, 0, 5);
@@ -1288,8 +1295,8 @@ void box_bot_left_build()
 	hsc_minadu_build();
 
 	// Pack into btnbox
-	gtk_table_attach(GTK_TABLE(box_bot_left), cmd_histogram, 0, 4, 0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_bot_left), spn_histogram, 4, 6, 0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_bot_left), cmd_histogram, 0, 3, 0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_bot_left), spn_histogram, 3, 6, 0,  1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_bot_left), hsc_maxadu,    0, 6, 1,  2, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_bot_left), frm_histogram, 0, 6, 2,  9, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_bot_left), hsc_minadu,    0, 6, 9, 10, GTK_FILL, GTK_FILL, 0, 0);

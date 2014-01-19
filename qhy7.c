@@ -191,7 +191,7 @@ int  qhy7_setregisters(qhy_exposure *expar)
 			return 2;
 	}
 	// Check for ROI (if valid)
-	if (expar->width > 0 && expar->width < i_width)
+	if (expar->width > 0 && expar->width < (i_width / (bin/Hbin)))
 	{
 		width = expar->width; 
 	}

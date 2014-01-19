@@ -188,7 +188,7 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 			return 2;
 	}
 	// Check for ROI (if valid)
-	if (expar->width > 0 && expar->width < i_width)
+	if (expar->width > 0 && expar->width < (i_width / (bin/Hbin)))
 	{
 		width = expar->width; 
 	}
@@ -306,7 +306,7 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 void qhy8l_decode(unsigned char *databuffer)
 {
 	unsigned char *src1, *src2, *tgt;
-	unsigned int   t, w;
+	unsigned int   t, w, p;
 	unsigned char  *swb;
 	unsigned char *processed = NULL;
 	int left_skip = 0, right_skip = 0, allocsize = (MAX(transfer_size, totalsize) + 2);
@@ -328,8 +328,8 @@ void qhy8l_decode(unsigned char *databuffer)
 			processed = (unsigned char*)realloc(processed, allocsize);
 			// This should mimic what cccd does...
 			t = height>>1;
-			src1 = (databuffer + top_skip_pix);
-			src2 = (databuffer + (i_width * t * 2) + top_skip_pix);
+			src1 = (databuffer + (top_skip_pix * 2));
+			src2 = (databuffer + (i_width * t * 2) + (top_skip_pix * 2));
 			tgt = processed;
 			while (t--) 
 			{
@@ -375,15 +375,69 @@ void qhy8l_decode(unsigned char *databuffer)
 			break;
 		case 2:  //2X2 binning
 			// This should mimic what cccd does...
-			src1 = databuffer + top_skip_pix;
+			src1 = databuffer + (top_skip_pix * 2);
 			tgt  = databuffer;
 			memcpy(tgt, src1, (i_width * height * 2));  
-		case 4:  //4X4 binning
+
 			if (width < i_width)
 			{
 				// Copy onto databuffer from databuffer(!) only the ROI data
 				left_skip = (int)((i_width - width) / 2);
 				right_skip = i_width - left_skip - width;
+				//printf("Processing i_width: ls %d, iw %d, rs %d\n", left_skip, width, right_skip);
+				src1 = databuffer;
+				tgt = databuffer;
+				t = height;
+				while (t--) 
+				{
+					// Skip the left part
+					src1 += left_skip * 2;
+					w = width * 2;
+					// Copy img_w pixels on the line
+					memcpy(tgt, src1, w);
+					if (t > 0)
+					{
+						// Move & Skip the right part
+						src1 += (width + right_skip) * 2;
+						tgt  += w;
+					}
+				}
+			}
+			break;
+
+		case 4:  //4X4 binning
+				//This indeed is partially software binning from Bin2x4 data got from the camera
+				// Copy onto databuffer from databuffer(!)
+			src1 = databuffer;
+			src2 = databuffer + 2;
+			tgt = databuffer;
+			t = height;
+			while (t--) 
+			{
+				w = (i_width / 2);
+				right_skip = (i_width % 2);
+				while (w--) 
+				{
+					p  = (src1[0] + src1[1] * 256);
+					p += (src2[0] + src2[1] * 256);
+					p = MIN(p, 65535);
+					tgt[0] = (int)(p % 256);
+					tgt[1] = (int)(p / 256);
+					src1 += 4;
+					src2 += 4;
+					tgt  += 2;
+				}
+				if (t > 0)
+				{
+					src1 += right_skip;
+					src2 += right_skip;
+				}
+			}
+			if (width < (int)(i_width / 2))
+			{
+				// Copy onto databuffer from databuffer(!) only the ROI data
+				left_skip = (int)(((int)(i_width / 2) - width) / 2);
+				right_skip = (int)(i_width / 2) - left_skip - width;
 				//printf("Processing i_width: ls %d, iw %d, rs %d\n", left_skip, width, right_skip);
 				src1 = databuffer;
 				tgt = databuffer;

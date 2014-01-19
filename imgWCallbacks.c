@@ -664,7 +664,7 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 			g_rw_lock_writer_lock(&thd_caplock);
 			capture = (capture == 0)? 1: 0;
 
-			// when in focus mode we need to set REG[15] to get more speed
+			// when in focus mode we may need to set something to get more speed
 			imgcam_get_expar()->preview = (capture == 0)? 1: 0;
 			imgcam_get_expar()->edit = 1;
 			// 
@@ -689,10 +689,14 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 					tecprerun = 0;
 					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
 				}
-				gtk_button_set_label(GTK_BUTTON(cmd_capture), C_("main","Capture mode"));
 				gtk_widget_set_sensitive(box_filename, 0);
 				gtk_widget_set_sensitive(box_cfw, 0);
 				fwhm_hide();
+				//
+				gtk_widget_set_sensitive(cmd_focus, 1);
+				gtk_widget_set_sensitive(cmd_capture, 0);
+				error = 1;
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_focus), FALSE);
 			}
 			else
 			{
@@ -704,7 +708,11 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 				}
 				gtk_widget_set_sensitive(box_filename, 1);
 				gtk_widget_set_sensitive(box_cfw, 1);
-				gtk_button_set_label(GTK_BUTTON(cmd_capture), C_("main","Focus mode"));
+				//
+				gtk_widget_set_sensitive(cmd_focus, 0);
+				gtk_widget_set_sensitive(cmd_capture, 1);
+				error = 1;
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_capture), FALSE);
 			}
 		}
 		else

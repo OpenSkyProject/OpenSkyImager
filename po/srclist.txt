@@ -1,6 +1,7 @@
 ../imgCamio.c
 ../imgCFWio.c
 ../imgFitsio.c
+../imgAvi.c
 ../imgPixbuf.c
 ../imgWCallbacks.c
 ../imgWFuncs.c
