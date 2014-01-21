@@ -202,7 +202,11 @@ int  qhy8l_setregisters(qhy_exposure *expar)
 		top_skip = (height - expar->height);
 		if (bin == 1)
 		{
-			top_skip = (int)(top_skip / 2);
+			top_skip = (int)(top_skip / 4);
+		}
+		else
+		{
+			  top_skip = (int)(top_skip / 2);
 		}
 		bot_skip = height - top_skip - expar->height;
 		height = expar->height;
