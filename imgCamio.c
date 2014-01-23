@@ -35,6 +35,7 @@
 #include "qhy8l.h"
 #include "qhy9.h"
 #include "qhy11.h"
+#include "dsi2pro.h"
 
 static char *cammsg;
 static unsigned char* databuffer[2] = {NULL, NULL};
@@ -48,6 +49,15 @@ static qhy_exposure expar;
 static qhy_exposure shpar;
 static qhy_tecpars  tecp;
 static qhy_camui    camui;
+
+char *get_core_msg()
+{
+	if (camid < 1000)
+		return qhy_core_msg();
+	if (camid == 1000)
+		return dsi2pro_core_msg();
+	return NULL;
+}
 
 void imgcam_exparcpy(qhy_exposure *copy, qhy_exposure *source)
 {
@@ -114,6 +124,10 @@ int imgcam_iscamera(const char *model)
 	else if (strcmp(model, "QHY11") == 0)
 	{
 		retcode = qhy11_iscamera();
+	}
+	else if (strcmp(model, "DSI2PRO") == 0)
+	{
+		retcode = dsi2pro_iscamera();
 	}
 	return (retcode);
 }
@@ -206,6 +220,11 @@ void imgcam_set_model(const char *val)
 	{
 		qhy11_init();
 		camid = 11;
+	}
+	else if (strcmp(val, "DSI2PRO") == 0)
+	{
+		dsi2pro_init();
+		camid = 1000;
 	}
 	strcpy(cammodel, val);
 }
@@ -334,6 +353,11 @@ char *imgcam_init_list(int all)
 	{
 		strcat(imgcam_get_camui()->camstr, "|QHY11");
 	}
+
+	if ((imgcam_iscamera("DSI2PRO")) || (all))
+	{
+		strcat(imgcam_get_camui()->camstr, "|DSI2PRO");
+	}
 	strcat(imgcam_get_camui()->camstr, "|:0");
 	return imgcam_get_camui()->camstr;
 }
@@ -349,13 +373,13 @@ int imgcam_connect()
 		{
 			case 5:
 				// Trigger an initial exposure (we won't use this one)
-				if ((retval = qhy_OpenCamera(qhy_core_getcampars()->vid, qhy_core_getcampars()->pid)) == 1)
+				if ((retval = qhy_OpenCamera()) == 1)
 				{
 					retval = qhy5_bonjour();
 				}
 				break;
 			case 52:
-				if ((retval = qhy_opencamera(qhy_core_getcampars()->vid, qhy_core_getcampars()->pid)) == 1)
+				if ((retval = qhy_opencamera()) == 1)
 				{
 					retval = qhy5ii_bonjour();
 				}
@@ -364,21 +388,24 @@ int imgcam_connect()
 			case 20:
 			case 60:
 			case 80:
-				retval = qhy_OpenCamera(qhy_core_getcampars()->vid, qhy_core_getcampars()->pid);
+				retval = qhy_OpenCamera();
 				break;
 			case 7:
 			case 81:
 			case 9:
 			case 11:
-				if ((retval = qhy_OpenCamera(qhy_core_getcampars()->vid, qhy_core_getcampars()->pid)) == 1)
+				if ((retval = qhy_OpenCamera()) == 1)
 				{
 					retval = imgcam_settec(tecp.tecpwr);
 				}
 				break;
+			case 1000:
+				retval = dsi2pro_OpenCamera();
+				break;
 		}
 		if ((retval == 0) && (strlen(cammsg) == 0))
 		{
-			strcpy(cammsg, qhy_core_msg());
+			strcpy(cammsg, get_core_msg());
 		}
 		connected = retval;
 	}
@@ -401,11 +428,15 @@ int imgcam_disconnect()
 		case 81:
 		case 9:
 		case 11:
-			if ((retval = qhy_CloseCamera()) == 0)
-			{
-				strcpy(cammsg, qhy_core_msg());
-			}
+			retval = qhy_CloseCamera();
 			break;
+		case 1000:
+			retval = dsi2pro_CloseCamera();
+			break;
+	}
+	if (retval == 0)
+	{
+		strcpy(cammsg, get_core_msg());
 	}
 	connected = (retval == 1) ? 0 : connected;
 	return (retval);
@@ -447,6 +478,9 @@ int imgcam_reset()
 			break;
 		case 11:
 			retval = qhy11_reset();
+			break;
+		case 1000:
+			retval = dsi2pro_reset();
 			break;
 	}
 	if (retval == 1)
@@ -553,10 +587,13 @@ int imgcam_shoot()
 				retval = qhy_ccdStartExposure(shpar.time);
 			}
 			break;
+		case 1000:
+			retval = dsi2pro_StartExposure(&shpar);
+			break;
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
-		strcpy(cammsg, qhy_core_msg());
+		strcpy(cammsg, get_core_msg());
 	}
 	return (retval);
 }
@@ -569,22 +606,6 @@ int imgcam_readout()
 	
 	cammsg[0] = '\0';
 	curdataptr = (curdataptr == 0) ? 1 : 0;
-	if ((qhy_core_getcampars()->buftimes > 0) || (qhy_core_getcampars()->buftimef > 0))
-	{
-		//printf("Buffering\n");
-		// Allow for buffering time on buffered camera
-		usleep(((shpar.speed == 0) ?  qhy_core_getcampars()->buftimes : qhy_core_getcampars()->buftimef) / shpar.bin * 1000);	
-		// Check if camera is good and ready thereafter
-		while (qhy_getCameraStatus() == 0)  
-		{
-			usleep(1000);
-			/*if (camid == 9)
-			{
-				// Qhy9 only allow one getCamerStatus call  
-				break;
-			}*/
-		}
-	}
 	if ((allocsize != presize[curdataptr]) || (databuffer[curdataptr] == NULL))
 	{
 		presize[curdataptr] = allocsize;
@@ -592,7 +613,38 @@ int imgcam_readout()
 		databuffer[curdataptr] = (unsigned char*)realloc(databuffer[curdataptr], allocsize);
 		//printf("Get Data\n");
 	}
-	if ((retval = qhy_getImgData(qhy_core_getendp()->bulk, shpar.tsize, databuffer[curdataptr], &error, &length_transferred)) == 1)
+	if (camid < 1000)
+	{
+		// QHY
+		if ((qhy_core_getcampars()->buftimes > 0) || (qhy_core_getcampars()->buftimef > 0))
+		{
+			//printf("Buffering\n");
+			// Allow for buffering time on buffered camera
+			usleep(((shpar.speed == 0) ?  qhy_core_getcampars()->buftimes : qhy_core_getcampars()->buftimef) / shpar.bin * 1000);	
+			// Check if camera is good and ready thereafter
+			while (qhy_getCameraStatus() == 0)  
+			{
+				usleep(1000);
+				/*if (camid == 9)
+				{
+					// Qhy9 only allow one getCamerStatus call  
+					break;
+				}*/
+			}
+		}
+		retval = qhy_getImgData(shpar.tsize, databuffer[curdataptr], &error, &length_transferred);
+	}
+	else if (camid == 1001)
+	{
+		//Meade dsi2pro
+		retval = dsi2pro_getImgData();
+	}
+	else
+	{
+		// Unknown
+		retval = 0;
+	}
+	if (retval == 1)
 	{
 		switch (camid)
 		{
@@ -633,12 +685,15 @@ int imgcam_readout()
 			case 11:
 				qhy11_decode(databuffer[curdataptr]);	
 				break;
+			case 1001:
+				dsi2pro_decode(databuffer[curdataptr]);	
+				break;
 		}
 		loaded = 1;
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
-		strcpy(cammsg, qhy_core_msg());
+		strcpy(cammsg, get_core_msg());
 	}
 	return (retval);
 }
@@ -677,12 +732,16 @@ int imgcam_abort()
 			retval = qhy_ccdAbortCapture();
 			usleep(100000);
 			break;
+		case 1000:
+			retval = dsi2pro_AbortCapture();
+			usleep(100000);
+			break;
 	}
 	loaded = (retval == 1) ? 0 : loaded;
 	expar.edit = (retval == 1) ? 1 : expar.edit;
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
-		strcpy(cammsg, qhy_core_msg());
+		strcpy(cammsg, get_core_msg());
 	}
 	return (retval);
 }
@@ -740,6 +799,10 @@ int imgcam_gettec(double *tC, double *mV)
 		case 11:
 			retval = qhy_getDC201_i(&imgtC, &imgmV);
 			break;
+		case 1000:
+			imgtC = dsi2pro_GetTemp();
+			retval = 1;
+			break;
 	}
 	if (retval)
 	{
@@ -756,7 +819,7 @@ int imgcam_gettec(double *tC, double *mV)
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
-		strcpy(cammsg, qhy_core_msg());
+		strcpy(cammsg, get_core_msg());
 	}
 	return (retval);
 } 
@@ -790,10 +853,12 @@ int imgcam_shutter(int cmd)
 			break;
 		case 11:
 			break;
+		case 1000:
+			break;
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
-		strcpy(cammsg, qhy_core_msg());
+		strcpy(cammsg, get_core_msg());
 	}
 	return (retval);
 } 
@@ -822,10 +887,12 @@ int imgcam_wheel(int pos)
 			cammsg[0] = '\0';
 			retval = qhy_setColorWheel(pos);
 			break;
+		case 1000:
+			break;
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
-		strcpy(cammsg, qhy_core_msg());
+		strcpy(cammsg, get_core_msg());
 	}
 	return (retval);
 } 

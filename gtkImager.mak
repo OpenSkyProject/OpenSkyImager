@@ -23,6 +23,7 @@ OBJS = \
 	qhy9.o \
 	qhy11.o \
 	qhycore.o \
+	dsi2pro.o \
 	libusbio.o \
 	imgCFWio.o \
 	avilib.o \

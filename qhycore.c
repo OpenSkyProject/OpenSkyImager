@@ -200,12 +200,12 @@ int qhy_cameraiIO(int dir, unsigned char *buf, int size)
 	return (rcode==0);
 }
 
-int qhy_opencamera(int vendorid, int productid) 
+int qhy_opencamera() 
 {
-	return open_camera(vendorid, productid, &hDevice, coremsg);
+	return open_camera(camp.vid, camp.pid, &hDevice, coremsg);
 }
 
-int qhy_OpenCamera(int vendorid, int productid) 
+int qhy_OpenCamera() 
 {
 	int retcode = 1;
 
@@ -218,7 +218,7 @@ int qhy_OpenCamera(int vendorid, int productid)
 		// Level 2: warning and error messages are printed to stderr
 		// Level 3: informational messages are printed to stdout, warning and error messages are printed to stderr
 		libusb_set_debug(NULL,0);
-		if (open_camera(vendorid, productid, &hDevice, coremsg))
+		if (open_camera(camp.vid, camp.pid, &hDevice, coremsg))
 		{
 			if (libusb_set_configuration(hDevice, 1) == 0) 
 			{
@@ -417,7 +417,7 @@ int qhy_cmosDumpImage(int transfer_size)
 	int error = 0, length_transferred = 0, retcode = 1;
 	unsigned char databuffer[transfer_size];
 
-	qhy_getImgData(endp.bulk, transfer_size, databuffer, &error, &length_transferred);
+	qhy_getImgData(transfer_size, databuffer, &error, &length_transferred);
 	if (error < 0)
 	{
    		printf( "Error: Could not dump image data from camera!\nError %d\nTransferred data %d\nExpected data %d\n", error, length_transferred, transfer_size);
@@ -532,7 +532,7 @@ int qhy_setColorWheel(int Pos)
    	return (qhy_cameraIO(endp.write, req.wheel, REG,  sizeof(REG), 0, 0));
 }
 
-int qhy_getImgData(int endp, int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred)
+int qhy_getImgData(int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred)
 {
 	// It looks like libusb1.0 is very picky about "transfer_size" value.
 	// If it's not set with the exact amount of bytes returned it will either claim for a overflow or wait for the long
@@ -540,7 +540,7 @@ int qhy_getImgData(int endp, int transfer_size, unsigned char *databuffer, int *
 	// For some strange reason the amount of bytes returned is not exactly width*height*2 (as one would expect), but some less.
 	// I set up the error message to show the "lenght_transferred" so that one can set the new "transfer_size" variable accordingly
 	// See WriteRegisters.
-	*errcode = libusb_bulk_transfer( hDevice, endp, databuffer, transfer_size, length_transferred, 20000);
+	*errcode = libusb_bulk_transfer( hDevice, endp.bulk, databuffer, transfer_size, length_transferred, 20000);
 	return (*errcode == 0);
 }
 
