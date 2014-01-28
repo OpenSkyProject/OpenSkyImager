@@ -2527,3 +2527,336 @@ void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
+gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
+{
+	GIOStatus retval;
+	GError *err = NULL;
+	gchar  *msg;
+	char  cmd[33];
+	char  arg[225];
+	float fval;
+	int   ival;
+	unsigned int len;
+
+	if (condition & G_IO_HUP)
+	{
+		printf("Fifo: Read end died!\n");
+		// We remove the event as it's now invalid
+		return FALSE;
+	}
+	else
+	{
+		retval = g_io_channel_read_line (gch, &msg, &len, NULL, &err);
+		if (retval == G_IO_STATUS_ERROR)
+		{
+			printf("Fifo: Error reading; %s\n", err->message);
+		}
+		else
+		{
+			// Msg format: "<command>:<arg>\n"
+			// Msg max len 255
+			sscanf(msg, "%[^:]:%[^\n]", cmd, arg);
+			if (strcmp(cmd, "EXPTIME") == 0)
+			{
+				sscanf(arg, "%f", &fval);
+				sprintf(arg, "%05.3f", fval);
+				GtkWidget *text = gtk_bin_get_child(GTK_BIN(cmb_exptime));
+				gtk_entry_set_text(GTK_ENTRY(text), arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}			
+			else if (strcmp(cmd, "TOTSHOTS") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (ival > 0)
+				{
+					gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_expnum), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=must be > 0\n");
+				}
+			}
+			else if (strcmp(cmd, "SAVSHOTS") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (ival > 0)
+				{
+					gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_shots), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=must be > 0\n");
+				}
+			}
+			else if (strcmp(cmd, "MAXADU") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (((ival <= 65535) && (ival >= scrminadu) && (uibytepix == 2)) || ((ival <= 255) && (ival >= scrminadu) && (uibytepix == 1)))
+				{
+					gtk_range_set_value(GTK_RANGE(hsc_maxadu), (double)ival);
+					hsc_maxadu_changed(GTK_RANGE(hsc_maxadu), GTK_SCROLL_NONE, (double)ival, NULL);
+				}
+				else
+				{
+					printf("Fifo: ERROR=MaxAdu out of range (%d-%d)\n", scrminadu, (int)(pow(256, uibytepix) -1));
+				}
+			}
+			else if (strcmp(cmd, "MINADU") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival <= scrmaxadu) && (ival >= 0))
+				{
+					gtk_range_set_value(GTK_RANGE(hsc_minadu), (double)ival);
+					hsc_maxadu_changed(GTK_RANGE(hsc_minadu), GTK_SCROLL_NONE, (double)ival, NULL);
+				}
+				else
+				{
+					printf("Fifo: ERROR=MinAdu out of range (%d-%d)\n", 0, scrmaxadu);
+				}
+			}
+			else if (strcmp(cmd, "TECREAD") == 0)
+			{
+				if (imgcam_get_tecp()->istec > 0)
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), (ival > 0));
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=No TEC to read\n");
+				}
+			}
+			else if (strcmp(cmd, "TECAUTO") == 0)
+			{
+				if (imgcam_get_tecp()->istec == 1)
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if ((ival > 0) && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecenable)) == FALSE))
+					{
+						// Activate tec read mode too if it is not already
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+					}
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), (ival > 0));
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=No TEC to set\n");
+				}
+			}
+			else if (strcmp(cmd, "SETTEMP") == 0)
+			{
+				if (imgcam_get_tecp()->istec == 1)
+				{
+					sscanf(arg, "%f", &fval);
+					sprintf(arg, "%06.2f", fval);
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecenable)) == FALSE)
+					{
+						// Activate tec read mode too if it is not already
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+					}
+					if (imgcam_get_tecp()->tecauto == 0)
+					{
+						// Set tec to auto
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), TRUE);
+					}
+					gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tectgt), fval);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=No TEC to set\n");
+				}
+			}
+			else if (strcmp(cmd, "GETTEMP") == 0)
+			{
+				printf("Fifo: %s=%+06.2f\n", cmd, imgcam_get_tecp()->tectemp);
+			}
+			else if (strcmp(cmd, "CAPMODE") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (ival > 0)
+				{
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_capture), TRUE);
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_capture)))
+					{
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=file name/folder parameters missing\n");
+					}
+				}
+				else
+				{
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_focus), TRUE);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+			}
+			else if (strcmp(cmd, "RUN") == 0)
+			{
+				// This command has no arg
+				if (imgcam_connected())
+				{
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)) == FALSE)
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), TRUE);
+						printf("Fifo: %s=ACK\n", cmd);				
+					}
+					else
+					{
+						printf("Fifo: ERROR=Capture already running\n");
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=Camera is not connected\n");
+				}
+			}
+			else if (strcmp(cmd, "STOP") == 0)
+			{
+				// This command has no arg
+				if (imgcam_connected())
+				{
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)))
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), FALSE);
+						printf("Fifo: %s=ACK\n", cmd);				
+					}
+					else
+					{
+						printf("Fifo: ERROR=No capture running\n");
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=Camera is not connected\n");
+				}
+			}
+			else if (strcmp(cmd, "HOLD") == 0)
+			{
+				if (imgcam_connected())
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)))
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_hold), (ival > 0));
+						printf("Fifo: %s=ACK\n", cmd);				
+					}
+					else
+					{
+						printf("Fifo: ERROR=No capture running\n");
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=Camera is not connected\n");
+				}
+			}
+			else if (strcmp(cmd, "AUDELA") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_audela), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "IRIS") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_iris), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "DATEADD") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_dateadd), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "TIMEADD") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_timeadd), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "FLTADD") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_fltadd), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "ZEROCNT") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_zerofc), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "BASEFOLDER") == 0)
+			{
+				gtk_entry_set_text(GTK_ENTRY(txt_fitfolder), arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "BASENAME") == 0)
+			{
+				gtk_entry_set_text(GTK_ENTRY(txt_fitbase), arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "OUTMODE") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival > 0) && (ival < 4))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_fmt), (ival -1));
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Output mode out of range (1-3)\n");
+				}
+			}
+			else if (strcmp(cmd, "GETPREVIEW") == 0)
+			{
+				// This command has no arg
+				// Must use lock to avoid hitting the capture thread
+				// Other features use native callbacks that are thread aware already
+				char prwfile[256];
+				
+				sprintf(prwfile, "%s.jpg", fifopath);
+				g_rw_lock_reader_lock(&thd_caplock);
+				//if (gdk_pixbuf_save(imgpix_get_data(), prwfile, "png", NULL, "compression", "0", NULL))
+				if (gdk_pixbuf_save(imgpix_get_data(), prwfile, "jpeg", NULL, "quality", "50", NULL))
+				{
+					printf("Fifo: %s=ACK\n", cmd);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Save preview failed\n");
+				}
+				g_rw_lock_reader_unlock(&thd_caplock);
+			}
+			else
+			{
+				printf("Fifo: Unknown command; Read %d bytes; %s\n", len, msg);
+			}
+		}
+		g_free(msg);
+	}
+	return TRUE;
+}
+

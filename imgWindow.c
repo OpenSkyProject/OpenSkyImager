@@ -1444,3 +1444,8 @@ void imgwin_build()
 	printf("GTK M: %d, m: %d, u: %d\n", GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION);
 }
 
+gpointer fiforead ()
+{
+	return fiforeadcb;
+}
+

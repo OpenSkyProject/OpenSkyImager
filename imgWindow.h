@@ -123,6 +123,12 @@
 	GStaticRWLock pixbuf_lock;
 	#endif
 
+	// FifoManager
+	gboolean fifomode = FALSE;
+	int  fifofd = -1, fifotag = -1;
+	GIOChannel *fifoch = NULL;
+	char fifopath[256] = "/tmp/OpenSkyImager";
+	
 	// Flags
 	int fit = 0, hst = 0;
 	double imgratio = 1., icoratio = 1.;
@@ -223,6 +229,12 @@
 	extern GStaticRWLock pixbuf_lock;
 	#endif
 
+	// FifoManager
+	extern gboolean fifomode;
+	extern int  fifofd, fifotag;
+	extern GIOChannel *fifoch;
+	extern char fifopath[256];
+
 	// Flags
 	extern int fit, hst;
 	extern double imgratio, icoratio;
@@ -276,4 +288,5 @@
 #endif
 	
 void imgwin_build();
+gpointer fiforead();
 

@@ -21,35 +21,88 @@
  */
 
 #include "imgBase.h"
+#include "imgFifoio.h"
 #include "imgWindow.h"
+
+static GOptionEntry options[] =
+{
+	{ "fifo", 'f', 0, G_OPTION_ARG_NONE, &fifomode, "Create / Open '/tmp/<program_name>' named pipe for command input", NULL },
+	{ NULL }
+};
 
 int main(int argc, char* argv[])
 {
-	// Read cpuinfo
+	GError *error = NULL;
+
+    	// Read cpuinfo
 	cpucores = get_cpu_cores();
 	printf("Detected %d cpu cores\n", cpucores);
-	
+
 	// Set Locale
 	setlocale(LC_ALL,"en_US");
 	bindtextdomain(APPNAM,".");
 	textdomain(APPNAM);
-	
+
 	#if GLIB_MINOR_VERSION < 32
 	if(!g_thread_supported())
 	{
 	    g_thread_init( NULL );
 	}
 	#endif
-	
-	// Init gtk env
-	gtk_init(&argc, &argv);
-	
-	// Build window(s)
-	imgwin_build();
-	
-	// Main loop start
-	gtk_main();
 
+	// Init gtk env
+	if (gtk_init_with_args(&argc, &argv, APPTIT, options, NULL, &error))
+	{
+		if (fifomode)
+		{
+			fifomode = FALSE;
+			sprintf(fifopath, "%s%s", "/tmp/", g_get_prgname());
+			if (CreateFifo(fifopath))
+			{
+				fifofd = OpenFifo(fifopath);
+				if (fifofd > -1)
+				{
+					fifoch = g_io_channel_unix_new(fifofd);
+					fifotag = LinkFifo(fifofd, fifoch, (GIOFunc)fiforead(), NULL);
+					if (fifotag > -1)
+					{
+						fifomode = TRUE;
+						printf("Fifo: %s active\n", fifopath);
+						if(!fifoch)
+							printf("Null\n");
+					}
+					
+				}
+			}
+		}
+		
+		// Build window(s)
+		imgwin_build();
+
+		// Main loop start
+		gtk_main();
+
+		if (fifomode)
+		{
+			if (UnLinkFifo(fifotag, fifoch))
+			{
+				fifoch = NULL;
+				if (CloseFifo(fifofd))
+				{
+					printf("Fifo: %s inactive\n", fifopath);
+					if (DeleteFifo(fifopath))
+					{
+						printf("Fifo: %s deleted\n", fifopath);
+					}
+				}
+			}
+		}		
+	}
+	else
+	{
+		printf("GTK init failed: %s\n", error->message);	
+		return EXIT_FAILURE;
+	}
 	// Return value	
 	return EXIT_SUCCESS;
 }
