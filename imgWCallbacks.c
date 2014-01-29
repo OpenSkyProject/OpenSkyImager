@@ -2723,6 +2723,10 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)) == FALSE)
 					{
+						// Set fifo feedback on (will print ack each newly available image)
+						g_rw_lock_writer_lock(&thd_caplock);
+						fifofbk = 1;
+						g_rw_lock_writer_unlock(&thd_caplock);
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), TRUE);
 						printf("Fifo: %s=ACK\n", cmd);				
 					}

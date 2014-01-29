@@ -304,7 +304,12 @@ void load_image_from_data()
 		g_rw_lock_writer_lock(&pixbuf_lock);
 		retval = imgpix_load(imgfit_get_data(), imgfit_get_width(), imgfit_get_height(), imgfit_get_bytepix(), debayer, scrmaxadu, scrminadu);
 		g_rw_lock_writer_unlock(&pixbuf_lock);
-		
+				
+		if ((fifofbk) && (retval))
+		{
+			printf("Fifo: PREVIEW=New preview image available\n");
+		}
+
 		if (retval == 1)
 		{	
 			tmrfrmrefresh = g_timeout_add(1, (GSourceFunc) tmr_frm_refresh, NULL);
@@ -1454,6 +1459,11 @@ gpointer thd_capture_run(gpointer thd_data)
 	imgcam_shutter(1);
 	// Release
 	imgcam_shutter(2);
+	
+	g_rw_lock_writer_lock(&thd_caplock);
+	// Reset fifo feedback anyway
+	fifofbk = 0;
+	g_rw_lock_writer_unlock(&thd_caplock);
 	
 	return 0;
 }
