@@ -352,7 +352,7 @@ void dsi2pro_init()
 	imgcam_get_expar()->bitpix  = 16;	
 	imgcam_get_expar()->bytepix = 2;	
 	imgcam_get_expar()->tsize   = 0;
-	imgcam_get_expar()->edit    = 0;	
+	imgcam_get_expar()->edit    = 0;
 }
 
 int  dsi2pro_iscamera()
@@ -374,7 +374,7 @@ int dsi2pro_OpenCamera()
 		// Level 1: error messages are printed to stderr
 		// Level 2: warning and error messages are printed to stderr
 		// Level 3: informational messages are printed to stdout, warning and error messages are printed to stderr
-		libusb_set_debug(NULL,0);
+		libusb_set_debug(NULL,3);
 		if (open_camera(VENDOR_ID, PRODUCT_ID, &rc_dev_dsi, coremsg))
 		{
 			if (libusb_claim_interface(rc_dev_dsi, 0) == 0) 
@@ -421,6 +421,10 @@ int dsi2pro_StartExposure(qhy_exposure *expar)
 	int retval = 1;
 	static int gain = 0, offset = 0, mode = 0, amp = 0;
 
+//plouis
+	expar->width   = IMG_WIDTH ;
+	expar->height   = IMG_HEIGHT;
+//end of plouis
 	if (expar->edit)
 	{
 		// Wait time is just = exposure time in this case

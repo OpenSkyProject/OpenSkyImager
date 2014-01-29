@@ -634,7 +634,7 @@ int imgcam_readout()
 		}
 		retval = qhy_getImgData(shpar.tsize, databuffer[curdataptr], &error, &length_transferred);
 	}
-	else if (camid == 1001)
+	else if (camid == 1000)	//plouis
 	{
 		//Meade dsi2pro
 		retval = dsi2pro_getImgData();
@@ -685,7 +685,7 @@ int imgcam_readout()
 			case 11:
 				qhy11_decode(databuffer[curdataptr]);	
 				break;
-			case 1001:
+			case 1000:	// plouis
 				dsi2pro_decode(databuffer[curdataptr]);	
 				break;
 		}
