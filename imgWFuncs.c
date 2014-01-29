@@ -777,6 +777,32 @@ void combo_setlist(GtkWidget *cmb, char *str)
 	}
 }
 
+void combo_getlist(GtkWidget *cmb, char *str)
+{	
+	GtkListStore *list_store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb)));
+	GtkTreeIter iter;
+	GtkTreePath *path;
+	gchar *tmpstr;
+	int i, count = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(list_store), NULL);
+
+	str[0] = '\0';
+	path = gtk_tree_path_new_first();
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(list_store), &iter, path);
+	gtk_tree_path_free (path);
+	for (i = 0; i < count; i++)
+	{
+		gtk_tree_model_get(GTK_TREE_MODEL(list_store), &iter, 0, &tmpstr, -1);
+		sprintf(str,"%s|%s", str, tmpstr);
+		gtk_tree_model_iter_next(GTK_TREE_MODEL(list_store), &iter);
+	}
+	g_free(tmpstr);
+	if (strlen(str) > 0)
+	{
+		memmove(str,str+1, strlen(str)-1);
+		str[strlen(str)-1] = '\0';
+	}
+}
+
 void combo_ttylist(GtkWidget *cmb)
 {
 	char ttylist[2048];

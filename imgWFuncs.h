@@ -35,6 +35,7 @@ void tec_init_graph();
 void tec_show_graph();
 void tec_print_graph();
 void combo_setlist(GtkWidget *cmb, char *str);
+void combo_getlist(GtkWidget *cmb, char *str);
 void combo_ttylist(GtkWidget *cmb);
 void cfwmsgdestroy(int response);
 void filenaming(char *thdfit);

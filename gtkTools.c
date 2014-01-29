@@ -217,3 +217,7 @@ void gtk_widget_modify_bkg(GtkWidget *widget, GtkStateType state, GdkRGBA* color
 	g_object_unref(cssprv);
 }
 #endif
+int  gtk_combo_box_element_count(GtkWidget *cmb)
+{
+	return gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb))), NULL);
+}
