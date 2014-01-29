@@ -68,10 +68,10 @@ int main(int argc, char* argv[])
 					{
 						fifomode = TRUE;
 						printf("Fifo: %s active\n", fifopath);
-						if(!fifoch)
-							printf("Null\n");
+						// Set stdout as unbuffered in this case
+						fflush(stdout);
+						setvbuf(stdout,NULL,_IONBF,0);
 					}
-					
 				}
 			}
 		}
