@@ -3188,11 +3188,13 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				// Must use lock to avoid hitting the capture thread
 				// Other features use native callbacks that are thread aware already
 				char prwfile[256];
+				char prwhst[256];
 				
 				sprintf(prwfile, "%s.jpg", fifopath);
+				sprintf(prwhst , "%s.txt", fifopath);
 				g_rw_lock_reader_lock(&thd_caplock);
 				//if (gdk_pixbuf_save(imgpix_get_data(), prwfile, "png", NULL, "compression", "0", NULL))
-				if (gdk_pixbuf_save(imgpix_get_data(), prwfile, "jpeg", NULL, "quality", "50", NULL))
+				if ((imgpix_save_data(prwfile)) && (imgpix_save_histogram_data(prwhst)))
 				{
 					printf("Fifo: %s=ACK\n", cmd);
 				}
