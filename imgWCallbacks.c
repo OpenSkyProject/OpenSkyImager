@@ -1287,7 +1287,7 @@ void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
 	if (tmp > 0) 
 	{
 		imgcam_get_expar()->time = (int) (tmp * 1000);
-		fithdr[HDR_EXPTIME].dvalue = (double)imgcam_get_expar()->time/1000;
+		fithdr[HDR_EXPTIME].dvalue = (double)(imgcam_get_expar()->time/1000.);
 	}
 	else
 	{
@@ -2606,11 +2606,17 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					gtk_range_set_value(GTK_RANGE(hsc_maxadu), (double)ival);
 					hsc_maxadu_changed(GTK_RANGE(hsc_maxadu), GTK_SCROLL_NONE, (double)ival, NULL);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
 					printf("Fifo: ERROR=MaxAdu out of range (%d-%d)\n", scrminadu, (int)(pow(256, uibytepix) -1));
 				}
+			}
+			else if (strcmp(cmd, "READMAXADU") == 0)
+			{
+				sprintf(arg, "%d", scrmaxadu);
+				printf("Fifo: %s=%s\n", cmd, arg);
 			}
 			else if (strcmp(cmd, "MINADU") == 0)
 			{
@@ -2621,11 +2627,17 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					gtk_range_set_value(GTK_RANGE(hsc_minadu), (double)ival);
 					hsc_maxadu_changed(GTK_RANGE(hsc_minadu), GTK_SCROLL_NONE, (double)ival, NULL);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
 					printf("Fifo: ERROR=MinAdu out of range (%d-%d)\n", 0, scrmaxadu);
 				}
+			}
+			else if (strcmp(cmd, "READMINADU") == 0)
+			{
+				sprintf(arg, "%d", scrminadu);
+				printf("Fifo: %s=%s\n", cmd, arg);
 			}
 			else if (strcmp(cmd, "TECREAD") == 0)
 			{
@@ -2724,9 +2736,9 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)) == FALSE)
 					{
 						// Set fifo feedback on (will print ack each newly available image)
-						g_rw_lock_writer_lock(&thd_caplock);
+						/*g_rw_lock_writer_lock(&thd_caplock);
 						fifofbk = 1;
-						g_rw_lock_writer_unlock(&thd_caplock);
+						g_rw_lock_writer_unlock(&thd_caplock);*/
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), TRUE);
 						printf("Fifo: %s=ACK\n", cmd);				
 					}
@@ -2840,6 +2852,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_flt)))
 				{
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -2899,6 +2912,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_camera)))
 					{
 						gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_camera), ival);
+						printf("Fifo: %s=%s\n", cmd, arg);
 					}
 					else
 					{
@@ -2920,6 +2934,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					if (!imgcam_connected())
 					{
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_camera), TRUE);
+						printf("Fifo: %s=%s\n", cmd, arg);
 					}
 					else
 					{
@@ -2931,6 +2946,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					if (imgcam_connected())
 					{
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_camera), FALSE);
+						printf("Fifo: %s=%s\n", cmd, arg);
 					}
 					else
 					{
@@ -2948,6 +2964,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				if (!imgcam_connected())
 				{
 					gtk_button_clicked(GTK_BUTTON(cmd_updcamlst));
+					printf("Fifo: %s=ACK\n", cmd);
 				}
 				else
 				{
@@ -2983,6 +3000,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					gtk_range_set_value(GTK_RANGE(hsc_offset), (double)ival);
 					hsc_offset_changed(GTK_RANGE(hsc_offset), GTK_SCROLL_NONE, (double)ival, NULL);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -2998,6 +3016,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					gtk_range_set_value(GTK_RANGE(hsc_gain), (double)ival);
 					hsc_gain_changed(GTK_RANGE(hsc_gain), GTK_SCROLL_NONE, (double)ival, NULL);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -3020,6 +3039,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_bin)))
 				{
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_bin), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -3042,6 +3062,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_csize)))
 				{
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_csize), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -3064,6 +3085,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_dspeed)))
 				{
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_dspeed), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -3086,6 +3108,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_mode)))
 				{
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_mode), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -3108,6 +3131,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_amp)))
 				{
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_amp), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -3130,6 +3154,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_denoise)))
 				{
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_denoise), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -3152,6 +3177,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_depth)))
 				{
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_depth), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -3174,11 +3200,31 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_debayer)))
 				{
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_debayer), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
 					printf("Fifo: ERROR=Bayer matrix index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_debayer)-1);
 				}
+			}
+			else if (strcmp(cmd, "GETPRVWIDTH") == 0)
+			{
+				g_rw_lock_reader_lock(&pixbuf_lock);
+				sprintf(arg, "%d", imgpix_get_width());
+				g_rw_lock_reader_unlock(&pixbuf_lock);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "GETPRVHEIGHT") == 0)
+			{
+				g_rw_lock_reader_lock(&pixbuf_lock);
+				sprintf(arg, "%d", imgpix_get_height());
+				g_rw_lock_reader_unlock(&pixbuf_lock);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "GETDATADEPTH") == 0)
+			{
+				sprintf(arg, "%d", uibytepix);
+				printf("Fifo: %s=%s\n", cmd, arg);
 			}
 			else if (strcmp(cmd, "GETPREVIEW") == 0)
 			{
@@ -3192,7 +3238,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				
 				sprintf(prwfile, "%s.jpg", fifopath);
 				sprintf(prwhst , "%s.txt", fifopath);
-				g_rw_lock_reader_lock(&thd_caplock);
+				g_rw_lock_reader_lock(&pixbuf_lock);
 				//if (gdk_pixbuf_save(imgpix_get_data(), prwfile, "png", NULL, "compression", "0", NULL))
 				if ((imgpix_save_data(prwfile)) && (imgpix_save_histogram_data(prwhst)))
 				{
@@ -3202,7 +3248,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					printf("Fifo: ERROR=Save preview failed\n");
 				}
-				g_rw_lock_reader_unlock(&thd_caplock);
+				g_rw_lock_reader_unlock(&pixbuf_lock);
 			}
 			else
 			{

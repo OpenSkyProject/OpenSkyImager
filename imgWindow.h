@@ -128,7 +128,6 @@
 	int  fifofd = -1, fifotag = -1;
 	GIOChannel *fifoch = NULL;
 	char fifopath[256] = "/tmp/OpenSkyImager";
-	int  fifofbk = 0;
 	
 	// Flags
 	int fit = 0, hst = 0;
@@ -235,7 +234,6 @@
 	extern int  fifofd, fifotag;
 	extern GIOChannel *fifoch;
 	extern char fifopath[256];
-	extern int  fifofbk;
 
 	// Flags
 	extern int fit, hst;
