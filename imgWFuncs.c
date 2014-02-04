@@ -1020,7 +1020,7 @@ int wrtavihdr(char *filename, fit_rowhdr *hdr, int hdrsz)
 gpointer thd_capture_run(gpointer thd_data)
 {
 	int thdrun = 1, thderror = 0, thdhold = 0, thdmode = 0, thdshoot = 0;
-	int thdpreshots = shots, thdexp = 0, thdtlmode = 0;
+	int thdpreshots = shots, thdexp = 0, thdtlmode = 0, thdsavejpg = 0;
 	int thdtimer = 0, thdtimeradd = 0;
 	int avimaxframes = 0, writeavih = 0;
 	char thdfit[2048];
@@ -1036,6 +1036,7 @@ gpointer thd_capture_run(gpointer thd_data)
 	gettimeofday(&clks, NULL);
 	g_rw_lock_reader_lock(&thd_caplock);
 	thdmode = capture;
+	thdsavejpg = savejpg;
 	thdrun = run;
 	thdtlmode = tlenable + tlcalendar;
 	if ((thdtlmode == 2) && (thdrun == 1))
@@ -1067,6 +1068,7 @@ gpointer thd_capture_run(gpointer thd_data)
 			g_rw_lock_reader_lock(&thd_caplock);
 			thdrun = run;
 			thdmode = capture;
+			thdsavejpg = savejpg;
 			g_rw_lock_reader_unlock(&thd_caplock);		
 			if (thdrun == 0)
 			{
@@ -1173,6 +1175,7 @@ gpointer thd_capture_run(gpointer thd_data)
 					g_rw_lock_reader_lock(&thd_caplock);
 					thdrun = run;
 					thdmode = capture;
+					thdsavejpg = savejpg;
 					g_rw_lock_reader_unlock(&thd_caplock);		
 					if (thdrun == 0)
 					{
@@ -1211,7 +1214,8 @@ gpointer thd_capture_run(gpointer thd_data)
 					//printf("Readout ok\n");
 					g_rw_lock_writer_lock(&thd_caplock);
 					readout = 0;
-					
+					thdsavejpg = savejpg;
+
 					// The fit data structure is also used anyway to store preview params
 					imgfit_init();
 					imgfit_set_width(imgcam_get_shpar()->width);
@@ -1256,6 +1260,10 @@ gpointer thd_capture_run(gpointer thd_data)
 									shotsnaming(thdfit, shots);
 								}
 								wrtavihdr(thdfit, fithdr, FITHDR_SLOTS);
+							}
+							else if (thdsavejpg == 1)
+							{
+								shotsnaming(thdfit, shots);
 							}
 							imgavi_set_data(imgcam_get_data());
 						}
@@ -1318,7 +1326,7 @@ gpointer thd_capture_run(gpointer thd_data)
 						thd_pixbuf = NULL;
 					}
 					// Starts backgroung elaboration of pixbuf
-					thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, NULL);
+					thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, (((thdmode == 1) && (thdsavejpg == 1)) ? (gpointer)thdfit : NULL));
 					
 					//UI update
 					if (tmrcapprgrefresh != -1)
@@ -1488,6 +1496,23 @@ gpointer thd_pixbuf_run(gpointer thd_data)
 	}
 	// Update image and graph / preview from the main thread (safer)
 	load_image_from_data();
+	if ((savejpg == 1) && (thd_data != NULL))
+	{
+		// Save the captures image to jpg
+		char prwfile[2048];
+		char prwhst[2048];
+		
+		sprintf(prwfile, "%s.jpg", (char *)thd_data);
+		sprintf(prwhst , "%s.txt", (char *)thd_data);
+		if ((imgpix_save_data(prwfile)) && (imgpix_save_histogram_data(prwhst)))
+		{
+			printf("Fifo: CAPVIEW=New image available (%s)\n", (char *)thd_data);
+		}
+		else
+		{
+			printf("Fifo: ERROR=Save capview failed\n");
+		}
+	}
 	tmrhstrefresh = g_timeout_add(1, (GSourceFunc) tmr_hst_refresh, NULL);
 	return 0;
 }

@@ -3233,6 +3233,15 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				sprintf(arg, "%d", uibytepix);
 				printf("Fifo: %s=%s\n", cmd, arg);
 			}
+			else if (strcmp(cmd, "SETSAVEJPG") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				g_rw_lock_writer_lock(&thd_caplock);
+				savejpg = (ival) ? 1 : 0;
+				g_rw_lock_writer_unlock(&thd_caplock);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
 			else if (strcmp(cmd, "GETPREVIEW") == 0)
 			{
 				// Will save a preview image (as can be seen in program window)
