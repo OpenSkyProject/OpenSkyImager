@@ -61,6 +61,9 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 	strcpy(hdr[HDR_EXPTIME].name, "EXPTIME"); 
 	hdr[HDR_EXPTIME].dtype = 'F'; 
 	strcpy(hdr[HDR_EXPTIME].comment, "[s] Total integration time"); 
+	strcpy(hdr[HDR_EXPOSURE].name, "EXPOSURE"); 
+	hdr[HDR_EXPOSURE].dtype = 'F'; 
+	strcpy(hdr[HDR_EXPOSURE].comment, "[s] Total integration time"); 
 	//GAIN
 	strcpy(hdr[HDR_GAIN].name, "GAIN"); 
 	hdr[HDR_GAIN].dtype = 'I'; 
@@ -81,12 +84,16 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 	strcpy(hdr[HDR_CCDTEMP].name, "CCD-TEMP"); 
 	hdr[HDR_CCDTEMP].dtype = '\0'; // This will be activated if the ccd temp is read 
 	strcpy(hdr[HDR_CCDTEMP].comment, "[C] Sensor temperature"); 
+	//SET-TEMP
+	strcpy(hdr[HDR_SETTEMP].name, "SET-TEMP"); 
+	hdr[HDR_SETTEMP].dtype = '\0'; // This will be activated if the ccd temp is read 
+	strcpy(hdr[HDR_SETTEMP].comment, "[C] Sensor target temperature"); 
 	//PSZX
-	strcpy(hdr[HDR_PSZX].name, "PSZX"); 
+	strcpy(hdr[HDR_PSZX].name, "XPIXSZ"); 
 	hdr[HDR_PSZX].dtype = '\0'; //'F'; 
 	strcpy(hdr[HDR_PSZX].comment, "[um] Size of a pixel in X direction"); 
 	//PSZY
-	strcpy(hdr[HDR_PSZY].name, "PSZY"); 
+	strcpy(hdr[HDR_PSZY].name, "YPIXSZ"); 
 	hdr[HDR_PSZY].dtype = '\0'; //'F'; 
 	strcpy(hdr[HDR_PSZY].comment, "[um] Size of a pixel in Y direction"); 
 	//FILTER

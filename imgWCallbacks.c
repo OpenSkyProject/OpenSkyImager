@@ -482,6 +482,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 				gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
 				// Header update
 				fithdr[HDR_CCDTEMP].dvalue = round(imgcam_get_tecp()->tectemp * 100) / 100;
+				fithdr[HDR_SETTEMP].dvalue = round(imgcam_get_tecp()->settemp * 100) / 100;
 			}
 			else
 			{
@@ -1288,11 +1289,13 @@ void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
 	{
 		imgcam_get_expar()->time = (int) (tmp * 1000);
 		fithdr[HDR_EXPTIME].dvalue = (double)(imgcam_get_expar()->time/1000.);
+		fithdr[HDR_EXPOSURE].dvalue = (double)(imgcam_get_expar()->time/1000.);
 	}
 	else
 	{
 		imgcam_get_expar()->time = 1;
 		fithdr[HDR_EXPTIME].dvalue = 0.001;
+		fithdr[HDR_EXPOSURE].dvalue = 0.001;
 	}
 	imgcam_get_expar()->edit = 1;
 	g_rw_lock_writer_unlock(&thd_caplock);
@@ -2184,6 +2187,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 				{
 					// Activate ccdtemp header entry
 					fithdr[HDR_CCDTEMP].dtype = 'F';
+					fithdr[HDR_SETTEMP].dtype = 'F';
 					if (tmrtecrefresh == -1)
 					{
 						// If there's no one running, run it
@@ -2213,6 +2217,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 				{
 					// De-activate ccdtemp header entry
 					fithdr[HDR_CCDTEMP].dtype = '\0';
+					fithdr[HDR_SETTEMP].dtype = '\0';
 					if (tmrtecrefresh != -1)
 					{
 						// Stop tec
@@ -2244,6 +2249,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 					gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
 					// Activate ccdtemp header entry
 					fithdr[HDR_CCDTEMP].dtype = 'F';
+					fithdr[HDR_SETTEMP].dtype = '\0';
 				}
 				else
 				{
@@ -2255,6 +2261,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 					gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Enable tec read"));
 					// De-activate ccdtemp header entry
 					fithdr[HDR_CCDTEMP].dtype = '\0';
+					fithdr[HDR_SETTEMP].dtype = '\0';
 				}
 			}
 			else
