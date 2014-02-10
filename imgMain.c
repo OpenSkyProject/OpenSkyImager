@@ -24,9 +24,11 @@
 #include "imgFifoio.h"
 #include "imgWindow.h"
 
+static gchar *FPath = NULL;
 static GOptionEntry options[] =
 {
 	{ "fifo", 'f', 0, G_OPTION_ARG_NONE, &fifomode, "Create / Open '/tmp/<program_name>' named pipe for command input", NULL },
+	{ "custom_fifo", 'F', 0, G_OPTION_ARG_STRING, &FPath, "custom fifo path/name", NULL },
 	{ NULL }
 };
 
@@ -56,7 +58,14 @@ int main(int argc, char* argv[])
 		if (fifomode)
 		{
 			fifomode = FALSE;
-			sprintf(fifopath, "%s%s", "/tmp/", g_get_prgname());
+			if (strlen(FPath) > 0)
+			{
+				sprintf(fifopath, "%s", FPath);
+			}
+			else
+			{
+				sprintf(fifopath, "%s%s", "/tmp/", g_get_prgname());
+			}
 			if (CreateFifo(fifopath))
 			{
 				fifofd = OpenFifo(fifopath);

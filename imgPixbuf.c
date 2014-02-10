@@ -207,7 +207,7 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 	int rowstride, bpp;
 	guchar *pixels, *p;
 	int row, col, pix, size = (width * height);
-	double resample = 1;
+	double resample = 1.;
 	unsigned char *pix8;
 	unsigned char *pix16;
 	
