@@ -50,3 +50,12 @@ Versions
 *Version 0.7.5*
 - Fix preview showing only B/W for QHY5L-II
 
+*Version 0.8.0*
+- Add remote control on a fifo, integration with iAstroHub
+already tested (http://sourceforge.net/projects/iastrohub/).
+- Fit Header fix:
+	- change pixel size keys
+	- add EXPOSURE key
+	- add SET-TEMP key
+	- Adapted a few key to be more compatible
+
