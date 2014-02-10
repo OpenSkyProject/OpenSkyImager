@@ -46,31 +46,33 @@
 
 #define CFW_SLOTS     8
 
-#define FITHDR_SLOTS  24
+#define FITHDR_SLOTS  26
 #define HDR_SWCREATE  0
 #define HDR_INSTRUME  1
 #define HDR_EXPTIME   2
-#define HDR_GAIN      3
-#define HDR_OFFSET    4
-#define HDR_XBINNING  5
-#define HDR_YBINNING  6
-#define HDR_CCDTEMP   7
-#define HDR_PSZX      8
-#define HDR_PSZY      9
-#define HDR_FILTER    10
-#define HDR_TELESCOP  11
-#define HDR_FOCALLEN  12
-#define HDR_APTDIA    13
-#define HDR_IPANGX    14
-#define HDR_IPANGY    15
-#define HDR_IMAGETYP  16
-#define HDR_FRAMENO   17
-#define HDR_SITELAT   18
-#define HDR_SITELONG  19
-#define HDR_DATEOBS   20
-#define HDR_DATE      21
-#define HDR_OBSERVER  22
-#define HDR_OBJECT    23
+#define HDR_EXPOSURE  3
+#define HDR_GAIN      4
+#define HDR_OFFSET    5
+#define HDR_XBINNING  6
+#define HDR_YBINNING  7
+#define HDR_CCDTEMP   8
+#define HDR_SETTEMP   9
+#define HDR_PSZX      10
+#define HDR_PSZY      11
+#define HDR_FILTER    12
+#define HDR_TELESCOP  13
+#define HDR_FOCALLEN  14
+#define HDR_APTDIA    15
+#define HDR_IPANGX    16
+#define HDR_IPANGY    17
+#define HDR_IMAGETYP  18
+#define HDR_FRAMENO   19
+#define HDR_SITELAT   20
+#define HDR_SITELONG  21
+#define HDR_DATEOBS   22
+#define HDR_DATE      23
+#define HDR_OBSERVER  24
+#define HDR_OBJECT    25
 
 #ifdef DECLARE_WINDOW
 
@@ -123,6 +125,13 @@
 	GStaticRWLock pixbuf_lock;
 	#endif
 
+	// FifoManager
+	gboolean fifomode = FALSE;
+	int  fifofd = -1, fifotag = -1;
+	GIOChannel *fifoch = NULL;
+	char fifopath[256] = "/tmp/OpenSkyImager";
+	int savejpg = 0;
+	
 	// Flags
 	int fit = 0, hst = 0;
 	double imgratio = 1., icoratio = 1.;
@@ -223,6 +232,13 @@
 	extern GStaticRWLock pixbuf_lock;
 	#endif
 
+	// FifoManager
+	extern gboolean fifomode;
+	extern int  fifofd, fifotag;
+	extern GIOChannel *fifoch;
+	extern char fifopath[256];
+	extern int savejpg;
+
 	// Flags
 	extern int fit, hst;
 	extern double imgratio, icoratio;
@@ -276,4 +292,5 @@
 #endif
 	
 void imgwin_build();
+gpointer fiforead();
 

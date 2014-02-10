@@ -61,6 +61,9 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 	strcpy(hdr[HDR_EXPTIME].name, "EXPTIME"); 
 	hdr[HDR_EXPTIME].dtype = 'F'; 
 	strcpy(hdr[HDR_EXPTIME].comment, "[s] Total integration time"); 
+	strcpy(hdr[HDR_EXPOSURE].name, "EXPOSURE"); 
+	hdr[HDR_EXPOSURE].dtype = 'F'; 
+	strcpy(hdr[HDR_EXPOSURE].comment, "[s] Total integration time"); 
 	//GAIN
 	strcpy(hdr[HDR_GAIN].name, "GAIN"); 
 	hdr[HDR_GAIN].dtype = 'I'; 
@@ -81,12 +84,16 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 	strcpy(hdr[HDR_CCDTEMP].name, "CCD-TEMP"); 
 	hdr[HDR_CCDTEMP].dtype = '\0'; // This will be activated if the ccd temp is read 
 	strcpy(hdr[HDR_CCDTEMP].comment, "[C] Sensor temperature"); 
+	//SET-TEMP
+	strcpy(hdr[HDR_SETTEMP].name, "SET-TEMP"); 
+	hdr[HDR_SETTEMP].dtype = '\0'; // This will be activated if the ccd temp is read 
+	strcpy(hdr[HDR_SETTEMP].comment, "[C] Sensor target temperature"); 
 	//PSZX
-	strcpy(hdr[HDR_PSZX].name, "PSZX"); 
+	strcpy(hdr[HDR_PSZX].name, "XPIXSZ"); 
 	hdr[HDR_PSZX].dtype = '\0'; //'F'; 
 	strcpy(hdr[HDR_PSZX].comment, "[um] Size of a pixel in X direction"); 
 	//PSZY
-	strcpy(hdr[HDR_PSZY].name, "PSZY"); 
+	strcpy(hdr[HDR_PSZY].name, "YPIXSZ"); 
 	hdr[HDR_PSZY].dtype = '\0'; //'F'; 
 	strcpy(hdr[HDR_PSZY].comment, "[um] Size of a pixel in Y direction"); 
 	//FILTER
@@ -304,7 +311,12 @@ void load_image_from_data()
 		g_rw_lock_writer_lock(&pixbuf_lock);
 		retval = imgpix_load(imgfit_get_data(), imgfit_get_width(), imgfit_get_height(), imgfit_get_bytepix(), debayer, scrmaxadu, scrminadu);
 		g_rw_lock_writer_unlock(&pixbuf_lock);
-		
+				
+		if ((fifomode) && (retval))
+		{
+			printf("Fifo: PREVIEW=New preview image available\n");
+		}
+
 		if (retval == 1)
 		{	
 			tmrfrmrefresh = g_timeout_add(1, (GSourceFunc) tmr_frm_refresh, NULL);
@@ -777,6 +789,32 @@ void combo_setlist(GtkWidget *cmb, char *str)
 	}
 }
 
+void combo_getlist(GtkWidget *cmb, char *str)
+{	
+	GtkListStore *list_store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb)));
+	GtkTreeIter iter;
+	GtkTreePath *path;
+	gchar *tmpstr;
+	int i, count = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(list_store), NULL);
+
+	str[0] = '\0';
+	path = gtk_tree_path_new_first();
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(list_store), &iter, path);
+	gtk_tree_path_free (path);
+	for (i = 0; i < count; i++)
+	{
+		gtk_tree_model_get(GTK_TREE_MODEL(list_store), &iter, 0, &tmpstr, -1);
+		sprintf(str,"%s|%s", str, tmpstr);
+		gtk_tree_model_iter_next(GTK_TREE_MODEL(list_store), &iter);
+	}
+	g_free(tmpstr);
+	if (strlen(str) > 0)
+	{
+		memmove(str,str+1, strlen(str)-1);
+		str[strlen(str)-1] = '\0';
+	}
+}
+
 void combo_ttylist(GtkWidget *cmb)
 {
 	char ttylist[2048];
@@ -982,7 +1020,7 @@ int wrtavihdr(char *filename, fit_rowhdr *hdr, int hdrsz)
 gpointer thd_capture_run(gpointer thd_data)
 {
 	int thdrun = 1, thderror = 0, thdhold = 0, thdmode = 0, thdshoot = 0;
-	int thdpreshots = shots, thdexp = 0, thdtlmode = 0;
+	int thdpreshots = shots, thdexp = 0, thdtlmode = 0, thdsavejpg = 0;
 	int thdtimer = 0, thdtimeradd = 0;
 	int avimaxframes = 0, writeavih = 0;
 	char thdfit[2048];
@@ -998,6 +1036,7 @@ gpointer thd_capture_run(gpointer thd_data)
 	gettimeofday(&clks, NULL);
 	g_rw_lock_reader_lock(&thd_caplock);
 	thdmode = capture;
+	thdsavejpg = savejpg;
 	thdrun = run;
 	thdtlmode = tlenable + tlcalendar;
 	if ((thdtlmode == 2) && (thdrun == 1))
@@ -1029,6 +1068,7 @@ gpointer thd_capture_run(gpointer thd_data)
 			g_rw_lock_reader_lock(&thd_caplock);
 			thdrun = run;
 			thdmode = capture;
+			thdsavejpg = savejpg;
 			g_rw_lock_reader_unlock(&thd_caplock);		
 			if (thdrun == 0)
 			{
@@ -1135,6 +1175,7 @@ gpointer thd_capture_run(gpointer thd_data)
 					g_rw_lock_reader_lock(&thd_caplock);
 					thdrun = run;
 					thdmode = capture;
+					thdsavejpg = savejpg;
 					g_rw_lock_reader_unlock(&thd_caplock);		
 					if (thdrun == 0)
 					{
@@ -1173,7 +1214,8 @@ gpointer thd_capture_run(gpointer thd_data)
 					//printf("Readout ok\n");
 					g_rw_lock_writer_lock(&thd_caplock);
 					readout = 0;
-					
+					thdsavejpg = savejpg;
+
 					// The fit data structure is also used anyway to store preview params
 					imgfit_init();
 					imgfit_set_width(imgcam_get_shpar()->width);
@@ -1218,6 +1260,10 @@ gpointer thd_capture_run(gpointer thd_data)
 									shotsnaming(thdfit, shots);
 								}
 								wrtavihdr(thdfit, fithdr, FITHDR_SLOTS);
+							}
+							else if (thdsavejpg == 1)
+							{
+								shotsnaming(thdfit, shots);
 							}
 							imgavi_set_data(imgcam_get_data());
 						}
@@ -1280,7 +1326,7 @@ gpointer thd_capture_run(gpointer thd_data)
 						thd_pixbuf = NULL;
 					}
 					// Starts backgroung elaboration of pixbuf
-					thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, NULL);
+					thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, (((thdmode == 1) && (thdsavejpg == 1)) ? (gpointer)thdfit : NULL));
 					
 					//UI update
 					if (tmrcapprgrefresh != -1)
@@ -1429,6 +1475,11 @@ gpointer thd_capture_run(gpointer thd_data)
 	// Release
 	imgcam_shutter(2);
 	
+	// Reset fifo feedback anyway
+	/*g_rw_lock_writer_lock(&thd_caplock);
+	fifofbk = 0;
+	g_rw_lock_writer_unlock(&thd_caplock);*/
+	
 	return 0;
 }
 
@@ -1445,6 +1496,23 @@ gpointer thd_pixbuf_run(gpointer thd_data)
 	}
 	// Update image and graph / preview from the main thread (safer)
 	load_image_from_data();
+	if ((savejpg == 1) && (thd_data != NULL))
+	{
+		// Save the captures image to jpg
+		char prwfile[2048];
+		char prwhst[2048];
+		
+		sprintf(prwfile, "%s.jpg", (char *)thd_data);
+		sprintf(prwhst , "%s.txt", (char *)thd_data);
+		if ((imgpix_save_data(prwfile)) && (imgpix_save_histogram_data(prwhst)))
+		{
+			printf("Fifo: CAPVIEW=New image available (%s)\n", (char *)thd_data);
+		}
+		else
+		{
+			printf("Fifo: ERROR=Save capview failed\n");
+		}
+	}
 	tmrhstrefresh = g_timeout_add(1, (GSourceFunc) tmr_hst_refresh, NULL);
 	return 0;
 }

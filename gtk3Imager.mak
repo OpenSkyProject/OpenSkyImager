@@ -29,6 +29,7 @@ OBJS = \
 	imgAvi.o \
 	ttylist.o \
 	ttycom.o \
+	imgFifoio.o \
 	imgMain.o 
 
 all: gtk3Imager

@@ -28,7 +28,7 @@
 static GdkPixbuf *pixbuf = NULL;
 static GdkPixbuf *hstbuf = NULL;
 static GdkPixbuf *roibuf = NULL;
-int pwidth, pheight, pdebayer;
+int pwidth, pheight, pdebayer, pbpp = 1;
 static char     *pixmsg;
 static int       loaded;
 static double hst[256];
@@ -41,6 +41,17 @@ char *imgpix_get_msg()
 GdkPixbuf *imgpix_get_data()
 {
 	return pixbuf;
+}
+
+int imgpix_save_data(char *path)
+{
+	int retval = 0;
+	
+	if (loaded)
+	{
+		retval = (gdk_pixbuf_save(pixbuf, path, "jpeg", NULL, "quality", "50", NULL) == TRUE); 
+	}
+	return (retval);
 }
 
 int imgpix_get_width()
@@ -84,6 +95,34 @@ GdkPixbuf *imgpix_get_histogram(int scale)
 		}
 	}
 	return hstbuf;
+}
+
+int imgpix_save_histogram_data(char *path)
+{
+	int retval = 0, i, size = (pwidth * pheight);;
+	FILE *outf;
+	
+	if (loaded)
+	{
+		outf = fopen(path, "w");
+		if (outf != NULL)
+		{
+			if (pbpp == 1)
+			{
+				fprintf(outf, "ADURANGE:0-255\n");
+			}
+			else
+			{
+				fprintf(outf, "ADURANGE:0-65535\n");
+			}
+			for (i = 0; i < 256; i++)
+			{
+				fprintf(outf, "%d:%d\n", i, (int)(hst[i] * size / 256.));
+			}
+			retval = (fclose(outf) == 0);
+		}
+	}
+	return (retval);
 }
 
 void imgpix_init_histogram()
@@ -168,7 +207,7 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 	int rowstride, bpp;
 	guchar *pixels, *p;
 	int row, col, pix, size = (width * height);
-	double resample = 1;
+	double resample = 1.;
 	unsigned char *pix8;
 	unsigned char *pix16;
 	
@@ -177,6 +216,7 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 	pwidth  = width;
 	pheight = height; 
 	pdebayer = debayer;
+	pbpp = bytepix;
 	// Failsafe
 	resample = (maxadu >= minadu) ? (maxadu - minadu + 1) / 255. : 1.;
 	

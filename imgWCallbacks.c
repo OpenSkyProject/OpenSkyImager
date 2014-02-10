@@ -482,6 +482,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 				gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
 				// Header update
 				fithdr[HDR_CCDTEMP].dvalue = round(imgcam_get_tecp()->tectemp * 100) / 100;
+				fithdr[HDR_SETTEMP].dvalue = round(imgcam_get_tecp()->settemp * 100) / 100;
 			}
 			else
 			{
@@ -1287,12 +1288,14 @@ void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
 	if (tmp > 0) 
 	{
 		imgcam_get_expar()->time = (int) (tmp * 1000);
-		fithdr[HDR_EXPTIME].dvalue = (double)imgcam_get_expar()->time/1000;
+		fithdr[HDR_EXPTIME].dvalue = (double)(imgcam_get_expar()->time/1000.);
+		fithdr[HDR_EXPOSURE].dvalue = (double)(imgcam_get_expar()->time/1000.);
 	}
 	else
 	{
 		imgcam_get_expar()->time = 1;
 		fithdr[HDR_EXPTIME].dvalue = 0.001;
+		fithdr[HDR_EXPOSURE].dvalue = 0.001;
 	}
 	imgcam_get_expar()->edit = 1;
 	g_rw_lock_writer_unlock(&thd_caplock);
@@ -2184,6 +2187,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 				{
 					// Activate ccdtemp header entry
 					fithdr[HDR_CCDTEMP].dtype = 'F';
+					fithdr[HDR_SETTEMP].dtype = 'F';
 					if (tmrtecrefresh == -1)
 					{
 						// If there's no one running, run it
@@ -2213,6 +2217,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 				{
 					// De-activate ccdtemp header entry
 					fithdr[HDR_CCDTEMP].dtype = '\0';
+					fithdr[HDR_SETTEMP].dtype = '\0';
 					if (tmrtecrefresh != -1)
 					{
 						// Stop tec
@@ -2244,6 +2249,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 					gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
 					// Activate ccdtemp header entry
 					fithdr[HDR_CCDTEMP].dtype = 'F';
+					fithdr[HDR_SETTEMP].dtype = '\0';
 				}
 				else
 				{
@@ -2255,6 +2261,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 					gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Enable tec read"));
 					// De-activate ccdtemp header entry
 					fithdr[HDR_CCDTEMP].dtype = '\0';
+					fithdr[HDR_SETTEMP].dtype = '\0';
 				}
 			}
 			else
@@ -2525,5 +2532,747 @@ void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
 	}
 	sprintf(imgmsg, "%s", imgcfw_get_msg());
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}
+
+gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
+{
+	GIOStatus retval;
+	GError *err = NULL;
+	gchar  *msg;
+	char  cmd[33];
+	char  arg[225];
+	float fval;
+	int   ival;
+	unsigned int len;
+
+	if (condition & G_IO_HUP)
+	{
+		printf("Fifo: Read end died!\n");
+		// We remove the event as it's now invalid
+		return FALSE;
+	}
+	else
+	{
+		retval = g_io_channel_read_line (gch, &msg, &len, NULL, &err);
+		if (retval == G_IO_STATUS_ERROR)
+		{
+			printf("Fifo: Error reading; %s\n", err->message);
+		}
+		else
+		{
+			// Msg format: "<command>:<arg>\n"
+			// Msg max len 255
+			sscanf(msg, "%[^:]:%[^\n]", cmd, arg);
+			if (strcmp(cmd, "EXPTIME") == 0)
+			{
+				// Exposure time in ms
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				fval = (float)(ival / 1000.);
+				sprintf(arg, "%05.3f", fval);
+				GtkWidget *text = gtk_bin_get_child(GTK_BIN(cmb_exptime));
+				gtk_entry_set_text(GTK_ENTRY(text), arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}			
+			else if (strcmp(cmd, "TOTSHOTS") == 0)
+			{
+				// Shots to do in a run
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (ival > 0)
+				{
+					gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_expnum), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=must be > 0\n");
+				}
+			}
+			else if (strcmp(cmd, "SAVSHOTS") == 0)
+			{	
+				// Shots saved already (useful to number future shots)
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (ival > 0)
+				{
+					gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_shots), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=must be > 0\n");
+				}
+			}
+			else if (strcmp(cmd, "MAXADU") == 0)
+			{
+				// Preview max adu (preview image will be saved accordingly)
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (((ival <= 65535) && (ival >= scrminadu) && (uibytepix == 2)) || ((ival <= 255) && (ival >= scrminadu) && (uibytepix == 1)))
+				{
+					gtk_range_set_value(GTK_RANGE(hsc_maxadu), (double)ival);
+					hsc_maxadu_changed(GTK_RANGE(hsc_maxadu), GTK_SCROLL_NONE, (double)ival, NULL);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=MaxAdu out of range (%d-%d)\n", scrminadu, (int)(pow(256, uibytepix) -1));
+				}
+			}
+			else if (strcmp(cmd, "READMAXADU") == 0)
+			{
+				sprintf(arg, "%d", scrmaxadu);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "MINADU") == 0)
+			{
+				// Preview min adu (preview image will be saved accordingly)
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival <= scrmaxadu) && (ival >= 0))
+				{
+					gtk_range_set_value(GTK_RANGE(hsc_minadu), (double)ival);
+					hsc_maxadu_changed(GTK_RANGE(hsc_minadu), GTK_SCROLL_NONE, (double)ival, NULL);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=MinAdu out of range (%d-%d)\n", 0, scrmaxadu);
+				}
+			}
+			else if (strcmp(cmd, "READMINADU") == 0)
+			{
+				sprintf(arg, "%d", scrminadu);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "TECREAD") == 0)
+			{
+				// Enable / disable tec read feature
+				if (imgcam_get_tecp()->istec > 0)
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), (ival > 0));
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=No TEC to read\n");
+				}
+			}
+			else if (strcmp(cmd, "TECAUTO") == 0)
+			{
+				// Enable disable tec feedback mode (using current target temp)
+				if (imgcam_get_tecp()->istec == 1)
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if ((ival > 0) && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecenable)) == FALSE))
+					{
+						// Activate tec read mode too if it is not already
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+					}
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), (ival > 0));
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=No TEC to set\n");
+				}
+			}
+			else if (strcmp(cmd, "SETTEMP") == 0)
+			{
+				// Set target temperature (if tecread & tecauto are not set already, it will do)
+				if (imgcam_get_tecp()->istec == 1)
+				{
+					sscanf(arg, "%f", &fval);
+					sprintf(arg, "%06.2f", fval);
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecenable)) == FALSE)
+					{
+						// Activate tec read mode too if it is not already
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+					}
+					if (imgcam_get_tecp()->tecauto == 0)
+					{
+						// Set tec to auto
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), TRUE);
+					}
+					gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tectgt), fval);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=No TEC to set\n");
+				}
+			}
+			else if (strcmp(cmd, "GETTEMP") == 0)
+			{
+				// Print current CCD temp on the command line
+				printf("Fifo: %s=%+06.2f\n", cmd, imgcam_get_tecp()->tectemp);
+			}
+			else if (strcmp(cmd, "CAPMODE") == 0)
+			{
+				// Set capture mode (next run will save file(s) following current naming conventin)
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (ival > 0)
+				{
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_capture), TRUE);
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_capture)))
+					{
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=file name/folder parameters missing\n");
+					}
+				}
+				else
+				{
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_focus), TRUE);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+			}
+			else if (strcmp(cmd, "RUN") == 0)
+			{
+				// This will start camera capture in current CAPMODE
+				// This command has no arg
+				if (imgcam_connected())
+				{
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)) == FALSE)
+					{
+						// Set fifo feedback on (will print ack each newly available image)
+						/*g_rw_lock_writer_lock(&thd_caplock);
+						fifofbk = 1;
+						g_rw_lock_writer_unlock(&thd_caplock);*/
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), TRUE);
+						printf("Fifo: %s=ACK\n", cmd);				
+					}
+					else
+					{
+						printf("Fifo: ERROR=Capture already running\n");
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=Camera is not connected\n");
+				}
+			}
+			else if (strcmp(cmd, "STOP") == 0)
+			{
+				// This will request stop current camera capture run
+				// To kill last capture (if > 1000ms) just issue a second STOP request
+				// This command has no arg
+				if (imgcam_connected())
+				{
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)))
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), FALSE);
+						printf("Fifo: %s=ACK\n", cmd);				
+					}
+					else
+					{
+						printf("Fifo: ERROR=No capture running\n");
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=Camera is not connected\n");
+				}
+			}
+			else if (strcmp(cmd, "HOLD") == 0)
+			{
+				// Enable / disable a pause in the current camera capture run
+				if (imgcam_connected())
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)))
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_hold), (ival > 0));
+						printf("Fifo: %s=ACK\n", cmd);				
+					}
+					else
+					{
+						printf("Fifo: ERROR=No capture running\n");
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=Camera is not connected\n");
+				}
+			}
+			else if (strcmp(cmd, "AUDELA") == 0)
+			{
+				// Sets "audela" naming convention (save folder = ~/<current date>, base name="image")
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_audela), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "IRIS") == 0)
+			{
+				// Add a variant to file numbering to be iris compatible
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_iris), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "DATEADD") == 0)
+			{
+				// Add current date to the file naming convention
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_dateadd), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "TIMEADD") == 0)
+			{
+				// Add current time to the naming convention
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_timeadd), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "FLTADD") == 0)
+			{
+				// Add current filter name to the naming convention
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_fltadd), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "FLTLIST") == 0)
+			{
+				// Prints the filter (pipe separated) list to the command line
+				// FLTSET must use ordinal position (0 based) from this list
+				// That is FLTSET:1 will set the second element
+				combo_getlist(cmb_flt, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "FLTSET") == 0)
+			{	
+				// Set active the nth element in the filters combobox
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_flt)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Filter index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_flt)-1);
+				}
+			}
+			else if (strcmp(cmd, "ZEROCNT") == 0)
+			{
+				// Set a flag so that each camera capture run will restart file numbering from 0
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_zerofc), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "BASEFOLDER") == 0)
+			{
+				// Sets a custom folder to save captured frames
+				gtk_entry_set_text(GTK_ENTRY(txt_fitfolder), arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "BASENAME") == 0)
+			{
+				// Sets a custom base name for captured frames
+				gtk_entry_set_text(GTK_ENTRY(txt_fitbase), arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "OUTMODE") == 0)
+			{
+				// Sets the output mode (values are those in program combo 1:Fit, 2:Avi 3:Avi+Fit)
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival > 0) && (ival < 4))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_fmt), (ival -1));
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Output mode out of range (1-3)\n");
+				}
+			}
+			else if (strcmp(cmd, "CAMLIST") == 0)
+			{
+				// Prints the camera (pipe separated) list to the command line
+				// CAMSET must use ordinal position (0 based) from this list
+				// That is CAMSET:1 will set the second element
+				combo_getlist(cmb_camera, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CAMSET") == 0)
+			{	
+				// Set active the nth element in the filters combobox
+				if (!imgcam_connected())
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_camera)))
+					{
+						gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_camera), ival);
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=Camera index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_camera)-1);
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=Camera is connected already\n");
+				}
+			}
+			else if (strcmp(cmd, "CAMCONNECT") == 0)
+			{	
+				// Connect / disconnect selected camera
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (ival == 1)
+				{
+					if (!imgcam_connected())
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_camera), TRUE);
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=Camera is connected already\n");
+					}
+				}
+				else if (ival == 0)
+				{
+					if (imgcam_connected())
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_camera), FALSE);
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=Camera is not connected\n");
+					}				
+				}
+				else
+				{
+					printf("Fifo: ERROR=Invalid value (0-1)\n");
+				}
+			}
+			else if (strcmp(cmd, "CAMREFRESH") == 0)
+			{
+				// Refresh camera list
+				if (!imgcam_connected())
+				{
+					gtk_button_clicked(GTK_BUTTON(cmd_updcamlst));
+					printf("Fifo: %s=ACK\n", cmd);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Camera is connected already\n");
+				}				
+			}
+			else if (strcmp(cmd, "CAMRESET") == 0)
+			{
+				// Reset currently selected camera
+				if (!imgcam_connected())
+				{
+					if (gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_camera)) > 0)
+					{
+						gtk_button_clicked(GTK_BUTTON(cmd_resetcam));
+						printf("Fifo: %s=ACK\n", cmd);
+					}
+					else
+					{
+						printf("Fifo: ERROR=Cannot reset none camera\n");
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=Camera is connected already\n");
+				}				
+			}
+			else if (strcmp(cmd, "CAMOFFSET") == 0)
+			{
+				// Camera offset (0-255)
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival <= 255) && (ival >= 0)) 
+				{
+					gtk_range_set_value(GTK_RANGE(hsc_offset), (double)ival);
+					hsc_offset_changed(GTK_RANGE(hsc_offset), GTK_SCROLL_NONE, (double)ival, NULL);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Offset out of range (0-255)\n");
+				}
+			}
+			else if (strcmp(cmd, "CAMGAIN") == 0)
+			{
+				// Camera offset (0-100)
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival <= 100) && (ival >= 0)) 
+				{
+					gtk_range_set_value(GTK_RANGE(hsc_gain), (double)ival);
+					hsc_gain_changed(GTK_RANGE(hsc_gain), GTK_SCROLL_NONE, (double)ival, NULL);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Gain out of range (0-100)\n");
+				}
+			}
+			else if (strcmp(cmd, "CAMBINLIST") == 0)
+			{
+				// Prints the camera bin (pipe separated) list to the command line
+				// CAMBINSET must use ordinal position (0 based) from this list
+				// That is CAMBINSET:1 will set the second element
+				combo_getlist(cmb_bin, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CAMBINSET") == 0)
+			{	
+				// Set active the nth element in the filters combobox
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_bin)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_bin), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Bin index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_bin)-1);
+				}
+			}
+			else if (strcmp(cmd, "CAMSIZELIST") == 0)
+			{
+				// Prints the camera bin (pipe separated) list to the command line
+				// CAMSIZESET must use ordinal position (0 based) from this list
+				// That is CAMSIZESET:1 will set the second element
+				combo_getlist(cmb_csize, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CAMSIZESET") == 0)
+			{	
+				// Set active the nth element in the filters combobox
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_csize)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_csize), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Capture size index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_csize)-1);
+				}
+			}
+			else if (strcmp(cmd, "CAMDSPDLIST") == 0)
+			{
+				// Prints the camera bin (pipe separated) list to the command line
+				// CAMDSPDSET must use ordinal position (0 based) from this list
+				// That is CAMDSPDSET:1 will set the second element
+				combo_getlist(cmb_dspeed, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CAMDSPDSET") == 0)
+			{	
+				// Set active the nth element in the filters combobox
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_dspeed)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_dspeed), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Download speed index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_dspeed)-1);
+				}
+			}
+			else if (strcmp(cmd, "CAMXMODLIST") == 0)
+			{
+				// Prints the camera bin (pipe separated) list to the command line
+				// CAMXMODSET must use ordinal position (0 based) from this list
+				// That is CAMDXMODSET:1 will set the second element
+				combo_getlist(cmb_mode, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CAMXMODSET") == 0)
+			{	
+				// Set active the nth element in the filters combobox
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_mode)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_mode), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=%s index out of range (0-%d)\n", gtk_label_get_text(GTK_LABEL(lbl_mode)), gtk_combo_box_element_count(cmb_mode)-1);
+				}
+			}
+			else if (strcmp(cmd, "CAMAMPLIST") == 0)
+			{
+				// Prints the camera bin (pipe separated) list to the command line
+				// CAMAMPSET must use ordinal position (0 based) from this list
+				// That is CAMAMPSET:1 will set the second element
+				combo_getlist(cmb_amp, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CAMAMPSET") == 0)
+			{	
+				// Set active the nth element in the filters combobox
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_amp)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_amp), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Amp mode index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_amp)-1);
+				}
+			}
+			else if (strcmp(cmd, "CAMNRLIST") == 0)
+			{
+				// Prints the camera bin (pipe separated) list to the command line
+				// CAMNRSET must use ordinal position (0 based) from this list
+				// That is CAMNRSET:1 will set the second element
+				combo_getlist(cmb_denoise, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CAMNRSET") == 0)
+			{	
+				// Set active the nth element in the filters combobox
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_denoise)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_denoise), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Noise reduction mode index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_denoise)-1);
+				}
+			}
+			else if (strcmp(cmd, "CAMDEPTHLIST") == 0)
+			{
+				// Prints the camera bin (pipe separated) list to the command line
+				// CAMDEPTHSET must use ordinal position (0 based) from this list
+				// That is CAMDEPTHSET:1 will set the second element
+				combo_getlist(cmb_depth, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CAMDEPTHSET") == 0)
+			{	
+				// Set active the nth element in the filters combobox
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_depth)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_depth), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Image depth index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_depth)-1);
+				}
+			}
+			else if (strcmp(cmd, "CAMBAYERLIST") == 0)
+			{
+				// Prints the camera bin (pipe separated) list to the command line
+				// CAMBAYERSET must use ordinal position (0 based) from this list
+				// That is CAMBAYERSET:1 will set the second element
+				combo_getlist(cmb_debayer, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CAMBAYERSET") == 0)
+			{	
+				// Set active the nth element in the filters combobox
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_debayer)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_debayer), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Bayer matrix index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_debayer)-1);
+				}
+			}
+			else if (strcmp(cmd, "GETPRVWIDTH") == 0)
+			{
+				g_rw_lock_reader_lock(&pixbuf_lock);
+				sprintf(arg, "%d", imgpix_get_width());
+				g_rw_lock_reader_unlock(&pixbuf_lock);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "GETPRVHEIGHT") == 0)
+			{
+				g_rw_lock_reader_lock(&pixbuf_lock);
+				sprintf(arg, "%d", imgpix_get_height());
+				g_rw_lock_reader_unlock(&pixbuf_lock);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "GETDATADEPTH") == 0)
+			{
+				sprintf(arg, "%d", uibytepix);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "SETSAVEJPG") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				g_rw_lock_writer_lock(&thd_caplock);
+				savejpg = (ival) ? 1 : 0;
+				g_rw_lock_writer_unlock(&thd_caplock);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "GETPREVIEW") == 0)
+			{
+				// Will save a preview image (as can be seen in program window)
+				// File name will be <fifopath>.jpg
+				// This command has no arg
+				// Must use lock to avoid hitting the capture thread
+				// Other features use native callbacks that are thread aware already
+				char prwfile[256];
+				char prwhst[256];
+				
+				sprintf(prwfile, "%s.jpg", fifopath);
+				sprintf(prwhst , "%s.txt", fifopath);
+				g_rw_lock_reader_lock(&pixbuf_lock);
+				//if (gdk_pixbuf_save(imgpix_get_data(), prwfile, "png", NULL, "compression", "0", NULL))
+				if ((imgpix_save_data(prwfile)) && (imgpix_save_histogram_data(prwhst)))
+				{
+					printf("Fifo: %s=ACK\n", cmd);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Save preview failed\n");
+				}
+				g_rw_lock_reader_unlock(&pixbuf_lock);
+			}
+			else
+			{
+				printf("Fifo: Unknown command; Read %d bytes; %s\n", len, msg);
+			}
+		}
+		g_free(msg);
+	}
+	return TRUE;
 }
 

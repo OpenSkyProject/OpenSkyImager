@@ -35,3 +35,4 @@ void       gtk_color_get_lighter (GdkRGBA *color);
 void       gtk_color_get_alert (GdkRGBA *color);
 void       gtk_widget_modify_bkg(GtkWidget *widget, GtkStateType state, GdkRGBA* color);
 #endif
+int        gtk_combo_box_element_count(GtkWidget *cmb);
