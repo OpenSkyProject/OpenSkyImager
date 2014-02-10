@@ -147,6 +147,7 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 	static int bpp = 1;
 	
 	expar->wtime = expar->time;
+	expar->bin = 1;
 	if (expar->edit)
 	{
 		// Set switches
@@ -300,7 +301,7 @@ int qhy5ii_bonjour()
 		{
 			// Color
 			camcolor = 1;
-			strcpy(imgcam_get_camui()->byrstr, "1");
+			strcpy(imgcam_get_camui()->byrstr, "3");
 		}
 		else 
 		{

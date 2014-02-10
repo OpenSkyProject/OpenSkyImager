@@ -44,6 +44,9 @@ Versions
 - New radio toggle-buttons for Capture/Focus mode selection
 - Qhy8l now fully supported (special thanks to Anat Ruangrassamee for help)
 
-*Version 0.7.3*
+*Version 0.7.4*
 - Fix subframe not centered on the ccd for qhy8l
+
+*Version 0.7.5*
+- Fix preview showing only B/W for QHY5L-II
 
