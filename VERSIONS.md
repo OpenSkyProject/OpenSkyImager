@@ -59,3 +59,6 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 	- add SET-TEMP key
 	- Adapted a few key to be more compatible
 
+*Version 0.8.1*
+- Pre processor code updated to cope with GTK 3.8 version (avoid deprecated)
+

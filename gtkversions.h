@@ -39,6 +39,9 @@
 	#define gtk_table_attach(tbl, wgt, l, r, t, b, hf, vf, xp, yp)  gtk_grid_attach(tbl, wgt, l, t, r-l, b-t)
 	#define gtk_table_set_row_spacings(tbl, spc)                    gtk_grid_set_row_spacing(tbl, spc)
 	#define gtk_table_set_col_spacings(tbl, spc)                    gtk_grid_set_column_spacing(tbl, spc)
+	#if GTK_CHECK_VERSION(3,8,0) == TRUE
+		#define gtk_scrolled_window_add_with_viewport(swnd,wdgt)   gtk_container_add(GTK_CONTAINER(swnd), wdgt)
+	#endif
 #elif GTK_CHECK_VERSION(2,24,0) == FALSE
 	#define gtk_combo_box_text_new()                           gtk_combo_box_entry_new_text()
 	#define gtk_combo_box_text_new_with_entry()                gtk_combo_box_entry_new_text()
@@ -48,5 +51,4 @@
 	#define gtk_combo_box_text_remove(cmb, pos)                gtk_combo_box_remove_text(cmb, pos)
 	#define gtk_statusbar_remove_all(stb, id)                  gtk_statusbar_pop(stb, id)
 #endif
-
 
