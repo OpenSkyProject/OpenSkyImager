@@ -35,6 +35,7 @@
 #include "qhy8l.h"
 #include "qhy9.h"
 #include "qhy11.h"
+#include "qhy12.h"
 
 static char *cammsg;
 static unsigned char* databuffer[2] = {NULL, NULL};
@@ -114,6 +115,10 @@ int imgcam_iscamera(const char *model)
 	else if (strcmp(model, "QHY11") == 0)
 	{
 		retcode = qhy11_iscamera();
+	}
+	else if (strcmp(model, "QHY12") == 0)
+	{
+		retcode = qhy12_iscamera();
 	}
 	return (retcode);
 }
@@ -206,6 +211,11 @@ void imgcam_set_model(const char *val)
 	{
 		qhy11_init();
 		camid = 11;
+	}
+	else if (strcmp(val, "QHY12") == 0)
+	{
+		qhy12_init();
+		camid = 12;
 	}
 	strcpy(cammodel, val);
 }
@@ -334,6 +344,10 @@ char *imgcam_init_list(int all)
 	{
 		strcat(imgcam_get_camui()->camstr, "|QHY11");
 	}
+	if ((imgcam_iscamera("QHY12")) || (all))
+	{
+		strcat(imgcam_get_camui()->camstr, "|QHY12");
+	}
 	strcat(imgcam_get_camui()->camstr, "|:0");
 	return imgcam_get_camui()->camstr;
 }
@@ -370,6 +384,7 @@ int imgcam_connect()
 			case 81:
 			case 9:
 			case 11:
+			case 12:
 				if ((retval = qhy_OpenCamera(qhy_core_getcampars()->vid, qhy_core_getcampars()->pid)) == 1)
 				{
 					retval = imgcam_settec(tecp.tecpwr);
@@ -401,6 +416,7 @@ int imgcam_disconnect()
 		case 81:
 		case 9:
 		case 11:
+		case 12:
 			if ((retval = qhy_CloseCamera()) == 0)
 			{
 				strcpy(cammsg, qhy_core_msg());
@@ -447,6 +463,9 @@ int imgcam_reset()
 			break;
 		case 11:
 			retval = qhy11_reset();
+			break;
+		case 12:
+			retval = qhy12_reset();
 			break;
 	}
 	if (retval == 1)
@@ -553,6 +572,12 @@ int imgcam_shoot()
 				retval = qhy_ccdStartExposure(shpar.time);
 			}
 			break;
+		case 12:
+			if ((retval = ((shpar.edit) ? qhy12_setregisters(&shpar) : 1)) == 1)
+			{
+				retval = qhy_ccdStartExposure(shpar.time);
+			}
+			break;
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
@@ -633,6 +658,9 @@ int imgcam_readout()
 			case 11:
 				qhy11_decode(databuffer[curdataptr]);	
 				break;
+			case 12:
+				qhy12_decode(databuffer[curdataptr]);	
+				break;
 		}
 		loaded = 1;
 	}
@@ -674,6 +702,7 @@ int imgcam_abort()
 		case 81:
 		case 9:
 		case 11:
+		case 12:
 			retval = qhy_ccdAbortCapture();
 			usleep(100000);
 			break;
@@ -705,6 +734,7 @@ int imgcam_settec(int pwm)
 		case 81:
 		case 9:
 		case 11:
+		case 12:
 			retval = qhy_setDC201_i(pwm, 1);
 			break;
 	}
@@ -738,6 +768,7 @@ int imgcam_gettec(double *tC, double *mV)
 		case 81:
 		case 9:
 		case 11:
+		case 12:
 			retval = qhy_getDC201_i(&imgtC, &imgmV);
 			break;
 	}
@@ -769,26 +800,19 @@ int imgcam_shutter(int cmd)
 	switch (camid)
 	{
 		case 20:
-			break;
 		case 5:
-			break;
 		case 52:
-			break;
 		case 6:
-			break;
 		case 60:
-			break;
 		case 7:
-			break;
 		case 80:
-			break;
 		case 81:
+		case 11:
+		case 12:
 			break;
 		case 9:
 			cammsg[0] = '\0';
 			retval = qhy_Shutter(cmd);
-			break;
-		case 11:
 			break;
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
@@ -812,6 +836,7 @@ int imgcam_wheel(int pos)
 		case 60:
 		case 80:
 		case 81:
+		case 12:
 			break;
 		case 9:
 			cammsg[0] = '\0';
