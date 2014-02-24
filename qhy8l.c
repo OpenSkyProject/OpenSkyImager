@@ -130,15 +130,13 @@ int  qhy8l_reset()
 int  qhy8l_setregisters(qhy_exposure *expar) 
 {
 	int retval = 1;	
-	int time, Vbin, Hbin, ShortExp, antiamp, vbe, PatchNumber;
+	int time, Vbin, Hbin, ShortExp, antiamp, PatchNumber;
 	int top_skip = 0, bot_skip = 0;	
 	int top_skip_null = 100;
 	unsigned char time_H,time_M,time_L;
 	
 	expar->wtime = (expar->mode == 2) ? expar->time * 2 : expar->time;
 	bin = expar->bin;
-	vbe = (expar->mode - 1);
-	vbe = (vbe >= 0) ? vbe : 0;
 	if(expar->time < SHORTEXP) 
 	{  
 		ShortExp = 1;
