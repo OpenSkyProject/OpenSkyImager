@@ -1,5 +1,5 @@
 /*
- * qhycore.c
+ * qhycore.h
  *
  *  Created on: 01.09.2013
  *      Author: Giampiero Spezzano (gspezzano@gmail.com)

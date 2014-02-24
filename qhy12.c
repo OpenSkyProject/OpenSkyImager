@@ -84,7 +84,7 @@ void qhy12_init()
 	strcpy(imgcam_get_camui()->moddsc, "");
 	strcpy(imgcam_get_camui()->snrstr, "");
 	strcpy(imgcam_get_camui()->bppstr, "2-16Bit|:0");
-	strcpy(imgcam_get_camui()->byrstr, "1");
+	strcpy(imgcam_get_camui()->byrstr, "2");
 	strcpy(imgcam_get_camui()->tecstr, "0:255:1:2");
 	strcpy(imgcam_get_camui()->whlstr, "");
 	// Header values
@@ -310,11 +310,18 @@ int  qhy12_setregisters(qhy_exposure *expar)
 
 void qhy12_decode(unsigned char *databuffer)
 {
-	unsigned char *src1, *src2, *src3, *src4, *tgt;
-	unsigned int   t, w, p;
-	unsigned char  *swb;
-	int left_skip = 0, right_skip = 0;
+	unsigned char *srcF1, *srcF2, *srcF3, *srcF4;
+	unsigned char *tgt11, *tgt12, *tgt13, *tgt14, *tgt21, *tgt22, *tgt23, *tgt24;
+	unsigned char *swb;
+	int tgt1, tgt2;
+	int sF1, sF2, sF3, sF4;
+	int t, w, p, hgt2 = (height / 2), hgt22 = (height / 2) - 2;
+	int p1, p2;
+	unsigned char *processed = NULL;
+	int left_skip = 0, right_skip = 0, allocsize = (MAX(transfer_size, totalsize) + 2);
 
+	processed = (unsigned char*)realloc(processed, allocsize);
+	
 	//Swap bytes
 	swb = databuffer;
 	t = totalsize>>1;
@@ -324,164 +331,211 @@ void qhy12_decode(unsigned char *databuffer)
 		swb+=2;
 	}
 
+	// Top pix skip
+	srcF1 = databuffer + (top_skip_pix * 2);
+	memcpy(processed, srcF1, (i_width * height * 2));
+
 	//DECODE
 	switch(bin) 
 	{
 		case 1:  //1X1 binning
-			// Possibly noop except top pix null skip
-			src1 = databuffer + (top_skip_pix * 2);
-			memcpy(databuffer, src1, (i_width * height * 2));
-			// Subframe eventually
+			// Field1 = R, Filed2 = Gr, Field3 = Gb, Field4 = B
+			// Now we have to rebuild the whole frame starting from the dual oputput, dual field 
+			// (R,R,R / B,B,B - Gr,Gr,Gr / Gb,Gb,Gb)
+			// Please note that B and Gb data are vertically flipped 
+			// Output should be a RGGB mask
+			for (t = 0; t < hgt22; t += 2)
+			{
+				// Loop on rows
+				// Jump two lines on the output
+				tgt1 = (t * 2 * width);
+				tgt2 = ((t + 1) * 2 * width);
+				// Jump one line on the original camera data
+				sF1 = width * (t + 3) + 1; 			//R
+				sF2 = width * (height - t - 2) + 3;	//G
+				sF3 = width * (hgt2 - t - 2) + 1;	//G
+				sF4 = width * (hgt2 + t + 3) + 1;     //B
+				// Please note 2 & 4 field are vertically flipped
+				//In each output field 1 there's a pixel offset for unknown reason
+				for (w = 0; w < width; w += 4)
+				{
+					for (p = 0; p < 2; p++)
+					{
+						tgt11 = databuffer + tgt1 * 2 + p * 4 + w * 2;
+						tgt12 = tgt11 + 2;
+						tgt13 = tgt11 + (width * 2);
+						tgt14 = tgt13 + 2;
+						srcF1 = processed + ((sF1 + w + p) * 2);
+						srcF2 = processed + ((sF2 + w + p) * 2);
+						srcF3 = processed + ((sF3 + w + p) * 2);
+						srcF4 = processed + ((sF4 + w + p) * 2);
+						
+						*tgt11 = *srcF1; tgt11++;  srcF1++;  *tgt11 = *srcF1;
+						*tgt12 = *srcF2; tgt12++;  srcF2++;  *tgt12 = *srcF2;
+						*tgt13 = *srcF3; tgt13++;  srcF3++;  *tgt13 = *srcF3;
+						*tgt14 = *srcF4; tgt14++;  srcF4++;  *tgt14 = *srcF4;
+					}
+					for (p = 0; p < 2; p++)
+					{
+						tgt21 = databuffer + tgt2 * 2 + p * 4 + w * 2 + 4;
+						tgt22 = tgt21 + 2;
+						tgt23 = tgt21 + (width * 2);
+						tgt24 = tgt23 + 2;
+						srcF1 = processed + ((sF1 + w + p + 2) * 2);
+						srcF2 = processed + ((sF2 + w + p + 2) * 2);
+						srcF3 = processed + ((sF3 + w + p + 2) * 2);
+						srcF4 = processed + ((sF4 + w + p + 2) * 2);
+
+						*tgt21 = *srcF1; tgt21++;  srcF1++;  *tgt21 = *srcF1;
+						*tgt22 = *srcF2; tgt22++;  srcF2++;  *tgt22 = *srcF2;
+						*tgt23 = *srcF3; tgt23++;  srcF3++;  *tgt23 = *srcF3;
+						*tgt24 = *srcF4; tgt24++;  srcF4++;  *tgt24 = *srcF4;
+					}
+				}
+			}
 			if (width < i_width)
 			{
 				// Copy onto databuffer from databuffer(!) only the ROI data
 				left_skip = (int)((i_width - width) / 2);
 				right_skip = i_width - left_skip - width;
 				//printf("Processing i_width: ls %d, iw %d, rs %d\n", left_skip, width, right_skip);
-				src1 = databuffer;
-				tgt = databuffer;
+				srcF1 = databuffer;
+				tgt11 = databuffer;
 				t = height;
 				while (t--) 
 				{
 					// Skip the left part
-					src1 += left_skip * 2;
+					srcF1 += left_skip * 2;
 					w = width * 2;
 					// Copy img_w pixels on the line
-					memcpy(tgt, src1, w);
+					memcpy(tgt11, srcF1, w);
 					if (t > 0)
 					{
 						// Move & Skip the right part
-						src1 += (width + right_skip) * 2;
-						tgt  += w;
+						srcF1 += (width + right_skip) * 2;
+						tgt11  += w;
 					}
 				}
 			}
 			break;
-			
+
 		case 2:  //2X2 binning
-				//This indeed is partially software binning from Bin1x2 data got from the camera
-				// Copy onto databuffer from databuffer(!)
-			// Possibly let's start with top pix null skip
-			src1 = databuffer + (top_skip_pix * 2);
-			memcpy(databuffer, src1, (i_width * height * 2));
-			//
-			src1 = databuffer;
-			src2 = databuffer + 2;
-			tgt = databuffer;
-			t = height;
-			while (t--) 
+			// First of all we have to reorder the interlaced output
+			// Fields are vertically flipped
+			for (t = 0; t < height; t += 2)
 			{
-				w = (i_width / 2);
-				right_skip = (i_width % 2);
-				while (w--) 
+				tgt1 = width * t;
+				tgt2 = width * (t + 1);
+				sF1 = i_width * (t + 1);	 			//F1
+				sF2 = i_width * (height - t - 2) + 1;	//F2
+				
+				for (w = 0; w < width; w++)
 				{
-					p  = (src1[0] + src1[1] * 256);
-					p += (src2[0] + src2[1] * 256);
-					p = MIN(p, 65535);
-					tgt[0] = (int)(p % 256);
-					tgt[1] = (int)(p / 256);
-					src1 += 4;
-					src2 += 4;
-					tgt  += 2;
+					tgt11 = databuffer + (tgt1 + w) * 2;
+					tgt21 = databuffer + (tgt2 + w) * 2;
+					srcF1 = processed + sF1 * 2 + w * 4;
+					srcF2 = processed + sF2 * 2 + w * 4;
+
+					p1  = (srcF1[0] + srcF1[1] * 256);
+					p1 += (srcF1[2] + srcF1[3] * 256);
+					p1  = MIN(p1, 65535);
+					p2  = (srcF2[0] + srcF2[1] * 256);
+					p2 += (srcF2[2] + srcF2[3] * 256);
+					p2  = MIN(p2, 65535);
+
+					tgt11[0] = (int)(p1 % 256);
+					tgt11[1] = (int)(p1 / 256);
+					tgt21[0] = (int)(p2 % 256);
+					tgt21[1] = (int)(p2 / 256);					
 				}
-				if (t > 0)
-				{
-					src1 += right_skip;
-					src2 += right_skip;
-				}
-			}
+			}			
 			if (width < (int)(i_width / 2))
 			{
 				// Copy onto databuffer from databuffer(!) only the ROI data
 				left_skip = (int)(((int)(i_width / 2) - width) / 2);
 				right_skip = (int)(i_width / 2) - left_skip - width;
 				//printf("Processing i_width: ls %d, iw %d, rs %d\n", left_skip, width, right_skip);
-				src1 = databuffer;
-				tgt = databuffer;
+				srcF1 = databuffer;
+				tgt11 = databuffer;
 				t = height;
 				while (t--) 
 				{
 					// Skip the left part
-					src1 += left_skip * 2;
+					srcF1 += left_skip * 2;
 					w = width * 2;
 					// Copy img_w pixels on the line
-					memcpy(tgt, src1, w);
+					memcpy(tgt11, srcF1, w);
 					if (t > 0)
 					{
 						// Move & Skip the right part
-						src1 += (width + right_skip) * 2;
-						tgt  += w;
+						srcF1 += (width + right_skip) * 2;
+						tgt11  += w;
 					}
 				}
 			}
 			break;
-
-		case 4:  //4X4 binning
-				//This indeed is partially software binning from Bin1x4 data got from the camera
-				// Copy onto databuffer from databuffer(!)
-			// Possibly let's start with top pix null skip
-			src1 = databuffer + (top_skip_pix * 2);
-			memcpy(databuffer, src1, (i_width * height * 2));
-			//
-			src1 = databuffer;
-			src2 = databuffer + 2;
-			src2 = databuffer + 4;
-			src2 = databuffer + 6;
-			tgt = databuffer;
-			t = height;
-			while (t--) 
+			
+		case 4:  //2X2 binning
+			// First of all we have to reorder the interlaced output
+			// Fields are vertically flipped
+			for (t = 0; t < height - 2; t += 2)
 			{
-				w = (i_width / 4);
-				right_skip = (i_width % 4);
-				while (w--) 
+				tgt1 = width * t;
+				tgt2 = width * (t + 3);
+				sF1 = i_width * (t + 1);	 			//F1
+				sF2 = i_width * (height - t - 2) + 1;	//F2
+
+				for (w = 0; w < width; w++)
 				{
-					p  = (src1[0] + src1[1] * 256);
-					p += (src2[0] + src2[1] * 256);
-					p += (src3[0] + src3[1] * 256);
-					p += (src4[0] + src4[1] * 256);
-					p = MIN(p, 65535);
-					tgt[0] = (int)(p % 256);
-					tgt[1] = (int)(p / 256);
-					src1 += 8;
-					src2 += 8;
-					src3 += 8;
-					src4 += 8;
-					tgt  += 2;
+					tgt11 = databuffer + (tgt1 + w) * 2;
+					tgt21 = databuffer + (tgt2 + w) * 2;
+					srcF1 = processed + sF1 * 2 + w * 8;
+					srcF2 = processed + sF2 * 2 + w * 8;
+
+					p1  = (srcF1[0] + srcF1[1] * 256);
+					p1 += (srcF1[2] + srcF1[3] * 256);
+					p1 += (srcF1[4] + srcF1[5] * 256);
+					p1 += (srcF1[6] + srcF1[7] * 256);
+					p1  = MIN(p1, 65535);
+					p2  = (srcF2[0] + srcF2[1] * 256);
+					p2 += (srcF2[2] + srcF2[3] * 256);
+					p2 += (srcF2[4] + srcF2[5] * 256);
+					p2 += (srcF2[6] + srcF2[7] * 256);
+					p2  = MIN(p2, 65535);
+
+					tgt11[0] = (int)(p1 % 256);
+					tgt11[1] = (int)(p1 / 256);
+					tgt21[0] = (int)(p2 % 256);
+					tgt21[1] = (int)(p2 / 256);
 				}
-				if (t > 0)
-				{
-					src1 += right_skip;
-					src2 += right_skip;
-					src3 += right_skip;
-					src4 += right_skip;
-				}
-			}
+			}			
 			if (width < (int)(i_width / 4))
 			{
 				// Copy onto databuffer from databuffer(!) only the ROI data
 				left_skip = (int)(((int)(i_width / 4) - width) / 2);
 				right_skip = (int)(i_width / 4) - left_skip - width;
 				//printf("Processing i_width: ls %d, iw %d, rs %d\n", left_skip, width, right_skip);
-				src1 = databuffer;
-				tgt = databuffer;
+				srcF1 = databuffer;
+				tgt11 = databuffer;
 				t = height;
 				while (t--) 
 				{
 					// Skip the left part
-					src1 += left_skip * 2;
+					srcF1 += left_skip * 2;
 					w = width * 2;
 					// Copy img_w pixels on the line
-					memcpy(tgt, src1, w);
+					memcpy(tgt11, srcF1, w);
 					if (t > 0)
 					{
 						// Move & Skip the right part
-						src1 += (width + right_skip) * 2;
-						tgt  += w;
+						srcF1 += (width + right_skip) * 2;
+						tgt11  += w;
 					}
 				}
 			}
-			break;
-	}		
+			break;			
+	}
+	free(processed);
 	return;
 }
 

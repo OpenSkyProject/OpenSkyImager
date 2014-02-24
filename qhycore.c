@@ -540,7 +540,11 @@ int qhy_getImgData(int endp, int transfer_size, unsigned char *databuffer, int *
 	// For some strange reason the amount of bytes returned is not exactly width*height*2 (as one would expect), but some less.
 	// I set up the error message to show the "lenght_transferred" so that one can set the new "transfer_size" variable accordingly
 	// See WriteRegisters.
-	*errcode = libusb_bulk_transfer( hDevice, endp, databuffer, transfer_size, length_transferred, 20000);
+	*errcode = libusb_bulk_transfer( hDevice, endp, databuffer, transfer_size, length_transferred, ((transfer_size > 20000000) ? 60000: 20000));
+	if (*errcode != 0)
+	{
+		sprintf(coremsg, C_("qhycore","getImgData failed, error %d"), *errcode);
+	}
 	return (*errcode == 0);
 }
 
