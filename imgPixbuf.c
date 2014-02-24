@@ -293,6 +293,11 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 		GdkPixbuf *pixtmp;
 		
 		// Creates an empty pixbuf using appropriate geometry
+		if (pixbuf != NULL)
+		{
+			g_object_unref(pixbuf);
+			pixbuf = NULL;
+		}
 		pixtmp    = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, endw, endh);
 		rowstride = gdk_pixbuf_get_rowstride (pixtmp);
 		pixels    = gdk_pixbuf_get_pixels (pixtmp);
