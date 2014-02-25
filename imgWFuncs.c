@@ -409,6 +409,7 @@ void fwhm_show()
 	int roix = ((fwhmx - (fwhms / 2)) / imgratio), roiy = ((fwhmy - (fwhms / 2)) / imgratio);
 	int lblx = roix, lbly = roiy;
 	int width = (imgpix_get_width() / imgratio), height = (imgpix_get_height() / imgratio);
+	GdkPixbuf *pixbuf;
 
 	// check ROI is fully inside frame and fix if needed
 	// Move centroid position relative to ROI accordingly
@@ -432,7 +433,9 @@ void fwhm_show()
 	// Set flag "is visible"	
 	fwhmv = 1;
 
-	gtk_image_set_from_pixbuf((GtkImage *) fwhmroi, imgpix_get_roi(roisize));
+	pixbuf = imgpix_get_roi(roisize);
+	gtk_image_set_from_pixbuf((GtkImage *) fwhmroi, pixbuf);
+	g_object_unref(pixbuf);
 	gtk_fixed_move(GTK_FIXED(fixed), fwhmroi, roix, roiy);
 	
 	// Write label

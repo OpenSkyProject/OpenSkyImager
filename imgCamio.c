@@ -614,7 +614,12 @@ int imgcam_readout()
 	{
 		presize[curdataptr] = allocsize;
 		//printf("Realloc camio %d, %d\n", allocsize, presize[curdataptr]);
-		databuffer[curdataptr] = (unsigned char*)realloc(databuffer[curdataptr], allocsize);
+		//databuffer[curdataptr] = (unsigned char*)realloc(databuffer[curdataptr], allocsize);
+		if (databuffer[curdataptr] == NULL)
+		{
+			free(databuffer[curdataptr]);
+		}
+		databuffer[curdataptr] = (unsigned char*)malloc(allocsize);
 		//printf("Get Data\n");
 	}
 	if ((retval = qhy_getImgData(qhy_core_getendp()->bulk, shpar.tsize, databuffer[curdataptr], &error, &length_transferred)) == 1)
@@ -667,6 +672,8 @@ int imgcam_readout()
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
 		strcpy(cammsg, qhy_core_msg());
+		//printf("%s\n", cammsg);
+		//printf("TotalSize: %d, TSize: %d, Transferred: %d\n", shpar.totsize, shpar.tsize, length_transferred);
 	}
 	return (retval);
 }
