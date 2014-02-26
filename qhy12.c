@@ -76,7 +76,8 @@ void qhy12_init()
 	
 	strcpy(imgcam_get_camui()->binstr, "1x1|2x2|4x4:0");
 	/// Capture size values list, just translate "Full" (frame)
-	strcpy(imgcam_get_camui()->roistr, C_("camio","Full|512x512|256x256:0"));
+	//strcpy(imgcam_get_camui()->roistr, C_("camio","Full|512x512|256x256:0"));
+	strcpy(imgcam_get_camui()->roistr, "");
 	/// Combo box values list, keep N-<desc> format. Just translate <desc>
 	strcpy(imgcam_get_camui()->spdstr, C_("camio","0-Slow|1-Fast:0"));
 	strcpy(imgcam_get_camui()->ampstr, C_("camio","0-AmpOff|1-AmpOn|2-Auto:2"));
