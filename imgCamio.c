@@ -624,50 +624,59 @@ int imgcam_readout()
 	}
 	if ((retval = qhy_getImgData(qhy_core_getendp()->bulk, shpar.tsize, databuffer[curdataptr], &error, &length_transferred)) == 1)
 	{
-		switch (camid)
+		printf("Data: %d, %d\n",shpar.tsize, length_transferred);
+		if (shpar.tsize == length_transferred)
 		{
-			case 20:
-				qhy2old_decode(databuffer[curdataptr]);
-				break;
-			case 5:
-				qhy5_decode(databuffer[curdataptr]);
-				break;
-			case 52:
-				qhy5ii_decode(databuffer[curdataptr]);
-				break;
-			case 6:
-				qhy6_decode(databuffer[curdataptr]);	
-				break;
-			case 60:
-				//printf("Decode\n");
-				qhy6old_decode(databuffer[curdataptr]);	
-				break;
-			case 7:
-				qhy7_decode(databuffer[curdataptr]);	
-				break;
-			case 80:
-				qhy8old_decode(databuffer[curdataptr]);	
-				break;
-			case 81:
-				qhy8l_decode(databuffer[curdataptr]);	
-				break;
-			case 9:
-				if (shpar.mode > 0)
-				{
-					// In dark mode
-					// Release shutter go avoid excess strain
-					imgcam_shutter(2);
-				}
-				qhy9_decode(databuffer[curdataptr]);	
-				break;
-			case 11:
-				qhy11_decode(databuffer[curdataptr]);	
-				break;
-			case 12:
-				qhy12_decode(databuffer[curdataptr]);	
-				break;
+			switch (camid)
+			{
+				case 20:
+					qhy2old_decode(databuffer[curdataptr]);
+					break;
+				case 5:
+					qhy5_decode(databuffer[curdataptr]);
+					break;
+				case 52:
+					qhy5ii_decode(databuffer[curdataptr]);
+					break;
+				case 6:
+					qhy6_decode(databuffer[curdataptr]);	
+					break;
+				case 60:
+					//printf("Decode\n");
+					qhy6old_decode(databuffer[curdataptr]);	
+					break;
+				case 7:
+					qhy7_decode(databuffer[curdataptr]);	
+					break;
+				case 80:
+					qhy8old_decode(databuffer[curdataptr]);	
+					break;
+				case 81:
+					qhy8l_decode(databuffer[curdataptr]);	
+					break;
+				case 9:
+					if (shpar.mode > 0)
+					{
+						// In dark mode
+						// Release shutter go avoid excess strain
+						imgcam_shutter(2);
+					}
+					qhy9_decode(databuffer[curdataptr]);	
+					break;
+				case 11:
+					qhy11_decode(databuffer[curdataptr]);	
+					break;
+				case 12:
+					qhy12_decode(databuffer[curdataptr]);	
+					break;
+			}
+			loaded = 1;
 		}
-		loaded = 1;
+		else
+		{
+			sprintf(cammsg, C_("camio","Bad data received, discarded"));
+			retval = 0;
+		}
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{

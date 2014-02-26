@@ -1026,6 +1026,7 @@ gpointer thd_capture_run(gpointer thd_data)
 	int thdpreshots = shots, thdexp = 0, thdtlmode = 0, thdsavejpg = 0;
 	int thdtimer = 0, thdtimeradd = 0;
 	int avimaxframes = 0, writeavih = 0;
+	int thdreadok = 1;
 	char thdfit[2048];
 	char thdtdmark[32];
 	time_t ref, last;
@@ -1132,17 +1133,17 @@ gpointer thd_capture_run(gpointer thd_data)
 		readout = thdshoot;
 		thdrun = run;
 		thdexp = imgcam_get_shpar()->wtime;
-		//if (thdexp < 1000)
-		//{
+		if (thdreadok == 1)
+		{
 			// Get the time for a complete loop (first loop is invalid result)
 			gettimeofday(&clke, NULL);
 			fps = (clke.tv_sec - clks.tv_sec + 0.000001 * (clke.tv_usec - clks.tv_usec));
 			gettimeofday(&clks, NULL);
-		//}
-		//else
-		//{
-		//	fps = 0.;
-		//}
+		}
+		else
+		{
+			fps = 0;
+		}
 		g_rw_lock_writer_unlock(&thd_caplock);
 		if (thdshoot)
 		{
@@ -1212,6 +1213,7 @@ gpointer thd_capture_run(gpointer thd_data)
 				// Unless aborted during exposure time
 				if (imgcam_readout())
 				{
+					thdreadok = 1;
 					// Free tec reading
 					g_rw_lock_reader_unlock(&thd_teclock);
 					//printf("Readout ok\n");
@@ -1342,8 +1344,9 @@ gpointer thd_capture_run(gpointer thd_data)
 				{
 					// Free tec reading even in case of error
 					g_rw_lock_writer_unlock(&thd_teclock);
-					run = 0;
-					runerr = 1;
+					//run = 0;
+					//runerr = 1;
+					thdreadok = 0;
 				}
 			}
 			// Determine if loop has to stop

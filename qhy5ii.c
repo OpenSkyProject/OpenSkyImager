@@ -210,7 +210,7 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 		}
 		// Reg set
 		totalsize      = width * height * bytepix;
-		transfer_size  = totalsize + (IMGOFFSET * bytepix);
+		transfer_size  = totalsize + IMGOFFSET;
 		expar->totsize = totalsize;
 		expar->tsize   = transfer_size;
 
@@ -225,17 +225,8 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 
 void qhy5ii_decode(unsigned char *databuffer)
 {
-	//unsigned char *src1;
 	int i = 0, pixval = 0;
-	
-	//src1 = databuffer + IMGOFFSET;
-	// Pointer to first byte of image data
-	// Move back pixels back to cut out image offset
-	// This is due so that when databuffer is freed
-	// No memory leack will occurr as if databuffer pointer
-	// was simply moved ahead.	
-	//memmove(databuffer, src1, totalsize);
-
+		
 	if ((bytepix > 1) && (hdr == 0))
 	{
 		// 12Bit -> 16Bit
