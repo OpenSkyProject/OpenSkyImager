@@ -624,7 +624,6 @@ int imgcam_readout()
 	}
 	if ((retval = qhy_getImgData(qhy_core_getendp()->bulk, shpar.tsize, databuffer[curdataptr], &error, &length_transferred)) == 1)
 	{
-		printf("Data: %d, %d\n",shpar.tsize, length_transferred);
 		if (shpar.tsize == length_transferred)
 		{
 			switch (camid)
@@ -674,6 +673,7 @@ int imgcam_readout()
 		}
 		else
 		{
+			printf("Data: %d, %d\n", shpar.tsize, length_transferred);
 			sprintf(cammsg, C_("camio","Bad data received, discarded"));
 			retval = 0;
 		}
