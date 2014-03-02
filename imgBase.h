@@ -37,5 +37,5 @@
 #define VRTHND "./handle_o.png"
 #define APPNAM "OpenSkyImager"
 #define APPTIT "OpenSkyImager (c) 2013 JP & C AstroSoftware"
-#define APPVER "0.8.1"
+#define APPVER "0.8.2"
 

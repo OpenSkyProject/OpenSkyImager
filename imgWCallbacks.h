@@ -25,7 +25,7 @@ gboolean tmr_imgstatus_pixmsg (GtkWidget *widget);
 gboolean tmr_adu_check (GtkWidget *widget);
 gboolean tmr_frm_refresh (GtkWidget *widget);
 gboolean tmr_hst_refresh (GtkWidget *widget);
-gboolean tmr_capture_progress_refresh (GtkWidget *widget);
+gboolean tmr_capture_progress_refresh (int *readoutok);
 gboolean tmr_exp_progress_refresh (GtkWidget *widget);
 gboolean tmr_tecpwr (GtkWidget *widget);
 gboolean tmr_tecstatus_write (GtkWidget *widget);

@@ -115,10 +115,10 @@ gboolean tmr_hst_refresh (GtkWidget *widget)
 	return FALSE;
 }
 
-gboolean tmr_capture_progress_refresh (GtkWidget *widget)
+gboolean tmr_capture_progress_refresh (int *readoutok)
 {
 	double tmpshots, tmpfract, tmperr, tmprun, tmpfps;
-	
+
 	g_rw_lock_reader_lock(&thd_caplock);
 	tmpshots = shots;
 	tmpfract = shotfract;
@@ -126,75 +126,91 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 	tmprun = run;
 	tmpfps = fps;
 	g_rw_lock_reader_unlock(&thd_caplock);
-	
-	if (tmpfps < 10)
-	{
-		sprintf(fpsfbk, "Fps:%05.1F", (1./ tmpfps));
-	}
-	else if (tmpfps >= 10)
-	{
-		sprintf(fpsfbk, "Fpm:%05.1F", (60. / tmpfps));
+
+	//printf("Readout: %d\n", *readoutok);
+
+	if (*readoutok == 1)
+	{	
+		if (tmpfps < 10)
+		{
+			sprintf(fpsfbk, "Fps:%05.1F", (1./ tmpfps));
+		}
+		else if (tmpfps >= 10)
+		{
+			sprintf(fpsfbk, "Fpm:%05.1F", (60. / tmpfps));
+		}
+		else
+		{
+			fpsfbk[0] = '\0';
+		}
 	}
 	else
-	{
-		fpsfbk[0] = '\0';
+	{	
+		gtk_statusbar_write(GTK_STATUSBAR(imgstafit), 0, C_("camio","Bad data received, discarded"));
+		strcpy(fpsfbk, "--");	
 	}
-	
+
 	if (tmprun == 1)
 	{
-	
-		if (fwhmv == 1)
+
+		if ((fwhmv == 1) && (*readoutok == 1))
 		{
 			fwhm_show();
 		}
-		
+	
 		if (capture)
 		{
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_shots), (int)tmpshots);
 			gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbr_expnum), tmpfract);
-			if (savefmt == 1)
+			if (*readoutok == 1)
 			{
-				/// Message on statusbar about last saved frame (%s)
-				sprintf(imgmsg, C_("main","Image: %s saved"), g_path_get_basename(imgfit_get_name()));
-			}
-			else if (savefmt == 2)
-			{
-				/// Message on statusbar about last frame add to avi (%s)
-				sprintf(imgmsg, C_("main","Frame: add to %s"), g_path_get_basename(imgavi_get_name()));
-			}
-			else if (savefmt == 3)
-			{
-				/// Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
-				sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), g_path_get_basename(imgfit_get_name()), g_path_get_basename(imgavi_get_name()));
+				if (savefmt == 1)
+				{
+					/// Message on statusbar about last saved frame (%s)
+					sprintf(imgmsg, C_("main","Image: %s saved"), g_path_get_basename(imgfit_get_name()));
+				}
+				else if (savefmt == 2)
+				{
+					/// Message on statusbar about last frame add to avi (%s)
+					sprintf(imgmsg, C_("main","Frame: add to %s"), g_path_get_basename(imgavi_get_name()));
+				}
+				else if (savefmt == 3)
+				{
+					/// Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
+					sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), g_path_get_basename(imgfit_get_name()), g_path_get_basename(imgavi_get_name()));
+				}
+				gtk_statusbar_write(GTK_STATUSBAR(imgstafit), 0, imgmsg);
 			}
 			// Main image update
 			sprintf(imgfbk, "#%04d", (int)tmpshots);
 			gtk_label_set_text(GTK_LABEL(lbl_fbkimg), (gchar *) imgfbk);	
 			gtk_label_set_text(GTK_LABEL(lbl_fbkfps), (gchar *) fpsfbk);	
-			gtk_statusbar_write(GTK_STATUSBAR(imgstafit), 0, imgmsg);
 		}
 		else
 		{
-			// Main image update
-			if (strcmp(imgfbk, "|") == 0)
+			if (*readoutok == 1)
 			{
-				strcpy(imgfbk, "/");
-			}
-			else if (strcmp(imgfbk, "/") == 0)
-			{
-				strcpy(imgfbk, "-");
-			}
-			else if (strcmp(imgfbk, "-") == 0)
-			{
-				strcpy(imgfbk, "\\");
-			}
-			else if (strcmp(imgfbk, "\\") == 0)
-			{
-				strcpy(imgfbk, "|");
-			}
-			else
-			{
-				strcpy(imgfbk, "|");
+				// Main image update
+				if (strcmp(imgfbk, "|") == 0)
+				{
+					strcpy(imgfbk, "/");
+				}
+				else if (strcmp(imgfbk, "/") == 0)
+				{
+					strcpy(imgfbk, "-");
+				}
+				else if (strcmp(imgfbk, "-") == 0)
+				{
+					strcpy(imgfbk, "\\");
+				}
+				else if (strcmp(imgfbk, "\\") == 0)
+				{
+					strcpy(imgfbk, "|");
+				}
+				else
+				{
+					strcpy(imgfbk, "|");
+				}
 			}
 			gtk_label_set_text(GTK_LABEL(lbl_fbkimg), (gchar *) imgfbk);	
 			gtk_label_set_text(GTK_LABEL(lbl_fbkfps), (gchar *) fpsfbk);	
@@ -235,23 +251,25 @@ gboolean tmr_capture_progress_refresh (GtkWidget *widget)
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbr_expnum), tmpfract);
 		if (capture)
 		{
-			// Message to confirm end of capture thread in capture mode
-			if (savefmt == 1)
-			{
-				/// Message on statusbar about last saved frame (%s)
-				sprintf(imgmsg, C_("main","Image: %s saved"), imgfit_get_name());
+			if (*readoutok == 1)
+			{	
+				// Message to confirm end of capture thread in capture mode
+				if (savefmt == 1)
+				{
+					/// Message on statusbar about last saved frame (%s)
+					sprintf(imgmsg, C_("main","Image: %s saved"), imgfit_get_name());
+				}
+				else if (savefmt == 2)
+				{
+					/// Message on statusbar about last frame add to avi (%s)
+					sprintf(imgmsg, C_("main","Frame: add to %s"), imgavi_get_name());
+				}
+				else if (savefmt == 3)
+				{
+					/// Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
+					sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), imgfit_get_name(), imgavi_get_name());
+				}
 			}
-			else if (savefmt == 2)
-			{
-				/// Message on statusbar about last frame add to avi (%s)
-				sprintf(imgmsg, C_("main","Frame: add to %s"), imgavi_get_name());
-			}
-			else if (savefmt == 3)
-			{
-				/// Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
-				sprintf(imgmsg, C_("main","Image: %s saved, Frame: add to %s"), imgfit_get_name(), imgavi_get_name());
-			}
-			gtk_statusbar_write(GTK_STATUSBAR(imgstafit), 0, imgmsg);
 			sprintf(imgmsg, C_("main","capture end"));
 			gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 			// Main image update

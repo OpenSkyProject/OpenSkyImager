@@ -543,6 +543,7 @@ int qhy_getImgData(int endp, int transfer_size, unsigned char *databuffer, int *
 	*errcode = libusb_bulk_transfer( hDevice, endp, databuffer, transfer_size, length_transferred, ((transfer_size > 20000000) ? 60000: 20000));
 	if (*errcode != 0)
 	{
+		//printf("Bulk errcode: %d\n", *errcode);
 		sprintf(coremsg, C_("qhycore","getImgData failed, error %d"), *errcode);
 	}
 	return (*errcode == 0);

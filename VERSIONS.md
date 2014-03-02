@@ -62,3 +62,9 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 *Version 0.8.1*
 - Pre processor code updated to cope with GTK 3.8 version (avoid deprecated)
 
+*Version 0.8.2*
+- New Qhy12 support. Fully functional excep subframe
+- New bad data filtering, especially useful for QHY5L-II
+- Fix memory leak when in color mode
+
+

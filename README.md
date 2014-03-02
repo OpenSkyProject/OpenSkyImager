@@ -26,10 +26,11 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Supported camera list
 ==================
-As of version 0.6.0 several QHY camera are actively developed against:
-QHY2 (old color model),5,5II series,6 (both firmware),7,8 (Old model),8L,9,11.
+As of version 0.8.2 several QHY camera are actively developed against:
+QHY2 (old color model),5,5II series,6 (both firmware),7,8(Old),8L,9,11,12.
 
-Models that have been 100% tested are: QHY5,5II series,6 (both firmware),7,9,11.
+Models that have been 100% tested are: QHY5,5II series,6 (both firmware),7,8L,
+9,11,12.
 
 If your camera make/model does not appear in the list you can try contact us
 and see if it can be add in a near future.

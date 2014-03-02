@@ -31,6 +31,9 @@
 #include "imgWCallbacks.h"
 #include <sys/time.h>
 
+static int intTrue  = 1;
+static int intFalse = 0;
+
 void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 {
 	int i;
@@ -1140,10 +1143,6 @@ gpointer thd_capture_run(gpointer thd_data)
 			fps = (clke.tv_sec - clks.tv_sec + 0.000001 * (clke.tv_usec - clks.tv_usec));
 			gettimeofday(&clks, NULL);
 		}
-		else
-		{
-			fps = 0;
-		}
 		g_rw_lock_writer_unlock(&thd_caplock);
 		if (thdshoot)
 		{
@@ -1332,13 +1331,6 @@ gpointer thd_capture_run(gpointer thd_data)
 					}
 					// Starts backgroung elaboration of pixbuf
 					thd_pixbuf = g_thread_new("Pixbuf", thd_pixbuf_run, (((thdmode == 1) && (thdsavejpg == 1)) ? (gpointer)thdfit : NULL));
-					
-					//UI update
-					if (tmrcapprgrefresh != -1)
-					{
-						g_source_remove(tmrcapprgrefresh);
-					}
-					tmrcapprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_capture_progress_refresh, NULL);
 				}
 				else
 				{
@@ -1346,8 +1338,17 @@ gpointer thd_capture_run(gpointer thd_data)
 					g_rw_lock_writer_unlock(&thd_teclock);
 					//run = 0;
 					//runerr = 1;
+					g_rw_lock_writer_lock(&thd_caplock);
+					readout = 0;
 					thdreadok = 0;
+					g_rw_lock_writer_unlock(&thd_caplock);
 				}
+				//UI update
+				if (tmrcapprgrefresh != -1)
+				{
+					g_source_remove(tmrcapprgrefresh);
+				}
+				tmrcapprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_capture_progress_refresh, (thdreadok == 1) ? &intTrue : &intFalse);
 			}
 			// Determine if loop has to stop
 			g_rw_lock_reader_lock(&thd_caplock);
@@ -1433,11 +1434,14 @@ gpointer thd_capture_run(gpointer thd_data)
 	if ((thdmode == 1) && ((savefmt == 2) || (savefmt == 3)))
 	{
 		//No matter TL mode (and error status), if avi is saved it must be ended properly
-		if (thd_avisav != NULL)
-		{
-			// Checks and wait if the last frame add is completed
-			g_thread_join(thd_avisav);
-			thd_avisav = NULL;
+		if (thdreadok == 1)
+		{			
+			if (thd_avisav != NULL)
+			{
+				// Checks and wait if the last frame add is completed
+				g_thread_join(thd_avisav);
+				thd_avisav = NULL;
+			}
 		}
 		if (imgavi_isopen())
 		{
@@ -1451,30 +1455,32 @@ gpointer thd_capture_run(gpointer thd_data)
 		run = 0;
 		runerr = thderror;
 		g_rw_lock_writer_unlock(&thd_caplock);
-		// If the thrad ended naturally, ensure the gui is consistent
+		// If the thrad ended, ensure the gui is consistent
 		if (tmrcapprgrefresh != -1)
 		{
 			g_source_remove(tmrcapprgrefresh);
 		}
-		tmrcapprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_capture_progress_refresh, NULL);
+		tmrcapprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_capture_progress_refresh, (thdreadok == 1) ? &intTrue : &intFalse);
 	}
 
 	expfract = 0.0;
 	tmrexpprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_exp_progress_refresh, NULL);
 	
-	if (thd_fitsav != NULL)
-	{
-		g_thread_join(thd_fitsav);							
-		thd_fitsav = NULL;
-	}
+	if (thdreadok == 1)
+	{	
+		if (thd_fitsav != NULL)
+		{
+			g_thread_join(thd_fitsav);							
+			thd_fitsav = NULL;
+		}
 
-	if (thd_pixbuf != NULL)
-	{
-		// Checks and wait if the pixbuf from previous frame is completed
-		g_thread_join(thd_pixbuf);
-		thd_pixbuf = NULL;
+		if (thd_pixbuf != NULL)
+		{
+			// Checks and wait if the pixbuf from previous frame is completed
+			g_thread_join(thd_pixbuf);
+			thd_pixbuf = NULL;
+		}
 	}
-
 	// It's a noop for camera that don't feature a mechanical shutter
 	// Close
 	imgcam_shutter(1);

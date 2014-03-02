@@ -673,7 +673,7 @@ int imgcam_readout()
 		}
 		else
 		{
-			printf("Data: %d, %d\n", shpar.tsize, length_transferred);
+			//printf("Data: %d, %d\n", shpar.tsize, length_transferred);
 			sprintf(cammsg, C_("camio","Bad data received, discarded"));
 			retval = 0;
 		}

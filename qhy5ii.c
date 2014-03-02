@@ -210,7 +210,8 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 		}
 		// Reg set
 		totalsize      = width * height * bytepix;
-		transfer_size  = totalsize + IMGOFFSET;
+		// IMGOFFSET bytes are not returned when in 800x600 mode. Firmware issue?
+		transfer_size  = totalsize + ((width != 800) ? IMGOFFSET : 0);
 		expar->totsize = totalsize;
 		expar->tsize   = transfer_size;
 
