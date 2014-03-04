@@ -99,7 +99,7 @@ GdkPixbuf *imgpix_get_histogram(int scale)
 
 int imgpix_save_histogram_data(char *path)
 {
-	int retval = 0, i, size = (pwidth * pheight);;
+	int retval = 0, i, size = (pwidth * pheight);
 	FILE *outf;
 	
 	if (loaded)

@@ -67,4 +67,10 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - New bad data filtering, especially useful for QHY5L-II
 - Fix memory leak when in color mode
 
+*Version 0.8.3*
+- New commans for remote operation: SETROIPOS, GETROIPOS, SETROISIZE, HIDEROI,
+  GETFWHM (please see REMOTE.md for details)
+- Fixed ROI possibly hitting image borders and crash application
+- Fixed segfault if running with -f only
+
 

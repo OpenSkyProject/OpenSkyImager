@@ -139,4 +139,16 @@ confirm a new preview image is available:
 - SETSAVEJPG:0-1, Enable disable save additional preview jpg along with output
 - GETPREVIEW:, Will save a preview image (as can be seen in program window)
   File name will be *fifopath*.jpg. Will answer with ACK or ERROR.
+- SETROIPOS:roix roiy, Will set and enable a ROI for fwhm calculation.
+  Will print out actually used coordinates (will chase for the bright spot 
+  within the ROI square). Used coordinates are also printed to /tmp/roipos.txt
+  Please note roix and roiy are relativ to the whole 1:1 image matrix.
+- GETROIPOS:, will print out actually used coordinates and save to 
+  /tmp/roipos.txt
+- SETROISIZE: number, will set ROI size in pixels. Valid values: 8, 16, 32, 64.
+  Will acknowledge change.
+- HIDEROI:, will hide the ROI square (and stop calculations). 
+  Will acknowledge change.
+- GETFWHM:, will print out fwhm data (fwhm peak) on stdout and /tmp/fwhm.txt
+
 

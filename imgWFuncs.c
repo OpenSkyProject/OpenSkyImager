@@ -406,6 +406,44 @@ void load_histogram_from_null()
 	g_rw_lock_reader_unlock(&pixbuf_lock);
 }
 
+void fwhm_center(int setx, int sety)
+{
+	int roix, roiy;
+	int roisize = fwhms / imgratio;
+	int width = (imgpix_get_width() / imgratio), height = (imgpix_get_height() / imgratio);
+
+	// Center on image data regardless of "fit to screen"
+	fwhmx = setx * imgratio;
+	fwhmy = sety * imgratio;
+
+	// Roi position depending on "fit to screen"
+	roix = ((fwhmx - (fwhms / 2)) / imgratio);
+	roiy = ((fwhmy - (fwhms / 2)) / imgratio);
+
+	// check ROI is fully inside frame and fix if needed
+	// Move centroid position relative to ROI accordingly
+	if( roix < (roisize / 2) )
+	{
+		roix = (roisize / 2);
+	}
+	if( roiy < (roisize / 2) )
+	{
+		roiy = (roisize / 2);
+	}
+	if( roix + roisize > width - (roisize / 2) )
+	{
+		roix = width - roisize - (roisize / 2) - 1;
+	}
+	if( roiy + roisize > height - (roisize / 2) )
+	{
+		roiy = height - roisize - (roisize / 2) - 1;
+	}	
+
+	// Center on image data regardless of "fit to screen"
+	fwhmx = (roix * imgratio) + (fwhms / 2);
+	fwhmy = (roiy * imgratio) + (fwhms / 2);
+}
+
 void fwhm_show()
 {
 	int roisize = fwhms / imgratio;
@@ -416,22 +454,26 @@ void fwhm_show()
 
 	// check ROI is fully inside frame and fix if needed
 	// Move centroid position relative to ROI accordingly
-	if( roix <= 0 )
+	if( roix < (roisize / 2) )
 	{
-		roix = 1;
+		roix = (roisize / 2);
 	}
-	if( roiy <= 0 )
+	if( roiy < (roisize / 2) )
 	{
-		roiy = 1;
+		roiy = (roisize / 2);
 	}
-	if( roix + fwhms >= width )
+	if( roix + roisize > width  - (roisize / 2))
 	{
-		roix = width - roisize - 1;
+		roix = width - roisize - (roisize / 2) - 1;
 	}
-	if( roiy + fwhms >= height )
+	if( roiy + fwhms > height - (roisize / 2))
 	{
-		roiy = height - roisize - 1;
+		roiy = height - roisize - (roisize / 2) - 1;
 	}	
+
+	// Center on image data regardless of "fit to screen"
+	fwhmx = (roix * imgratio) + (fwhms / 2);
+	fwhmy = (roiy * imgratio) + (fwhms / 2);
 
 	// Set flag "is visible"	
 	fwhmv = 1;
@@ -489,6 +531,24 @@ void fwhm_calc()
 	double vfwhm, ofwhm;
 	int roi[fwhmp];
 	unsigned char *porigin = NULL, *psrc = NULL;
+
+	// check ROI is fully inside frame and fix if needed
+	if( roix < (fwhms / 2) )
+	{
+		roix = (fwhms / 2);
+	}
+	if( roiy < (fwhms / 2) )
+	{
+		roiy = (fwhms / 2);
+	}
+	if( roix + fwhms > width - (fwhms / 2))
+	{
+		roix = width - fwhms - (fwhms / 2) - 1;
+	}
+	if( roiy + fwhms > height - (fwhms / 2))
+	{
+		roiy = height - fwhms - (fwhms / 2) - 1;
+	}	
 
 	for ( k = 0; k < 10; k++ )
 	{
@@ -571,25 +631,25 @@ void fwhm_calc()
 	
 		// check ROI is fully inside frame and fix if needed
 		// Move centroid position relative to ROI accordingly
-		if( roix <= 0 )
+		if( roix < (fwhms / 2) )
 		{
-			resx += (roix + 1);
-			roix = 1;
+			resx += (fwhms / 2) - roix;
+			roix = (fwhms / 2);
 		}
-		if( roiy <= 0 )
+		if( roiy < (fwhms / 2) )
 		{
-			resy += (roiy + 1);
-			roiy = 1;
+			resy += (fwhms / 2) - roiy;
+			roiy = (fwhms / 2);
 		}
-		if( roix + fwhms >= width )
+		if( roix + fwhms > width - (fwhms / 2))
 		{
-			resx += (roix + fwhms - width - 1);
-			roix = width - fwhms - 1;
+			resx = (width - fwhms - 1);
+			roix = width - fwhms - (fwhms / 2) - 1;
 		}
-		if( roiy + fwhms >= height )
+		if( roiy + fwhms > height - (fwhms / 2))
 		{
-			resy += (roiy + fwhms - height - 1);
-			roiy = height - fwhms - 1;
+			resy = (height - fwhms - 1);
+			roiy = height - fwhms - (fwhms / 2) - 1;
 		}	
 
 		if ((prex == roix) && (prey == roiy))
@@ -650,7 +710,7 @@ void fwhm_calc()
 		}
 	}
 
-	// Vertical fwhm
+	// Horizontal fwhm
 	ofwhm = 0;
 	for( i = resx; i < fwhms; i++ )
 	{

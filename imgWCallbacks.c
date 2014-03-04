@@ -1174,12 +1174,14 @@ gboolean fwhmroi_scroll (GtkWidget *widget, GdkEventScroll *event, gpointer data
 				fwhms /= (fwhms > 8) ? 2 : 1;
 			}
 		
+			g_rw_lock_reader_lock(&thd_caplock);
 			// Draw roi
 			fwhm_show();
 			// Calc
 			fwhm_calc();
 			// Draw roi after possible calc move
 			fwhm_show();
+			g_rw_lock_reader_unlock(&thd_caplock);
 			return TRUE;
 		}
 	}
@@ -1204,39 +1206,8 @@ gboolean image_button_press (GtkWidget *widget, GdkEventButton *event, gpointer 
 		else
 		{
 			g_rw_lock_reader_lock(&thd_caplock);
-			int width = (imgpix_get_width() / imgratio), height = (imgpix_get_height() / imgratio);
-
 			// Center on image data regardless of "fit to screen"
-			fwhmx = event->x * imgratio;
-			fwhmy = event->y * imgratio;
-
-			// Roi position depending on "fit to screen"
-			roix = ((fwhmx - (fwhms / 2)) / imgratio);
-			roiy = ((fwhmy - (fwhms / 2)) / imgratio);
-
-			// check ROI is fully inside frame and fix if needed
-			// Move centroid position relative to ROI accordingly
-			if( roix <= 0 )
-			{
-				roix = 1;
-			}
-			if( roiy <= 0 )
-			{
-				roiy = 1;
-			}
-			if( roix + fwhms >= width )
-			{
-				roix = width - roisize - 1;
-			}
-			if( roiy + fwhms >= height )
-			{
-				roiy = height - roisize - 1;
-			}	
-		
-			// Center on image data regardless of "fit to screen"
-			fwhmx = (roix * imgratio) + (fwhms / 2);
-			fwhmy = (roiy * imgratio) + (fwhms / 2);
-
+			fwhm_center(event->x, event->y);
 			// Draw roi
 			fwhm_show();
 			// Calc
@@ -2560,7 +2531,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 	char  cmd[33];
 	char  arg[225];
 	float fval;
-	int   ival;
+	int   ival, ival2;
 	unsigned int len;
 
 	if (condition & G_IO_HUP)
@@ -3283,6 +3254,105 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					printf("Fifo: ERROR=Save preview failed\n");
 				}
 				g_rw_lock_reader_unlock(&pixbuf_lock);
+			}
+			else if (strcmp(cmd, "SETROIPOS") == 0)
+			{
+				ival = 0; ival2 = 0;
+				sscanf(arg, "%d %d", &ival, &ival2);
+				g_rw_lock_reader_lock(&thd_caplock);
+				// Center on image data regardless of "fit to screen"
+				fwhm_center(ival, ival2);
+				// Draw roi
+				fwhm_show();
+				// Calc
+				fwhm_calc();
+				// Draw roi after possible calc move
+				fwhm_show();
+				g_rw_lock_reader_unlock(&thd_caplock);
+				// Please note "center" can modify requested x,y to let roi
+				// be fully inside image, also roi will settle on the
+				// brightest spot...
+				printf("Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+
+				FILE *outf;
+				outf = fopen("/tmp/roipos.txt", "w");
+				if (outf != NULL)
+				{
+					fprintf(outf, "Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+				}
+				fclose(outf);
+			}
+			else if (strcmp(cmd, "GETROIPOS") == 0)
+			{
+				if (fwhmv == 1)
+				{
+					g_rw_lock_reader_lock(&thd_caplock);
+					printf("Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+					g_rw_lock_reader_unlock(&thd_caplock);
+
+					FILE *outf;
+					outf = fopen("/tmp/roipos.txt", "w");
+					if (outf != NULL)
+					{
+						fprintf(outf, "Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+					}
+					fclose(outf);
+				}
+				else
+				{
+					printf("Fifo: ERROR=ROI not visible\n");
+				}
+			}
+			else if (strcmp(cmd, "SETROISIZE") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				if ((ival == 8) || (ival == 16) || (ival == 32) || (ival == 64))
+				{
+					fwhmp = ival * ival;
+					fwhms = ival;		
+					if (fwhmv == 1)
+					{
+						g_rw_lock_reader_lock(&thd_caplock);
+						// Draw roi
+						fwhm_show();
+						// Calc
+						fwhm_calc();
+						// Draw roi after possible calc move
+						fwhm_show();
+						g_rw_lock_reader_unlock(&thd_caplock);
+					}
+					printf("Fifo: %s=ACK\n", cmd);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Must be 8, 16, 32 or 64\n");
+				}				
+			}
+			else if (strcmp(cmd, "HIDEROI") == 0)
+			{
+				fwhm_hide();
+				printf("Fifo: %s=ACK\n", cmd);
+			}
+			else if (strcmp(cmd, "GETFWHM") == 0)
+			{
+				if (fwhmv == 1)
+				{
+					g_rw_lock_reader_lock(&thd_caplock);
+					printf("Fifo: %s=%05.2F %d\n", cmd, afwhm, pfwhm);
+					g_rw_lock_reader_unlock(&thd_caplock);
+
+					FILE *outf;
+					outf = fopen("/tmp/fwhm.txt", "w");
+					if (outf != NULL)
+					{
+						fprintf(outf, "Fifo: %s=%05.2F %d\n", cmd, afwhm, pfwhm);
+					}
+					fclose(outf);
+				}
+				else
+				{
+					printf("Fifo: ERROR=ROI not visible\n");
+				}
 			}
 			else
 			{

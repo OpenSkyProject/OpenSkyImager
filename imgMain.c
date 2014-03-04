@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 		if (fifomode)
 		{
 			fifomode = FALSE;
-			if (strlen(FPath) > 0)
+			if (FPath != NULL)
 			{
 				sprintf(fifopath, "%s", FPath);
 			}
