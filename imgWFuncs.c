@@ -406,19 +406,20 @@ void load_histogram_from_null()
 	g_rw_lock_reader_unlock(&pixbuf_lock);
 }
 
-void fwhm_center(int setx, int sety)
+void fwhm_center(int setx, int sety, int abspos)
 {
 	int roix, roiy;
-	int roisize = fwhms / imgratio;
-	int width = (imgpix_get_width() / imgratio), height = (imgpix_get_height() / imgratio);
+	double imrat = ((abspos == 0) ? imgratio : 1);
+	int roisize = fwhms / imrat;
+	int width = (imgpix_get_width() / imrat), height = (imgpix_get_height() / imrat);
 
 	// Center on image data regardless of "fit to screen"
-	fwhmx = setx * imgratio;
-	fwhmy = sety * imgratio;
+	fwhmx = setx * imrat;
+	fwhmy = sety * imrat;
 
 	// Roi position depending on "fit to screen"
-	roix = ((fwhmx - (fwhms / 2)) / imgratio);
-	roiy = ((fwhmy - (fwhms / 2)) / imgratio);
+	roix = ((fwhmx - (fwhms / 2)) / imrat);
+	roiy = ((fwhmy - (fwhms / 2)) / imrat);
 
 	// check ROI is fully inside frame and fix if needed
 	// Move centroid position relative to ROI accordingly
@@ -430,18 +431,18 @@ void fwhm_center(int setx, int sety)
 	{
 		roiy = (roisize / 2);
 	}
-	if( roix + roisize > width - (roisize / 2) )
+	if( roix + roisize + (roisize / 2) > width )
 	{
 		roix = width - roisize - (roisize / 2) - 1;
 	}
-	if( roiy + roisize > height - (roisize / 2) )
+	if( roiy + roisize + (roisize / 2) > height )
 	{
 		roiy = height - roisize - (roisize / 2) - 1;
 	}	
 
 	// Center on image data regardless of "fit to screen"
-	fwhmx = (roix * imgratio) + (fwhms / 2);
-	fwhmy = (roiy * imgratio) + (fwhms / 2);
+	fwhmx = (roix * imrat) + (fwhms / 2);
+	fwhmy = (roiy * imrat) + (fwhms / 2);
 }
 
 void fwhm_show()
@@ -462,14 +463,16 @@ void fwhm_show()
 	{
 		roiy = (roisize / 2);
 	}
-	if( roix + roisize > width  - (roisize / 2))
+	if( roix + roisize + (roisize / 2) > width )
 	{
 		roix = width - roisize - (roisize / 2) - 1;
 	}
-	if( roiy + fwhms > height - (roisize / 2))
+	if( roiy + fwhms + (roisize / 2) > height )
 	{
 		roiy = height - roisize - (roisize / 2) - 1;
-	}	
+	}
+	lblx = roix;
+	lbly = roiy;
 
 	// Center on image data regardless of "fit to screen"
 	fwhmx = (roix * imgratio) + (fwhms / 2);
@@ -484,7 +487,8 @@ void fwhm_show()
 	gtk_fixed_move(GTK_FIXED(fixed), fwhmroi, roix, roiy);
 	
 	// Write label
-	sprintf(fwhmfbk, "FWHM=%05.2F, Peak=%d, FWHM/Peak=%05.2F", afwhm, pfwhm, (afwhm / (double)pfwhm));
+	//sprintf(fwhmfbk, "FWHM=%05.2F, Peak=%d, FWHM/Peak=%05.2F", afwhm, pfwhm, (afwhm / (double)pfwhm));
+	sprintf(fwhmfbk, "HFD=%05.2F, Peak=%d", afwhm, pfwhm);
 	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), (gchar *) fwhmfbk);
 	
 	// Move Label
@@ -496,13 +500,9 @@ void fwhm_show()
 	{
 		lbly = (roiy + roisize + 10);
 	}
-	if ((roix - (fwhmlblw / 2)) > 0)
+	if ((roix + fwhmlblw) > width)
 	{
-		lblx = (roix - (fwhmlblw / 2));
-	}
-	if ((roix + (fwhmlblw / 2)) > width)
-	{
-		lblx = (roix - fwhmlblw);
+		lblx = (roix - fwhmlblw + roisize);
 	}
 	gtk_fixed_move(GTK_FIXED(fixed), lbl_fbkfwhm, lblx, lbly);
 }
@@ -528,7 +528,8 @@ void fwhm_calc()
 	int roix = (fwhmx - (fwhms / 2)), roiy = (fwhmy - (fwhms / 2));
 	int width = imgfit_get_width(), height = imgfit_get_height(), bytepix = imgfit_get_bytepix();
 	int resx, resy, prex = roix, prey = roiy, mass, threshold, pval, resp;
-	double vfwhm, ofwhm;
+	//double vfwhm, ofwhm;
+	double flux;
 	int roi[fwhmp];
 	unsigned char *porigin = NULL, *psrc = NULL;
 
@@ -541,11 +542,11 @@ void fwhm_calc()
 	{
 		roiy = (fwhms / 2);
 	}
-	if( roix + fwhms > width - (fwhms / 2))
+	if( roix + fwhms + (fwhms / 2) > width )
 	{
 		roix = width - fwhms - (fwhms / 2) - 1;
 	}
-	if( roiy + fwhms > height - (fwhms / 2))
+	if( roiy + fwhms + (fwhms / 2) > height )
 	{
 		roiy = height - fwhms - (fwhms / 2) - 1;
 	}	
@@ -641,14 +642,14 @@ void fwhm_calc()
 			resy += (fwhms / 2) - roiy;
 			roiy = (fwhms / 2);
 		}
-		if( roix + fwhms > width - (fwhms / 2))
+		if( roix + fwhms + (fwhms / 2) > width )
 		{
-			resx = (width - fwhms - 1);
+			resx -= (roix + fwhms + (fwhms / 2) - width);
 			roix = width - fwhms - (fwhms / 2) - 1;
 		}
-		if( roiy + fwhms > height - (fwhms / 2))
+		if( roiy + fwhms + (fwhms / 2) > height )
 		{
-			resy = (height - fwhms - 1);
+			resy -= (roiy + fwhms + (fwhms / 2) - height);
 			roiy = height - fwhms - (fwhms / 2) - 1;
 		}	
 
@@ -694,6 +695,28 @@ void fwhm_calc()
 		}
 	}
 
+	// Half flux diameter (http://www005.upp.so-net.ne.jp/k_miyash/occ02/halffluxdiameter/halffluxdiameter_en.html)
+	// First subtract the average and clamp to 0 (to mimic subtract bck noise)
+	// Then calculate the whole mass (Sum Vi)
+	// Then calculate sum Vi * Di
+	mass = 0;
+	flux = 0.;
+	for( j = 0; j < fwhms; j++ )
+	{
+		for( i = 0; i < fwhms; i++ )
+		{
+			pval = roi[((j * fwhms) + i)] - threshold;
+			pval = pval < 0 ? 0 : pval;
+			mass += pval;
+			// Distance from centroid * pixel value
+			flux += sqrt(pow(abs(resy - j), 2) + pow(abs(resx - i), 2)) * pval;
+			//printf ("pval: %d, resx: %d, resy: %d, x: %d, y: %d, resx-x^2: %f, resy-y^2 %f, dist: %f\n;", pval, resx, resy, i, j, pow(abs(resx - i), 2), pow(abs(resy - j), 2), sqrt(pow(abs(resy - j), 2) + pow(abs(resx - i), 2)));
+		}
+	}
+	// HFD
+	afwhm = (flux / mass) * 2;
+	
+	/*
 	// Vertical fwhm
 	threshold = resp / 2; 
 	vfwhm = 0;
@@ -726,6 +749,7 @@ void fwhm_calc()
 	}
 
 	afwhm = (vfwhm + ofwhm) / 2.;
+	*/
 	pfwhm = resp;
 }
 

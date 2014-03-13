@@ -28,7 +28,7 @@ void set_adu_limits(int bytepix);
 void load_image_from_data();
 void load_histogram_from_data();
 void load_histogram_from_null();
-void fwhm_center(int setx, int sety);
+void fwhm_center(int setx, int sety, int abspos);
 void fwhm_show();
 void fwhm_hide();
 void fwhm_calc();

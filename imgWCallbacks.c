@@ -1207,7 +1207,7 @@ gboolean image_button_press (GtkWidget *widget, GdkEventButton *event, gpointer 
 		{
 			g_rw_lock_reader_lock(&thd_caplock);
 			// Center on image data regardless of "fit to screen"
-			fwhm_center(event->x, event->y);
+			fwhm_center(event->x, event->y, 0);
 			// Draw roi
 			fwhm_show();
 			// Calc
@@ -3259,28 +3259,35 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 			{
 				ival = 0; ival2 = 0;
 				sscanf(arg, "%d %d", &ival, &ival2);
-				g_rw_lock_reader_lock(&thd_caplock);
-				// Center on image data regardless of "fit to screen"
-				fwhm_center(ival, ival2);
-				// Draw roi
-				fwhm_show();
-				// Calc
-				fwhm_calc();
-				// Draw roi after possible calc move
-				fwhm_show();
-				g_rw_lock_reader_unlock(&thd_caplock);
-				// Please note "center" can modify requested x,y to let roi
-				// be fully inside image, also roi will settle on the
-				// brightest spot...
-				printf("Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
-
-				FILE *outf;
-				outf = fopen("/tmp/roipos.txt", "w");
-				if (outf != NULL)
+				if (imgpix_loaded())
 				{
-					fprintf(outf, "Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+					g_rw_lock_reader_lock(&thd_caplock);
+					// Center on image data absolute
+					fwhm_center(ival, ival2, 1);
+					// Draw roi
+					fwhm_show();
+					// Calc
+					fwhm_calc();
+					// Draw roi after possible calc move
+					fwhm_show();
+					g_rw_lock_reader_unlock(&thd_caplock);
+					// Please note "center" can modify requested x,y to let roi
+					// be fully inside image, also roi will settle on the
+					// brightest spot...
+					printf("Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+
+					FILE *outf;
+					outf = fopen("/tmp/roipos.txt", "w");
+					if (outf != NULL)
+					{
+						fprintf(outf, "Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+					}
+					fclose(outf);
 				}
-				fclose(outf);
+				else
+				{
+					printf("Fifo: ERROR=Set ROI position failed\n");
+				}
 			}
 			else if (strcmp(cmd, "GETROIPOS") == 0)
 			{

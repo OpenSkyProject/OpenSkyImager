@@ -296,7 +296,7 @@ void lbl_fbkfwhm_build()
 	PangoFontDescription *fd; 
 	
 	fwhmfbk[0] = '\0';
-	lbl_fbkfwhm = gtk_label_new_with_align(fwhmfbk, 0.0, 0.5, 530, 60);
+	lbl_fbkfwhm = gtk_label_new_with_align(fwhmfbk, 0.0, 0.5, 300, 60);
 	fd = pango_font_description_from_string("Monospace 18"); 
 	#if GTK_MAJOR_VERSION == 3
 	gtk_widget_override_color(lbl_fbkfwhm , GTK_STATE_NORMAL, &clrFbk);
@@ -1433,7 +1433,8 @@ void imgwin_build()
 	gtk_widget_show_all(window);
 
 	// Get fwhm lablel max allocated size
-	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), "FWHM=05.20, Peak=65535, FWHM/Peak=05.20");
+	//gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), "FWHM=05.20, Peak=65535, FWHM/Peak=05.20");
+	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), "HFD=05.20, Peak=65535");
 	GtkAllocation *alloc = g_new0 (GtkAllocation, 1);
 	gtk_widget_get_allocation(GTK_WIDGET(lbl_fbkfwhm), alloc);
 	fwhmlblw = alloc->width;
