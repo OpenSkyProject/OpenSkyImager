@@ -3280,7 +3280,9 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					outf = fopen("/tmp/roipos.txt", "w");
 					if (outf != NULL)
 					{
-						fprintf(outf, "Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+					//	fprintf(outf, "Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+						fprintf(outf,"%d\n", fwhmx);
+						fprintf(outf,"%d\n", fwhmy);
 					}
 					fclose(outf);
 				}
@@ -3301,7 +3303,9 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					outf = fopen("/tmp/roipos.txt", "w");
 					if (outf != NULL)
 					{
-						fprintf(outf, "Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+					//	fprintf(outf, "Fifo: %s=%d %d\n", cmd, fwhmx, fwhmy);
+						fprintf(outf,"%d\n", fwhmx);
+						fprintf(outf,"%d\n", fwhmy);
 					}
 					fclose(outf);
 				}
@@ -3352,7 +3356,9 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					outf = fopen("/tmp/fwhm.txt", "w");
 					if (outf != NULL)
 					{
-						fprintf(outf, "Fifo: %s=%05.2F %d\n", cmd, afwhm, pfwhm);
+					//	fprintf(outf, "Fifo: %s=%05.2F %d\n", cmd, afwhm, pfwhm);
+						fprintf(outf, "%05.2F\n", afwhm);
+						fprintf(outf, "%d\n", pfwhm);
 					}
 					fclose(outf);
 				}
