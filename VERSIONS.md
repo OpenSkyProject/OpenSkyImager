@@ -87,3 +87,7 @@ already tested (http://sourceforge.net/projects/iastrohub/).
   dangerous - behavior. Please avoid doing this when using previous versions 
   and / or update your version.
 
+*Version 0.8.5*
+- Add DSI2PRO camera support, capture was tested, temp read should work, but 
+  true temperature match must be confirmed. Beta tester wanted.
+

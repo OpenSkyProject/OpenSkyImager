@@ -79,8 +79,8 @@ qhy_campars          *qhy_core_getcampars();
 ///////////////////////////
 int qhy_cameraIO( int dir, int req, unsigned char *buf, int size, unsigned int value, unsigned int index); 
 int qhy_cameraiIO(int dir, unsigned char *buf, int size);
-int qhy_opencamera(int vendorid, int productid);
-int qhy_OpenCamera(int vendorid, int productid);
+int qhy_opencamera();
+int qhy_OpenCamera();
 int qhy_CloseCamera();
 
 //////////////////////////
@@ -108,7 +108,7 @@ int qhy_getDC201_i(double *tC, double *mV);
 int qhy_setDC201_i(int pwm, int fan);
 int qhy_Shutter(int cmd);
 int qhy_setColorWheel(int Pos);
-int qhy_getImgData(int endp, int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred);
+int qhy_getImgData(int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred);
 
 
 int             qhy_EepromRead(unsigned char addr, unsigned char* data, unsigned short len);

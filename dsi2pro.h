@@ -1,8 +1,11 @@
 /*
- * imgBase.h
+ * dsi2pro.h
  *
- *  Created on: 01.09.2013
+ *  Created on: 23.01.2014
  *      Author: Giampiero Spezzano (gspezzano@gmail.com)
+ *
+ * Original author of device access code by Maxim Parygin
+ * Hints got from lin_guider by Galaxy Master (http://galaxymstr.users.sourceforge.net/)
  *
  * This file is part of "OpenSkyImager".
  *
@@ -20,22 +23,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include <math.h>
-#include <wait.h>
-#include <glib.h>
-#include <glib/gi18n.h>
-#include "tools.h"
-
-#define APPICO "./ico.png"
-#define ORZHND "./handle_v.png"
-#define VRTHND "./handle_o.png"
-#define APPNAM "OpenSkyImager"
-#define APPTIT "OpenSkyImager (c) 2013 JP & C AstroSoftware"
-#define APPVER "0.8.5"
+void    dsi2pro_init();
+int     dsi2pro_iscamera();
+int     dsi2pro_OpenCamera();
+int     dsi2pro_CloseCamera();
+int     dsi2pro_StartExposure(qhy_exposure *expar);
+int     dsi2pro_AbortCapture();
+double  dsi2pro_GetTemp();
+char   *dsi2pro_core_msg();
+int     dsi2pro_reset();
+int     dsi2pro_getImgData();
+void    dsi2pro_decode(unsigned char *databuffer);
 

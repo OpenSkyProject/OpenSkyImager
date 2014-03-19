@@ -1,4 +1,4 @@
-CC = gcc `pkg-config --cflags glib-2.0 gtk+-2.0  cfitsio libusb-1.0`
+CC = gcc `pkg-config --cflags glib-2.0 gtk+-2.0 cfitsio libusb-1.0`
 CFLAGS = -Wall
 
 LIBS = `pkg-config --libs glib-2.0 gtk+-2.0 cfitsio libusb-1.0` -lrt -lm
@@ -24,6 +24,7 @@ OBJS = \
 	qhy11.o \
 	qhy12.o \
 	qhycore.o \
+	dsi2pro.o \
 	libusbio.o \
 	imgCFWio.o \
 	avilib.o \
