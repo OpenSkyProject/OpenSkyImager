@@ -68,9 +68,22 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - Fix memory leak when in color mode
 
 *Version 0.8.3*
-- New commans for remote operation: SETROIPOS, GETROIPOS, SETROISIZE, HIDEROI,
+- New commands for remote operation: SETROIPOS, GETROIPOS, SETROISIZE, HIDEROI,
   GETFWHM (please see REMOTE.md for details)
 - Fixed ROI possibly hitting image borders and crash application
 - Fixed segfault if running with -f only
 
+*Version 0.8.4*
+- New command for remote operation: LOADFILE (please see REMOTE.md for details)
+- Changed oputput format for SETROIPOS and GETROIPOS
+- HFD (Half flux diameter) replace FWHM
+- fixed a possible source of crash while positioning ROI
+- introduced a compile/install script (thanks to Clive Rogers)
+- Add warning dialogs while attempting program quit or camera disconnect 
+  when capture thread is running
+- SECURITY PATCH: when cooled camera is in fast mode and TEC read / feedback is
+  disabled, widgets are now "grayed out". - WARNING - forcing TEC control while 
+  camera is in fast mode can lead to false Temp reading and unpredictable - yet
+  dangerous - behavior. Please avoid doing this when using previous versions 
+  and / or update your version.
 

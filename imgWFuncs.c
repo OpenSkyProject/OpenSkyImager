@@ -1576,6 +1576,9 @@ gpointer thd_capture_run(gpointer thd_data)
 	fifofbk = 0;
 	g_rw_lock_writer_unlock(&thd_caplock);*/
 	
+	g_rw_lock_writer_lock(&thd_caplock);
+	run = 0;
+	g_rw_lock_writer_unlock(&thd_caplock);
 	return 0;
 }
 

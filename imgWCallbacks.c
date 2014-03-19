@@ -706,6 +706,7 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 				if ((imgcam_get_tecp()->istec == 1) && (tecprerun == 1))
 				{
 					tecprerun = 0;
+					gtk_widget_set_sensitive(cmd_tecenable, 1);
 					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
 				}
 				gtk_widget_set_sensitive(box_filename, 0);
@@ -724,6 +725,7 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 				{
 					tecprerun = 1;
 					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
+					gtk_widget_set_sensitive(cmd_tecenable, 0);
 				}
 				gtk_widget_set_sensitive(box_filename, 1);
 				gtk_widget_set_sensitive(box_cfw, 1);
@@ -751,7 +753,15 @@ void cmd_load_click(GtkWidget *widget, gpointer data)
 {
 	char *filename = NULL;
 	
-	get_filename(&filename, 0, "*.fit");
+	if (data == NULL)
+	{
+		get_filename(&filename, 0, "*.fit");
+	}
+	else if (isfile(data))
+	{
+		filename = (char*)g_malloc(strlen(data));
+		strcpy(filename, data);
+	}
 
 	if (filename != NULL)
 	{
@@ -1232,25 +1242,54 @@ void mainw_destroy( GtkWidget *widget, gpointer   data )
 gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 {
 	int retval = TRUE;
-	GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, C_("quit-message","Confirm exit"));
-	gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog), C_("quit-message","Do you really want to quit?"));
-	gint result =  gtk_dialog_run (GTK_DIALOG (dialog));
-	
-	switch (result)
+
+	if (run)
 	{
-		case GTK_RESPONSE_OK:
-			if (imgcam_connected())
-			{
-				//Press on disconnect
-				gtk_widget_activate(cmd_camera);
-			}
-			retval = FALSE;
-			break;
-		default:
-			retval = TRUE;
-			break;
+		GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, C_("main","Capture thread running!"));
+		gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog), C_("main","Confirm only if you know exaclty what you're doing"));
+		gint result =  gtk_dialog_run (GTK_DIALOG (dialog));
+
+		switch (result)
+		{
+			case GTK_RESPONSE_OK:
+				// Brute force thread end
+				g_rw_lock_writer_lock(&thd_caplock);
+				run  = 0;
+				runerr = 1;
+				if (readout)
+				{
+					imgcam_abort();
+				}
+				readout = 0;
+				g_rw_lock_writer_unlock(&thd_caplock);
+				break;
+			default:
+				break;
+		}
+		gtk_widget_destroy(dialog);
 	}
-	gtk_widget_destroy(dialog);
+	if (run == 0)
+	{
+		GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, C_("quit-message","Confirm exit"));
+		gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog), C_("quit-message","Do you really want to quit?"));
+		gint result =  gtk_dialog_run (GTK_DIALOG (dialog));
+	
+		switch (result)
+		{
+			case GTK_RESPONSE_OK:
+				if (imgcam_connected())
+				{
+					//Press on disconnect
+					gtk_widget_activate(cmd_camera);
+				}
+				retval = FALSE;
+				break;
+			default:
+				retval = TRUE;
+				break;
+		}
+		gtk_widget_destroy(dialog);
+	}
 	/* Change TRUE to FALSE and the main window will be destroyed with
 	* a "delete-event". */
 	return retval;
@@ -1348,64 +1387,85 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 			//Disconnect
 			if (run)
 			{
-				// Brute force thread end
-				g_rw_lock_writer_lock(&thd_caplock);
-				run  = 0;
-				runerr = 1;
-				if (readout)
+				GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, C_("main","Capture thread running!"));
+				gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog), C_("main","Confirm only if you know exaclty what you're doing"));
+				gint result =  gtk_dialog_run (GTK_DIALOG (dialog));
+	
+				switch (result)
 				{
-					imgcam_abort();
+					case GTK_RESPONSE_OK:
+						// Brute force thread end
+						g_rw_lock_writer_lock(&thd_caplock);
+						run  = 0;
+						runerr = 1;
+						if (readout)
+						{
+							imgcam_abort();
+						}
+						readout = 0;
+						g_rw_lock_writer_unlock(&thd_caplock);
+						break;
+					default:
+						break;
 				}
-				readout = 0;
-				g_rw_lock_writer_unlock(&thd_caplock);
+				gtk_widget_destroy(dialog);
 			}
-			if ((imgcam_get_tecp()->istec != 0))
+			if (run == 0)
 			{
-				// Terminates the tec thread and disable choice
-				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
-				gtk_widget_set_sensitive(cmd_tecenable, 0);
-			}
-			if (strlen(imgcam_get_camui()->whlstr) > 0)
-			{
-				// Delete In-camera Wheel choice is there's one
-				if (imgcfw_get_mode() == 99)
+				if ((imgcam_get_tecp()->istec != 0))
 				{
-					// Set connection to none (and reset cfwmode)
-					int pre = gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_cfw));
-					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), 0);
-					// Delete the 99-In Camera mode row
-					gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(cmb_cfw), pre);
+					// Terminates the tec thread and disable choice
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
+					gtk_widget_set_sensitive(cmd_tecenable, 0);
 				}
-			}
-			if (imgcam_disconnect() == 1)
-			{
-				// Disable camera model/type related UI 
-				combo_setlist(cmb_bin, "");
-				combo_setlist(cmb_csize, "");
-				combo_setlist(cmb_dspeed, "");
-				combo_setlist(cmb_mode, "");
-				gtk_label_set_text(GTK_LABEL(lbl_mode), "");				
-				combo_setlist(cmb_amp, "");
-				combo_setlist(cmb_denoise, "");
-				combo_setlist(cmb_depth, "");
-				gtk_widget_set_sensitive(cmb_debayer, 1);
-				gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_debayer), 0);
-				//Enable choice list
-				gtk_widget_set_sensitive(cmb_camera, 1);
-				gtk_widget_set_sensitive(cmd_setcamlst, 1);
-				gtk_widget_set_sensitive(cmd_updcamlst, 1);
-				gtk_widget_set_sensitive(cmd_resetcam, 1);
-				gtk_widget_set_sensitive(cmd_run, 0);
-				gtk_button_set_label(GTK_BUTTON(widget), C_("settings","Connect"));
-				sprintf(imgmsg, C_("main","Camera %s disconnected"), gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cmb_camera)));
-				gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+				if (strlen(imgcam_get_camui()->whlstr) > 0)
+				{
+					// Delete In-camera Wheel choice is there's one
+					if (imgcfw_get_mode() == 99)
+					{
+						// Set connection to none (and reset cfwmode)
+						int pre = gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_cfw));
+						gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), 0);
+						// Delete the 99-In Camera mode row
+						gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(cmb_cfw), pre);
+					}
+				}
+				if (imgcam_disconnect() == 1)
+				{
+					// Disable camera model/type related UI 
+					combo_setlist(cmb_bin, "");
+					combo_setlist(cmb_csize, "");
+					combo_setlist(cmb_dspeed, "");
+					combo_setlist(cmb_mode, "");
+					gtk_label_set_text(GTK_LABEL(lbl_mode), "");				
+					combo_setlist(cmb_amp, "");
+					combo_setlist(cmb_denoise, "");
+					combo_setlist(cmb_depth, "");
+					gtk_widget_set_sensitive(cmb_debayer, 1);
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_debayer), 0);
+					//Enable choice list
+					gtk_widget_set_sensitive(cmb_camera, 1);
+					gtk_widget_set_sensitive(cmd_setcamlst, 1);
+					gtk_widget_set_sensitive(cmd_updcamlst, 1);
+					gtk_widget_set_sensitive(cmd_resetcam, 1);
+					gtk_widget_set_sensitive(cmd_run, 0);
+					gtk_button_set_label(GTK_BUTTON(widget), C_("settings","Connect"));
+					sprintf(imgmsg, C_("main","Camera %s disconnected"), gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cmb_camera)));
+					gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+				}
+				else
+				{
+					//Engage
+					GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,  GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", imgcam_get_msg());
+					gtk_dialog_run (GTK_DIALOG (dialog));
+					gtk_widget_destroy(dialog);
+					error = 1;
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
+				}
 			}
 			else
 			{
 				//Engage
-				GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,  GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", imgcam_get_msg());
-				gtk_dialog_run (GTK_DIALOG (dialog));
-				gtk_widget_destroy(dialog);
 				error = 1;
 				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 			}
@@ -1562,6 +1622,8 @@ void cmb_bin_changed (GtkComboBox *widget, gpointer user_data)
 			imgcam_get_expar()->bin = tmp;
 			fithdr[HDR_XBINNING].ivalue = tmp;
 			fithdr[HDR_YBINNING].ivalue = tmp;
+			fithdr[HDR_PSZX].dvalue = round(imgcam_get_camui()->pszx * tmp * 100) / 100;
+			fithdr[HDR_PSZY].dvalue = round(imgcam_get_camui()->pszy * tmp * 100) / 100;
 			imgcam_get_expar()->edit = 1;
 			sprintf(imgmsg, C_("main","Binning mode set to: %dx%d"), imgcam_get_expar()->bin, imgcam_get_expar()->bin);
 			gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
@@ -1619,11 +1681,13 @@ void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 			// when in focus mode and fast speed we need to stop temp read (for ccd only)
 			tecprerun = 1;
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
+			gtk_widget_set_sensitive(cmd_tecenable, 0);
 		}
 		else if ((imgcam_get_tecp()->istec == 1) && (tecprerun == 1))
 		{
 			// when in capture mode or slow speed we restore previous mode (for ccd only, regardless of speed)
 			tecprerun = 0;
+			gtk_widget_set_sensitive(cmd_tecenable, 1);
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
 		}
 		sprintf(imgmsg, C_("main","Download speed set to: %s"), str);
@@ -2189,6 +2253,10 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 						tec_init_graph();
 						gtk_widget_set_sensitive(vsc_tecpwr, 1);
 						gtk_widget_set_sensitive(cmd_tecauto, 1);
+						if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecauto)))
+						{
+							gtk_widget_set_sensitive(spn_tectgt, 1);
+						}
 						gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
 					}
 					else
@@ -2529,7 +2597,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 	GError *err = NULL;
 	gchar  *msg;
 	char  cmd[33];
-	char  arg[225];
+	static char  arg[225];
 	float fval;
 	int   ival, ival2;
 	unsigned int len;
@@ -2642,8 +2710,15 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					sscanf(arg, "%d", &ival);
 					sprintf(arg, "%d", ival);
-					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), (ival > 0));
-					printf("Fifo: %s=%s\n", cmd, arg);
+					if (gtk_widget_get_sensitive(cmd_tecenable))
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), (ival > 0));
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=TEC unavailable in fast preview mode\n");
+					}
 				}
 				else
 				{
@@ -2655,15 +2730,22 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				// Enable disable tec feedback mode (using current target temp)
 				if (imgcam_get_tecp()->istec == 1)
 				{
-					sscanf(arg, "%d", &ival);
-					sprintf(arg, "%d", ival);
-					if ((ival > 0) && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecenable)) == FALSE))
+					if (gtk_widget_get_sensitive(cmd_tecenable))
 					{
-						// Activate tec read mode too if it is not already
-						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+						sscanf(arg, "%d", &ival);
+						sprintf(arg, "%d", ival);
+						if ((ival > 0) && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecenable)) == FALSE))
+						{
+							// Activate tec read mode too if it is not already
+							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+						}
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), (ival > 0));
+						printf("Fifo: %s=%s\n", cmd, arg);
 					}
-					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), (ival > 0));
-					printf("Fifo: %s=%s\n", cmd, arg);
+					else
+					{
+						printf("Fifo: ERROR=TEC unavailable in fast preview mode\n");
+					}
 				}
 				else
 				{
@@ -2675,20 +2757,27 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				// Set target temperature (if tecread & tecauto are not set already, it will do)
 				if (imgcam_get_tecp()->istec == 1)
 				{
-					sscanf(arg, "%f", &fval);
-					sprintf(arg, "%06.2f", fval);
-					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecenable)) == FALSE)
+					if (gtk_widget_get_sensitive(cmd_tecenable))
 					{
-						// Activate tec read mode too if it is not already
-						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+						sscanf(arg, "%f", &fval);
+						sprintf(arg, "%06.2f", fval);
+						if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecenable)) == FALSE)
+						{
+							// Activate tec read mode too if it is not already
+							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+						}
+						if (imgcam_get_tecp()->tecauto == 0)
+						{
+							// Set tec to auto
+							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), TRUE);
+						}
+						gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tectgt), fval);
+						printf("Fifo: %s=%s\n", cmd, arg);
 					}
-					if (imgcam_get_tecp()->tecauto == 0)
+					else
 					{
-						// Set tec to auto
-						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), TRUE);
+						printf("Fifo: ERROR=TEC unavailable in fast preview mode\n");
 					}
-					gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tectgt), fval);
-					printf("Fifo: %s=%s\n", cmd, arg);
 				}
 				else
 				{
@@ -3365,6 +3454,42 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				else
 				{
 					printf("Fifo: ERROR=ROI not visible\n");
+				}
+			}
+			else if (strcmp(cmd, "LOADFILE") == 0)
+			{
+				g_rw_lock_reader_lock(&thd_caplock);
+				ival = run;
+				g_rw_lock_reader_unlock(&thd_caplock);
+				if (ival == 0)
+				{
+					if (isfile(arg))
+					{
+						cmd_load_click(NULL, arg);
+						if (imgfit_loaded())
+						{
+							if (imgpix_loaded())
+							{
+								printf("Fifo: %s=ACK\n", cmd);
+							}
+							else
+							{
+								printf("Fifo: ERROR=could not load pixel buffer\n");
+							}
+						}
+						else
+						{
+							printf("Fifo: ERROR=could not load fit file\n");
+						}
+					}
+					else
+					{
+						printf("Fifo: ERROR=file not found\n");
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=capture thread is running\n");
 				}
 			}
 			else

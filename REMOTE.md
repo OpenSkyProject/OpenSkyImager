@@ -150,5 +150,7 @@ confirm a new preview image is available:
 - HIDEROI:, will hide the ROI square (and stop calculations). 
   Will acknowledge change.
 - GETFWHM:, will print out fwhm data (fwhm peak) on stdout and /tmp/fwhm.txt
-
+- LOADFILE:filename-and-path, will load specified fit file. Program will report
+  error if capture thread is running, if cfitsio can't load file, the pixel
+  buffer can't be loaded or the file can't be found.
 

@@ -202,7 +202,37 @@ int qhy_cameraiIO(int dir, unsigned char *buf, int size)
 
 int qhy_opencamera(int vendorid, int productid) 
 {
-	return open_camera(vendorid, productid, &hDevice, coremsg);
+	int retcode = 1;
+
+	retcode = (libusb_init(NULL) == 0);
+	coremsg[0] = '\0';
+	if(retcode)
+	{
+		// Level 0: no messages ever printed by the library (default)
+		// Level 1: error messages are printed to stderr
+		// Level 2: warning and error messages are printed to stderr
+		// Level 3: informational messages are printed to stdout, warning and error messages are printed to stderr
+		libusb_set_debug(NULL,0);
+		if (open_camera(vendorid, productid, &hDevice, coremsg))
+		{
+			if (libusb_claim_interface(hDevice, 0) != 0) 
+			{
+				sprintf(coremsg, C_("qhycore","Error: Could not claim interface."));
+				retcode = 0;
+			}
+		}
+		else
+		{
+			retcode = 0;
+		}
+	}
+	else
+	{
+		sprintf(coremsg, C_("qhycore","Error: Could not initialise libusb."));
+		retcode = 0;
+	}
+	return retcode;
+	//return open_camera(vendorid, productid, &hDevice, coremsg);
 }
 
 int qhy_OpenCamera(int vendorid, int productid) 
@@ -249,6 +279,7 @@ int qhy_OpenCamera(int vendorid, int productid)
 
 int qhy_CloseCamera() 
 {
+	libusb_release_interface(hDevice, 0);
 	libusb_close(hDevice);
 	libusb_exit(NULL);
 	return 1;
