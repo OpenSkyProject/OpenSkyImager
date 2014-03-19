@@ -374,7 +374,7 @@ int dsi2pro_OpenCamera()
 		// Level 1: error messages are printed to stderr
 		// Level 2: warning and error messages are printed to stderr
 		// Level 3: informational messages are printed to stdout, warning and error messages are printed to stderr
-		libusb_set_debug(NULL,3);
+		libusb_set_debug(NULL,0);
 		if (open_camera(VENDOR_ID, PRODUCT_ID, &rc_dev_dsi, coremsg))
 		{
 			if (libusb_claim_interface(rc_dev_dsi, 0) == 0) 
