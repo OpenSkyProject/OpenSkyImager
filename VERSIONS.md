@@ -91,3 +91,8 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - Add DSI2PRO camera support, capture was tested, temp read should work, but 
   true temperature match must be confirmed. Beta tester wanted.
 
+*Version 0.8.6*
+- Fix QHY8 Bin2/4 image corrupted (thanks to Daniel Holler for report) 
+- QHY12 image flipped vertically (thanks to Anat Ruangrassamee for report)
+- Fix program crash if setting CFW filters while "Add filter" is selected
+

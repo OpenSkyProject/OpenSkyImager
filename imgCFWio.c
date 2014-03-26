@@ -105,6 +105,7 @@ void imgcfw_init()
 	cfwttyfd = -1;
 	cfwmodid = -1;
 	cfwmodel[0] = '\0';
+	cfwmodels[0] = '\0';
 	cfwslotc = 0;
 	memset(cfwslots, 0, 16);
 	cfwpos = -1;

@@ -238,7 +238,7 @@ void qhy8old_decode(unsigned char *databuffer)
 	}
 
 	dbuffer   = (unsigned short*)realloc(dbuffer, allocsize);
-	memcpy(dbuffer, databuffer, width * height * 2);
+	memcpy(dbuffer, databuffer, width * height * 2 * bin);
 
 	//DECODE
 	switch(bin) 
@@ -262,6 +262,7 @@ void qhy8old_decode(unsigned char *databuffer)
 			}
 			break;
 		case 2:  //2X2 binning
+		     // Data from camera is bin 1x2
 			tgt = src1 = dbuffer;
 			idx = width*height;
 			while (idx--) 
@@ -272,6 +273,7 @@ void qhy8old_decode(unsigned char *databuffer)
 			} 
 			break;
 		case 4:  //4X4 binning
+		     // Data from camera is bin 1x4
 			tgt = src1 = dbuffer;
 			idx = width*height;
 			while (idx--) 

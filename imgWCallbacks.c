@@ -1423,6 +1423,11 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 					// Delete In-camera Wheel choice is there's one
 					if (imgcfw_get_mode() == 99)
 					{
+						if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_cfw)))
+						{
+							// Disconnect to get the gui consistent
+							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_cfw), FALSE);
+						}
 						// Set connection to none (and reset cfwmode)
 						int pre = gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_cfw));
 						gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), 0);
@@ -2186,20 +2191,23 @@ void cmd_fltadd_click(GtkWidget *widget, gpointer data)
 
 void cmb_flt_changed (GtkComboBox *widget, gpointer user_data)
 {
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_fltadd)) == TRUE)
+	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
-		strcpy(fitflt, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
-		if (strlen(fitflt) > 0)
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_fltadd)) == TRUE)
 		{
-			sprintf(imgmsg, C_("main","Filter name: %s add to naming convention"), fitflt);
+			strcpy(fitflt, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+			if (strlen(fitflt) > 0)
+			{
+				sprintf(imgmsg, C_("main","Filter name: %s add to naming convention"), fitflt);
+			}
+			else
+			{
+				fitflt[0] = '\0';	
+				sprintf(imgmsg, C_("main","Filter name removed from naming convention"));
+			}
+			strcpy(fithdr[HDR_FILTER].svalue,fitflt);
+			gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 		}
-		else
-		{
-			fitflt[0] = '\0';	
-			sprintf(imgmsg, C_("main","Filter name removed from naming convention"));
-		}
-		strcpy(fithdr[HDR_FILTER].svalue,fitflt);
-		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 }
 
@@ -2569,7 +2577,10 @@ void cmb_cfwwhl_changed (GtkComboBox *widget, GtkWidget **awidget)
 			}
 		}
 		combo_setlist(cmb_flt, cfwfltstr);
-		gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), imgcfw_get_slot());
+		if ((i = imgcfw_get_slot()) > -1)
+		{
+			gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), i);
+		}
 	}
 }
 

@@ -85,7 +85,7 @@ void qhy12_init()
 	strcpy(imgcam_get_camui()->moddsc, "");
 	strcpy(imgcam_get_camui()->snrstr, "");
 	strcpy(imgcam_get_camui()->bppstr, "2-16Bit|:0");
-	strcpy(imgcam_get_camui()->byrstr, "2");
+	strcpy(imgcam_get_camui()->byrstr, "1");
 	strcpy(imgcam_get_camui()->tecstr, "0:255:1:2");
 	strcpy(imgcam_get_camui()->whlstr, "");
 	// Header values
@@ -334,7 +334,7 @@ void qhy12_decode(unsigned char *databuffer)
 
 	// Top pix skip
 	srcF1 = databuffer + (top_skip_pix * 2);
-	memcpy(processed, srcF1, (i_width * height * 2));
+	memcpy(databuffer, srcF1, (i_width * height * 2));
 
 	//DECODE
 	switch(bin) 
@@ -354,22 +354,22 @@ void qhy12_decode(unsigned char *databuffer)
 				// Jump one line on the original camera data
 				sF1 = width * (t + 3) + 1; 			//R
 				sF2 = width * (height - t - 2) + 3;	//G
-				sF3 = width * (hgt2 - t - 2) + 1;	//G
-				sF4 = width * (hgt2 + t + 3) + 1;     //B
+				sF3 = width * (hgt2 - t - 2) + 1;		//G
+				sF4 = width * (hgt2 + t + 3) + 1;		//B
 				// Please note 2 & 4 field are vertically flipped
 				//In each output field 1 there's a pixel offset for unknown reason
 				for (w = 0; w < width; w += 4)
 				{
 					for (p = 0; p < 2; p++)
 					{
-						tgt11 = databuffer + tgt1 * 2 + p * 4 + w * 2;
+						tgt11 = processed + tgt1 * 2 + p * 4 + w * 2;
 						tgt12 = tgt11 + 2;
 						tgt13 = tgt11 + (width * 2);
 						tgt14 = tgt13 + 2;
-						srcF1 = processed + ((sF1 + w + p) * 2);
-						srcF2 = processed + ((sF2 + w + p) * 2);
-						srcF3 = processed + ((sF3 + w + p) * 2);
-						srcF4 = processed + ((sF4 + w + p) * 2);
+						srcF1 = databuffer + ((sF1 + w + p) * 2);
+						srcF2 = databuffer + ((sF2 + w + p) * 2);
+						srcF3 = databuffer + ((sF3 + w + p) * 2);
+						srcF4 = databuffer + ((sF4 + w + p) * 2);
 						
 						*tgt11 = *srcF1; tgt11++;  srcF1++;  *tgt11 = *srcF1;
 						*tgt12 = *srcF2; tgt12++;  srcF2++;  *tgt12 = *srcF2;
@@ -378,14 +378,14 @@ void qhy12_decode(unsigned char *databuffer)
 					}
 					for (p = 0; p < 2; p++)
 					{
-						tgt21 = databuffer + tgt2 * 2 + p * 4 + w * 2 + 4;
+						tgt21 = processed + tgt2 * 2 + p * 4 + w * 2 + 4;
 						tgt22 = tgt21 + 2;
 						tgt23 = tgt21 + (width * 2);
 						tgt24 = tgt23 + 2;
-						srcF1 = processed + ((sF1 + w + p + 2) * 2);
-						srcF2 = processed + ((sF2 + w + p + 2) * 2);
-						srcF3 = processed + ((sF3 + w + p + 2) * 2);
-						srcF4 = processed + ((sF4 + w + p + 2) * 2);
+						srcF1 = databuffer + ((sF1 + w + p + 2) * 2);
+						srcF2 = databuffer + ((sF2 + w + p + 2) * 2);
+						srcF3 = databuffer + ((sF3 + w + p + 2) * 2);
+						srcF4 = databuffer + ((sF4 + w + p + 2) * 2);
 
 						*tgt21 = *srcF1; tgt21++;  srcF1++;  *tgt21 = *srcF1;
 						*tgt22 = *srcF2; tgt22++;  srcF2++;  *tgt22 = *srcF2;
@@ -396,18 +396,18 @@ void qhy12_decode(unsigned char *databuffer)
 			}
 			if (width < i_width)
 			{
-				// Copy onto databuffer from databuffer(!) only the ROI data
+				// Copy onto processed from processed(!) only the ROI data
 				left_skip = (int)((i_width - width) / 2);
 				right_skip = i_width - left_skip - width;
 				//printf("Processing i_width: ls %d, iw %d, rs %d\n", left_skip, width, right_skip);
-				srcF1 = databuffer;
-				tgt11 = databuffer;
+				srcF1 = processed;
+				tgt11 = processed;
 				t = height;
+				w = width * 2;
 				while (t--) 
 				{
 					// Skip the left part
 					srcF1 += left_skip * 2;
-					w = width * 2;
 					// Copy img_w pixels on the line
 					memcpy(tgt11, srcF1, w);
 					if (t > 0)
@@ -432,10 +432,10 @@ void qhy12_decode(unsigned char *databuffer)
 				
 				for (w = 0; w < width; w++)
 				{
-					tgt11 = databuffer + (tgt1 + w) * 2;
-					tgt21 = databuffer + (tgt2 + w) * 2;
-					srcF1 = processed + sF1 * 2 + w * 4;
-					srcF2 = processed + sF2 * 2 + w * 4;
+					tgt11 = processed + (tgt1 + w) * 2;
+					tgt21 = processed + (tgt2 + w) * 2;
+					srcF1 = databuffer + sF1 * 2 + w * 4;
+					srcF2 = databuffer + sF2 * 2 + w * 4;
 
 					p1  = (srcF1[0] + srcF1[1] * 256);
 					p1 += (srcF1[2] + srcF1[3] * 256);
@@ -452,18 +452,18 @@ void qhy12_decode(unsigned char *databuffer)
 			}			
 			if (width < (int)(i_width / 2))
 			{
-				// Copy onto databuffer from databuffer(!) only the ROI data
+				// Copy onto processed from processed(!) only the ROI data
 				left_skip = (int)(((int)(i_width / 2) - width) / 2);
 				right_skip = (int)(i_width / 2) - left_skip - width;
 				//printf("Processing i_width: ls %d, iw %d, rs %d\n", left_skip, width, right_skip);
-				srcF1 = databuffer;
-				tgt11 = databuffer;
+				srcF1 = processed;
+				tgt11 = processed;
 				t = height;
+				w = width * 2;
 				while (t--) 
 				{
 					// Skip the left part
 					srcF1 += left_skip * 2;
-					w = width * 2;
 					// Copy img_w pixels on the line
 					memcpy(tgt11, srcF1, w);
 					if (t > 0)
@@ -476,7 +476,7 @@ void qhy12_decode(unsigned char *databuffer)
 			}
 			break;
 			
-		case 4:  //2X2 binning
+		case 4:  //4X4 binning
 			// First of all we have to reorder the interlaced output
 			// Fields are vertically flipped
 			for (t = 0; t < height - 2; t += 2)
@@ -488,10 +488,10 @@ void qhy12_decode(unsigned char *databuffer)
 
 				for (w = 0; w < width; w++)
 				{
-					tgt11 = databuffer + (tgt1 + w) * 2;
-					tgt21 = databuffer + (tgt2 + w) * 2;
-					srcF1 = processed + sF1 * 2 + w * 8;
-					srcF2 = processed + sF2 * 2 + w * 8;
+					tgt11 = processed + (tgt1 + w) * 2;
+					tgt21 = processed + (tgt2 + w) * 2;
+					srcF1 = databuffer + sF1 * 2 + w * 8;
+					srcF2 = databuffer + sF2 * 2 + w * 8;
 
 					p1  = (srcF1[0] + srcF1[1] * 256);
 					p1 += (srcF1[2] + srcF1[3] * 256);
@@ -512,18 +512,18 @@ void qhy12_decode(unsigned char *databuffer)
 			}			
 			if (width < (int)(i_width / 4))
 			{
-				// Copy onto databuffer from databuffer(!) only the ROI data
+				// Copy onto processed from processed(!) only the ROI data
 				left_skip = (int)(((int)(i_width / 4) - width) / 2);
 				right_skip = (int)(i_width / 4) - left_skip - width;
 				//printf("Processing i_width: ls %d, iw %d, rs %d\n", left_skip, width, right_skip);
-				srcF1 = databuffer;
-				tgt11 = databuffer;
+				srcF1 = processed;
+				tgt11 = processed;
 				t = height;
+				w = width * 2;
 				while (t--) 
 				{
 					// Skip the left part
 					srcF1 += left_skip * 2;
-					w = width * 2;
 					// Copy img_w pixels on the line
 					memcpy(tgt11, srcF1, w);
 					if (t > 0)
@@ -535,6 +535,16 @@ void qhy12_decode(unsigned char *databuffer)
 				}
 			}
 			break;			
+	}
+	// Now we need to flip image vertically and store into databuffer
+	srcF1 = processed + (height - 1) * width * 2;
+	tgt11 = databuffer;
+	w = width * 2;
+	for (t = height; t > 1; t--)
+	{
+		tgt11 += w;
+		srcF1 -= w;
+		memcpy(tgt11, srcF1, w);
 	}
 	free(processed);
 	return;
