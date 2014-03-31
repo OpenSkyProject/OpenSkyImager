@@ -26,11 +26,11 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Supported camera list
 ==================
-As of version 0.8.2 several QHY camera are actively developed against:
+As of version 0.8.6 several QHY camera are actively developed against:
 QHY2 (old color model),5,5II series,6 (both firmware),7,8(Old),8L,9,11,12.
 
-Models that have been 100% tested are: QHY5,5II series,6 (both firmware),7,8L,
-9,11,12.
+Models that have been 100% tested are: QHY5,5II series,6 (both firmware),7,
+8(Old)8L,9,11,12.
 
 If your camera make/model does not appear in the list you can try contact us
 and see if it can be add in a near future.
@@ -114,6 +114,8 @@ Once you compiled your binaries, we suggest to:
 - copy the qhyReset.bash in same location
 - copy all .png files in same location
 - be sure to set the execute bit on binary and bash
+
+*OR* you can use the enclosed install script (thanks to Clive Rogers).
 
 Should you need an entry in the applications menu, create a suitable .desktop
 file, where most appropriate for your distro.

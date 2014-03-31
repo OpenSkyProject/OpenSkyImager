@@ -27,6 +27,7 @@
 
 static GdkPixbuf *pixbuf = NULL;
 static GdkPixbuf *hstbuf = NULL;
+static GdkPixbuf *sqrbuf = NULL;
 static GdkPixbuf *roibuf = NULL;
 int pwidth, pheight, pdebayer, pbpp = 1;
 static char     *pixmsg;
@@ -146,15 +147,15 @@ void imgpix_init_histogram()
 	}
 }
 
-GdkPixbuf *imgpix_get_roi(int size)
+GdkPixbuf *imgpix_get_roi_square(int size)
 {
 	int rowstride;
 	int row, col;
 	guchar *pixels, *p;
 	
-	roibuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, size, size);
-	rowstride = gdk_pixbuf_get_rowstride (roibuf);
-	pixels    = gdk_pixbuf_get_pixels (roibuf);
+	sqrbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, size, size);
+	rowstride = gdk_pixbuf_get_rowstride (sqrbuf);
+	pixels    = gdk_pixbuf_get_pixels (sqrbuf);
 	
 	for (row = 0; row < size; row++)
 	{
@@ -167,6 +168,13 @@ GdkPixbuf *imgpix_get_roi(int size)
 			p[3] = ((row == 0) || (row == (size - 1)) || (col == 0) || (col == (size - 1))) ? 255 : 0;
 		}
 	}
+	return sqrbuf;
+}
+
+GdkPixbuf *imgpix_get_roi_data(int centerx, int centery, int size)
+{	
+	roibuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, size, size);
+	gdk_pixbuf_copy_area(pixbuf, (centerx - size / 2), (centery - size / 2), size, size, roibuf, 0, 0);
 	return roibuf;
 }
 

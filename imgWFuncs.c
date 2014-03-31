@@ -166,7 +166,7 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 
 void get_filename(char **filename, int mode, char* flt)
 {
-	GtkWidget *dialog = gtk_file_chooser_dialog_new(C_("dialog-open","Open File"), (GtkWindow *) window, GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, ((mode == 1) ? GTK_STOCK_SAVE : GTK_STOCK_OPEN), GTK_RESPONSE_ACCEPT, NULL);
+	GtkWidget *dialog = gtk_file_chooser_dialog_new(C_("dialog-open","Open File"), (GtkWindow *) window, ((mode == 1) ? GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER : GTK_FILE_CHOOSER_ACTION_OPEN), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, ((mode == 1) ? GTK_STOCK_SAVE : GTK_STOCK_OPEN), GTK_RESPONSE_ACCEPT, NULL);
 	GtkFileFilter *filter = gtk_file_filter_new();
 
 	if (flt != NULL)
@@ -224,7 +224,7 @@ void set_img_fit()
 		}	
 		//printf("w: %d, h: %d\n", tgtw, tgth);
 		// Actual resize
-		GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_data(), tgtw, tgth, GDK_INTERP_TILES);
+		GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_data(), tgtw, tgth, ((imgratio < 1) ? GDK_INTERP_TILES : GDK_INTERP_HYPER));
 		gtk_image_set_from_pixbuf((GtkImage *) image, tmpbuf);
 		g_object_unref(tmpbuf);
 		
@@ -351,10 +351,6 @@ void load_histogram_from_data()
 		g_free(alloc);
 
 		// Actual resize
-		#if GTK_MAJOR_VERSION == 3
-		//tgtw -= 15;
-		//tgth -= 15;
-		#endif
 		GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_histogram(gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_histogram)) * 10), tgtw, tgth, GDK_INTERP_HYPER);
 		gtk_image_set_from_pixbuf((GtkImage *) histogram, tmpbuf);
 		g_object_unref(tmpbuf);
@@ -378,30 +374,50 @@ void load_histogram_from_null()
 		tgth = alloc->height -5;
 		// Cleanup
 		g_free(alloc);
-		// Resize ratios
-		wratio = ((double) imgpix_get_width() / tgtw);
-		hratio = ((double) imgpix_get_height() / tgth);
-		// Choose final size
-		if (wratio > hratio)
+		if (fwhmv == 1)
 		{
-			icoratio = wratio;
-			tgth = imgpix_get_height() / wratio;
+			// Resize ratios
+			wratio = ((double) fwhms / tgtw);
+			hratio = ((double) fwhms / tgth);
+			// Choose final size
+			if (wratio > hratio)
+			{
+				icoratio = wratio;
+				tgth = fwhms / wratio;
+			}
+			else
+			{
+				icoratio = hratio;
+				tgtw = fwhms / hratio;
+			}
+			// Actual resize
+			imgpix_init_histogram();
+			GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_roi_data(fwhmx, fwhmy, fwhms), tgtw, tgth, GDK_INTERP_HYPER);
+			gtk_image_set_from_pixbuf((GtkImage *) histogram, tmpbuf);
+			g_object_unref(tmpbuf);
 		}
 		else
 		{
-			icoratio = hratio;
-			tgtw = imgpix_get_width() / hratio;
-		}	
-
-		// Actual resize
-		imgpix_init_histogram();
-		#if GTK_MAJOR_VERSION == 3
-		//tgtw -= 15;
-		//tgth -= 15;
-		#endif
-		GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_data(), tgtw, tgth, GDK_INTERP_HYPER);
-		gtk_image_set_from_pixbuf((GtkImage *) histogram, tmpbuf);
-		g_object_unref(tmpbuf);
+			// Resize ratios
+			wratio = ((double) imgpix_get_width() / tgtw);
+			hratio = ((double) imgpix_get_height() / tgth);
+			// Choose final size
+			if (wratio > hratio)
+			{
+				icoratio = wratio;
+				tgth = imgpix_get_height() / wratio;
+			}
+			else
+			{
+				icoratio = hratio;
+				tgtw = imgpix_get_width() / hratio;
+			}
+			// Actual resize
+			imgpix_init_histogram();
+			GdkPixbuf *tmpbuf = gdk_pixbuf_scale_simple(imgpix_get_data(), tgtw, tgth, ((imgratio < 1) ? GDK_INTERP_TILES : GDK_INTERP_HYPER));
+			gtk_image_set_from_pixbuf((GtkImage *) histogram, tmpbuf);
+			g_object_unref(tmpbuf);
+		}
 	}
 	g_rw_lock_reader_unlock(&pixbuf_lock);
 }
@@ -481,7 +497,7 @@ void fwhm_show()
 	// Set flag "is visible"	
 	fwhmv = 1;
 
-	pixbuf = imgpix_get_roi(roisize);
+	pixbuf = imgpix_get_roi_square(roisize);
 	gtk_image_set_from_pixbuf((GtkImage *) fwhmroi, pixbuf);
 	g_object_unref(pixbuf);
 	gtk_fixed_move(GTK_FIXED(fixed), fwhmroi, roix, roiy);
@@ -942,6 +958,7 @@ void filenaming(char *thdfit)
 	if ((fitdateadd == 1) || (fittimeadd == 1))
 	{
 		strcpy(thdfit, g_build_path(G_DIR_SEPARATOR_S, fitfolder, fitbase, NULL));
+		localt = time(NULL);
 		now    = *(localtime(&localt));
 		if (fitdateadd == 1)
 		{

@@ -96,3 +96,9 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - QHY12 image flipped vertically (thanks to Anat Ruangrassamee for report)
 - Fix program crash if setting CFW filters while "Add filter" is selected
 
+*Version 0.8.7*
+- Fix incorrect date written when using "Add Date" (thanks to Clive Rogers)
+- Fix "Save As" dialog not allowing for new folder (thanks to Clive Rogers)
+- New: ROI star zoomed into the preview thumbnail
+- Update to the install script from Clive Rogers
+

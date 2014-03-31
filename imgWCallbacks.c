@@ -712,6 +712,11 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 				gtk_widget_set_sensitive(box_filename, 0);
 				gtk_widget_set_sensitive(box_cfw, 0);
 				fwhm_hide();
+				// Redraw icon
+				if (hst == 0)
+				{
+					load_histogram_from_null();
+				}	
 				//
 				gtk_widget_set_sensitive(cmd_focus, 1);
 				gtk_widget_set_sensitive(cmd_capture, 0);
@@ -1191,6 +1196,11 @@ gboolean fwhmroi_scroll (GtkWidget *widget, GdkEventScroll *event, gpointer data
 			fwhm_calc();
 			// Draw roi after possible calc move
 			fwhm_show();
+			// Redraw icon
+			if (hst == 0)
+			{
+				load_histogram_from_null();
+			}	
 			g_rw_lock_reader_unlock(&thd_caplock);
 			return TRUE;
 		}
@@ -1212,6 +1222,11 @@ gboolean image_button_press (GtkWidget *widget, GdkEventButton *event, gpointer 
 		if (((event->x > roix) && (event->x < (roix + roisize))) && ((event->y > roiy) && (event->y < (roiy + roisize))) && (fwhmv == 1))
 		{
 			fwhm_hide();
+			// Redraw icon
+			if (hst == 0)
+			{
+				load_histogram_from_null();
+			}	
 		}
 		else
 		{
@@ -1224,6 +1239,11 @@ gboolean image_button_press (GtkWidget *widget, GdkEventButton *event, gpointer 
 			fwhm_calc();
 			// Draw roi after possible calc move
 			fwhm_show();
+			// Redraw icon
+			if (hst == 0)
+			{
+				load_histogram_from_null();
+			}	
 			g_rw_lock_reader_unlock(&thd_caplock);
 		}
 	}
@@ -3370,6 +3390,11 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					fwhm_calc();
 					// Draw roi after possible calc move
 					fwhm_show();
+					// Redraw icon
+					if (hst == 0)
+					{
+						load_histogram_from_null();
+					}	
 					g_rw_lock_reader_unlock(&thd_caplock);
 					// Please note "center" can modify requested x,y to let roi
 					// be fully inside image, also roi will settle on the
@@ -3430,6 +3455,11 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 						fwhm_calc();
 						// Draw roi after possible calc move
 						fwhm_show();
+						// Redraw icon
+						if (hst == 0)
+						{
+							load_histogram_from_null();
+						}	
 						g_rw_lock_reader_unlock(&thd_caplock);
 					}
 					printf("Fifo: %s=ACK\n", cmd);
@@ -3442,6 +3472,11 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 			else if (strcmp(cmd, "HIDEROI") == 0)
 			{
 				fwhm_hide();
+				// Redraw icon
+				if (hst == 0)
+				{
+					load_histogram_from_null();
+				}	
 				printf("Fifo: %s=ACK\n", cmd);
 			}
 			else if (strcmp(cmd, "GETFWHM") == 0)
