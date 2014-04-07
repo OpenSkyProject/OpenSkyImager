@@ -1,8 +1,11 @@
 /*
- * imgBase.h
+ * qhy10.h
  *
  *  Created on: 01.09.2013
  *      Author: Giampiero Spezzano (gspezzano@gmail.com)
+ *	Modified by Daniel Holler (astrodan02@gmail.com)
+ * Device access code is based on original QHY code from https://github.com/qhyccd-lzr
+ *
  *
  * This file is part of "OpenSkyImager".
  *
@@ -20,22 +23,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include <math.h>
-#include <wait.h>
-#include <glib.h>
-#include <glib/gi18n.h>
-#include "tools.h"
-
-#define APPICO "./ico.png"
-#define ORZHND "./handle_v.png"
-#define VRTHND "./handle_o.png"
-#define APPNAM "OpenSkyImager"
-#define APPTIT "OpenSkyImager (c) 2013 JP & C AstroSoftware"
-#define APPVER "0.8.8"
+void qhy10_init();
+int  qhy10_iscamera();
+int  qhy10_reset();
+int  qhy10_setregisters(qhy_exposure *expar);
+void qhy10_decode(unsigned char *databuffer);
 

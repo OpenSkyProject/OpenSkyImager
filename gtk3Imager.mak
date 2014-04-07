@@ -21,6 +21,7 @@ OBJS = \
 	qhy8old.o \
 	qhy8l.o \
 	qhy9.o \
+        qhy10.o \
 	qhy11.o \
 	qhy12.o \
 	qhycore.o \

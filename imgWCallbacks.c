@@ -624,15 +624,15 @@ void cmd_settings_click(GtkWidget *widget, gpointer data)
  */
 void cmd_about_click(GtkWidget *widget, gpointer data)
 {
-	gchar* authors[]     = { "Giampiero Spezzano ", "Clive Rogers ", "Dan Holler ", "Fabrice Phung","Contributors are always welcome ", NULL };
+	gchar* authors[]     = { "Giampiero Spezzano ", "Clive Rogers ", "Dan Holler ", "Fabrice Phung", "Andrew Stepanenko","Contributors are always welcome ", NULL };
 	gchar* artists[]     = { "Wanted, a fancy icon and logo would be great! ", NULL };
 	const gchar* translators   = "Giampiero Spezzano (IT), Fabrice Phung (FR-DE), Max Chen (CN)";
-	gchar* documenters[] = { "Wanted!! ", NULL };	
+	gchar* documenters[] = { "Clive Rogers", NULL };	
 	const gchar* comments      = C_("about","OpenSkyImager is a capture program written for Astronomy camera operation");
 	const gchar* copyright     = C_("about","Copyright (c) 2013 JP & C AstroSoftware\n\nLicensed under GNU GPL 3.0\n\nThis program is free software: you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation, either version 3 of the License, or\nany later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with this program.  If not, see <http://www.gnu.org/licenses/>.");
 	gchar* name          = APPNAM;
 	gchar* version       = APPVER;
-	gchar* website       = "http://www.googole.com";
+	gchar* website       = "https://github.com/OpenSkyProject/OpenSkyImager";
 	const gchar* website_lbl   = C_("about","OpenSkyImager website");
 	
 	gtk_show_about_dialog (GTK_WINDOW(window),

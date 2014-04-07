@@ -26,8 +26,8 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Supported camera list
 ==================
-As of version 0.8.6 several QHY camera are actively developed against:
-QHY2 (old color model),5,5II series,6 (both firmware),7,8(Old),8L,9,11,12.
+As of version 0.8.8 several QHY camera are actively developed against:
+QHY2 (old color model),5,5II series,6 (both firmware),7,8(Old),8L,9,10,11,12.
 
 Models that have been 100% tested are: QHY5,5II series,6 (both firmware),7,
 8(Old)8L,9,11,12.
@@ -67,6 +67,15 @@ internationalization is concerned.
 
 More in-deep instructions and hints may be found in the "po" folder.
 
+Compiling and installing
+=====================
+As of version 0.8.4 a custom install script has been introduced thanks to Clive
+Rogers.
+This script will check for dependencies, (prompt for install if needed), compile 
+and install the program in a suitable folder.
+User interaction may be needed to create a menu entry, if so desired.
+
+However should anyone prefer to do all by hands here's what's needed and how to:
 
 Compiling your binary
 ===================
@@ -123,6 +132,10 @@ file, where most appropriate for your distro.
 The program can be run from any other location, proven that the above 
 "compoments" are all in the same folder.
 
+User manual
+==========
+As of version 0.8.8 the first release of a user manual has been created, thanks
+to the kind work of Mr. Clive Rogers.
 
 Sincerely
 *The OpenSkyProject team*

@@ -102,3 +102,8 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - New: ROI star zoomed into the preview thumbnail
 - Update to the install script from Clive Rogers
 
+*Version 0.8.8*
+- New: QHY10 support (experimental)
+- New: first release of the user manual (thanks to Clive Rogers)
+- Fix: link to web site
+

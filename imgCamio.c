@@ -3,7 +3,7 @@
  *
  *  Created on: 01.09.2013
  *      Author: Giampiero Spezzano (gspezzano@gmail.com)
- *
+ *	Modified by Daniel Holler (astrodan02@gmail.com)
  * This file is part of "OpenSkyImager".
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 #include "qhy8old.h"
 #include "qhy8l.h"
 #include "qhy9.h"
+#include "qhy10.h"
 #include "qhy11.h"
 #include "qhy12.h"
 #include "dsi2pro.h"
@@ -121,6 +122,10 @@ int imgcam_iscamera(const char *model)
 	else if (strcmp(model, "QHY9") == 0)
 	{
 		retcode = qhy9_iscamera();
+	}
+	else if (strcmp(model, "QHY10") == 0)
+	{
+		retcode = qhy10_iscamera();
 	}
 	else if (strcmp(model, "QHY11") == 0)
 	{
@@ -220,6 +225,11 @@ void imgcam_set_model(const char *val)
 	{
 		qhy9_init();
 		camid = 9;
+	}
+	else if (strcmp(val, "QHY10") == 0)
+	{
+		qhy10_init();
+		camid = 10;
 	}
 	else if (strcmp(val, "QHY11") == 0)
 	{
@@ -359,6 +369,11 @@ char *imgcam_init_list(int all)
 		strcat(imgcam_get_camui()->camstr, "|QHY9");
 	}
 	
+	if ((imgcam_iscamera("QHY10")) || (all))
+	{
+		strcat(imgcam_get_camui()->camstr, "|QHY10");
+	}
+
 	if ((imgcam_iscamera("QHY11")) || (all))
 	{
 		strcat(imgcam_get_camui()->camstr, "|QHY11");
@@ -406,6 +421,7 @@ int imgcam_connect()
 			case 7:
 			case 81:
 			case 9:
+			case 10:
 			case 11:
 			case 12:
 				if ((retval = qhy_OpenCamera()) == 1)
@@ -441,6 +457,7 @@ int imgcam_disconnect()
 		case 80:
 		case 81:
 		case 9:
+		case 10:
 		case 11:
 		case 12:
 			if ((retval = qhy_CloseCamera()) == 0)
@@ -493,6 +510,9 @@ int imgcam_reset()
 			break;
 		case 9:
 			retval = qhy9_reset();
+			break;
+		case 10:
+			retval = qhy10_reset();
 			break;
 		case 11:
 			retval = qhy11_reset();
@@ -600,6 +620,12 @@ int imgcam_shoot()
 				{
 					retval = qhy_ccdStartExposure(shpar.time);
 				}
+			}
+			break;
+		case 10:
+			if ((retval = ((shpar.edit) ? qhy10_setregisters(&shpar) : 1)) == 1)
+			{
+				retval = qhy_ccdStartExposure(shpar.time);
 			}
 			break;
 		case 11:
@@ -716,6 +742,9 @@ int imgcam_readout()
 					}
 					qhy9_decode(databuffer[curdataptr]);	
 					break;
+				case 10:
+					qhy10_decode(databuffer[curdataptr]);	
+					break;
 				case 11:
 					qhy11_decode(databuffer[curdataptr]);	
 					break;
@@ -774,6 +803,10 @@ int imgcam_abort()
 		case 7:
 		case 81:
 		case 9:
+		case 10:
+			retval = qhy_ccdAbortCapture();
+			usleep(100000);
+			break;
 		case 11:
 		case 12:
 			retval = qhy_ccdAbortCapture();
@@ -810,6 +843,9 @@ int imgcam_settec(int pwm)
 		case 7:
 		case 81:
 		case 9:
+		case 10:
+			retval = qhy_setDC201_i(pwm, 1);
+			break;
 		case 11:
 		case 12:
 			retval = qhy_setDC201_i(pwm, 1);
@@ -844,6 +880,9 @@ int imgcam_gettec(double *tC, double *mV)
 		case 7:
 		case 81:
 		case 9:
+		case 10:
+			retval = qhy_getDC201_i(&imgtC, &imgmV);
+			break;
 		case 11:
 		case 12:
 			retval = qhy_getDC201_i(&imgtC, &imgmV);
@@ -889,6 +928,7 @@ int imgcam_shutter(int cmd)
 		case 80:
 		case 81:
 		case 11:
+                case 10:
 		case 12:
 			break;
 		case 9:
@@ -919,6 +959,7 @@ int imgcam_wheel(int pos)
 		case 60:
 		case 80:
 		case 81:
+		case 10:
 		case 12:
 			break;
 		case 9:
