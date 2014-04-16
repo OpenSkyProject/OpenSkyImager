@@ -76,8 +76,7 @@ void qhy12_init()
 	
 	strcpy(imgcam_get_camui()->binstr, "1x1|2x2|4x4:0");
 	/// Capture size values list, just translate "Full" (frame)
-	//strcpy(imgcam_get_camui()->roistr, C_("camio","Full|512x512|256x256:0"));
-	strcpy(imgcam_get_camui()->roistr, "");
+	strcpy(imgcam_get_camui()->roistr, C_("camio","Full|512x512|256x256|128x128:0"));
 	/// Combo box values list, keep N-<desc> format. Just translate <desc>
 	strcpy(imgcam_get_camui()->spdstr, C_("camio","0-Slow|1-Fast:0"));
 	strcpy(imgcam_get_camui()->ampstr, C_("camio","0-AmpOff|1-AmpOn|2-Auto:2"));
@@ -136,7 +135,7 @@ int  qhy12_setregisters(qhy_exposure *expar)
 	int top_skip_null = 30;
 	unsigned char time_H,time_M,time_L;
 	
-	expar->wtime = (expar->mode == 2) ? expar->time * 2 : expar->time;
+	expar->wtime = expar->time;
 	bin = expar->bin;
 	vbe = (expar->mode - 1);
 	vbe = (vbe >= 0) ? vbe : 0;
@@ -190,7 +189,24 @@ int  qhy12_setregisters(qhy_exposure *expar)
 			return 2;
 	}
 	// Check for ROI (if valid)
-	if (expar->width > 0 && expar->width < (i_width / (bin/Hbin)))
+	if (expar->height > 0 && expar->height < 1170)
+	{
+		// Try set camera special mode for focus purpouse (several overrides)
+		i_width = 3328; height = 1170; width = i_width / 4; bin=3; Hbin = 1; Vbin = 99; top_skip_pix = 0;
+		top_skip_null = 25;
+		top_skip = (int)((height - expar->height) / 2);
+		bot_skip = height - top_skip - expar->height;
+		height = expar->height;
+		ShortExp = 0;
+		antiamp = 0;
+		// This is needed to disable debayer
+		expar->bin = bin;		
+	}
+	else
+	{
+		expar->height = height;
+	}
+	if (expar->width > 0 && expar->width < width)
 	{
 		width = expar->width; 
 	}
@@ -198,25 +214,7 @@ int  qhy12_setregisters(qhy_exposure *expar)
 	{
 		expar->width = width;
 	}
-	if (expar->height > 0 && expar->height < height)
-	{
-		top_skip_null = 100;
-		top_skip = (height - expar->height);
-		if (bin == 1)
-		{
-			top_skip = (int)(top_skip / 4);
-		}
-		else
-		{
-			  top_skip = (int)(top_skip / 2);
-		}
-		bot_skip = height - top_skip - expar->height;
-		height = expar->height;
-	}
-	else
-	{
-		expar->height = height;
-	}
+	
 	//printf("x: %d, y %d, tops %d, bots %d fx %d\n", i_width, height, top_skip, bot_skip, width);
 
 	totalsize = (i_width * 2 * height) + (top_skip_pix * 2);
@@ -455,6 +453,65 @@ void qhy12_decode(unsigned char *databuffer)
 				// Copy onto processed from processed(!) only the ROI data
 				left_skip = (int)(((int)(i_width / 2) - width) / 2);
 				right_skip = (int)(i_width / 2) - left_skip - width;
+				//printf("Processing i_width: ls %d, iw %d, rs %d\n", left_skip, width, right_skip);
+				srcF1 = processed;
+				tgt11 = processed;
+				t = height;
+				w = width * 2;
+				while (t--) 
+				{
+					// Skip the left part
+					srcF1 += left_skip * 2;
+					// Copy img_w pixels on the line
+					memcpy(tgt11, srcF1, w);
+					if (t > 0)
+					{
+						// Move & Skip the right part
+						srcF1 += (width + right_skip) * 2;
+						tgt11  += w;
+					}
+				}
+			}
+			break;
+		
+		case 3:
+				// This is the special mode for subframe (see setregisters)
+			srcF1 = databuffer;
+			srcF2 = databuffer + 2;
+			srcF3 = databuffer + 4;
+			srcF4 = databuffer + 6;
+			swb   = processed;
+			t = height;
+			while (t--) 
+			{
+				w = (i_width / 4);
+				right_skip = (i_width % 4) * 2;
+				while (w--) 
+				{
+					p  = (srcF1[0] + srcF1[1] * 256);
+					p += (srcF2[0] + srcF2[1] * 256);
+					p += (srcF3[0] + srcF3[1] * 256);
+					p += (srcF4[0] + srcF4[1] * 256);
+					p = MIN(p, 65535);
+					swb[0] = (int)(p % 256);
+					swb[1] = (int)(p / 256);
+					srcF1 += 8;
+					srcF2 += 8;
+					srcF3 += 8;
+					swb   += 2;
+				}
+				if (t > 0)
+				{
+					srcF1 += right_skip;
+					srcF2 += right_skip;
+					srcF3 += right_skip;
+				}
+			}
+			if (width < (int)(i_width / 4))
+			{
+				// Copy onto processed from processed(!) only the ROI data
+				left_skip = (int)(((int)(i_width / 4) - width) / 2);
+				right_skip = (int)(i_width / 4) - left_skip - width;
 				//printf("Processing i_width: ls %d, iw %d, rs %d\n", left_skip, width, right_skip);
 				srcF1 = processed;
 				tgt11 = processed;

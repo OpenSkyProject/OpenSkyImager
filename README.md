@@ -106,10 +106,10 @@ command line issue:
 	make -f gtkImager.mak  -> GTK2 version
 	make -f gtk3Imager.mak -> GTK3 version
 	
-As of version 0.6.0 features of the two versions are *exactly* the same, while
+As of current version features of the two variants are *exactly* the same, while
 appearance may differ a bit, also depending on your "theme" settings.
 
-You're not expected to see error messages or warnings while compiline. If so, 
+You're not expected to see error messages or warnings while compiling. If so, 
 let us know. 
 Submit details for your hardware / software configuration so that we'll be 
 able to track down any issue effectively.

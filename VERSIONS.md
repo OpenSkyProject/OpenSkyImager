@@ -107,3 +107,6 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - New: first release of the user manual (thanks to Clive Rogers)
 - Fix: link to web site
 
+*Version 0.8.9*
+- New: QHY10 / QHY12 subframe feature (thanks to Anat Ruangrassamee for testing)
+

@@ -336,11 +336,11 @@ void qhy7_decode(unsigned char *databuffer)
 				src1 = databuffer;
 				tgt = databuffer;
 				t = height;
+				w = width * 2;
 				while (t--) 
 				{
 					// Skip the left part
 					src1 += left_skip * 2;
-					w = width * 2;
 					// Copy img_w pixels on the line
 					memcpy(tgt, src1, w);
 					if (t > 0)
@@ -394,11 +394,11 @@ void qhy7_decode(unsigned char *databuffer)
 				src1 = databuffer;
 				tgt = databuffer;
 				t = height;
+				w = width * 2;
 				while (t--) 
 				{
 					// Skip the left part
 					src1 += left_skip * 2;
-					w = width * 2;
 					// Copy img_w pixels on the line
 					memcpy(tgt, src1, w);
 					if (t > 0)
@@ -448,11 +448,11 @@ void qhy7_decode(unsigned char *databuffer)
 				src1 = databuffer;
 				tgt = databuffer;
 				t = height;
+				w = width * 2;
 				while (t--) 
 				{
 					// Skip the left part
 					src1 += left_skip * 2;
-					w = width * 2;
 					// Copy img_w pixels on the line
 					memcpy(tgt, src1, w);
 					if (t > 0)
