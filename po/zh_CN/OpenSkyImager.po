@@ -21,19 +21,19 @@ msgstr ""
 #, c-format
 msgctxt "avi"
 msgid "Unable to write file %s. Check permissions"
-msgstr ""
+msgstr "无法写入到文件 %s。请检查权限。"
 
 #: ../imgAvi.c:180
 #, c-format
 msgctxt "avi"
 msgid "A component of the file path %s is not a folder"
-msgstr ""
+msgstr "文件路径 %s 中有不是目录的部分"
 
 #: ../imgAvi.c:186
 #, c-format
 msgctxt "avi"
 msgid "A component of the file path %s could not be created, check permissions"
-msgstr ""
+msgstr "无法创建文件路径 %s，请检查权限"
 
 #: ../imgCFWio.c:142 ../imgCFWio.c:236
 msgctxt "cfw"
@@ -150,7 +150,7 @@ msgstr "cfitsio错误: %d"
 #, c-format
 msgctxt "fitsio"
 msgid "A component of the file path %s could not be created, check permissions"
-msgstr ""
+msgstr "无法创建文件路径 %s，请检查权限"
 
 #: ../imgPixbuf.c:242 ../imgPixbuf.c:443
 msgctxt "pixbuf"
@@ -169,14 +169,14 @@ msgstr "图像: %s 已保存"
 #, c-format
 msgctxt "main"
 msgid "Frame: add to %s"
-msgstr ""
+msgstr "帧：已写入 %s"
 
 #. / Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
 #: ../imgWCallbacks.c:168 ../imgWCallbacks.c:252
 #, c-format
 msgctxt "main"
 msgid "Image: %s saved, Frame: add to %s"
-msgstr ""
+msgstr "图像：%s 已保存，帧：已写入到 %s"
 
 #: ../imgWCallbacks.c:220
 msgctxt "main"
@@ -225,7 +225,7 @@ msgstr "无法与制冷通信"
 #, c-format
 msgctxt "main"
 msgid "Temp: %+06.2fC"
-msgstr ""
+msgstr "温度：%+06.2fC"
 
 #. / Starusbar feedback message about timelapse mode
 #: ../imgWCallbacks.c:537
@@ -658,7 +658,7 @@ msgstr "移除命名规则里的滤镜项"
 #, c-format
 msgctxt "main"
 msgid "Save format set to: %s"
-msgstr ""
+msgstr "保存格式设置为：%s"
 
 #: ../imgWCallbacks.c:2199 ../imgWCallbacks.c:2244
 msgctxt "cooling"
@@ -852,7 +852,7 @@ msgstr "增加时间"
 #: ../imgWindow.c:662
 msgctxt "filename"
 msgid "Add filter"
-msgstr ""
+msgstr "增加滤镜"
 
 #: ../imgWindow.c:791
 msgctxt "timelapse"
@@ -863,7 +863,7 @@ msgstr "简单模式"
 #: ../imgWindow.c:823
 msgctxt "cfw"
 msgid "0-None"
-msgstr ""
+msgstr "0-无"
 
 #: ../imgWindow.c:824
 msgctxt "cfw"
@@ -878,7 +878,7 @@ msgstr "刷新"
 #: ../imgWindow.c:875
 msgctxt "cfw"
 msgid "Factory Reset"
-msgstr ""
+msgstr "重置"
 
 #. / Label for button to change wheel slot to %d
 #: ../imgWindow.c:911
@@ -976,7 +976,7 @@ msgstr "终止"
 #: ../imgWindow.c:1189
 msgctxt "cfw"
 msgid "Connection"
-msgstr ""
+msgstr "链接"
 
 #: ../imgWindow.c:1195
 msgctxt "cfw"
@@ -1021,7 +1021,7 @@ msgstr "滤镜轮"
 #: ../imgWindow.c:1233
 msgctxt "main"
 msgid "FOV Calc"
-msgstr "FOV计算"
+msgstr "视场计算"
 
 #: ../imgWindow.c:1268
 msgctxt "main"
@@ -1143,7 +1143,7 @@ msgstr ""
 #: ../qhy9.c:85
 msgctxt "camio"
 msgid "Light/Dark mode"
-msgstr ""
+msgstr "亮场/暗场"
 
 #: ../qhycore.c:179
 #, c-format
