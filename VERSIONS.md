@@ -110,3 +110,8 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 *Version 0.8.9*
 - New: QHY10 / QHY12 subframe feature (thanks to Anat Ruangrassamee for testing)
 
+*Version 0.8.10*
+- New: New Makefile to compile and install (please see README for details)
+- update install_OSI to use the new makefile
+- update Simple Chinese translation
+

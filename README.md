@@ -70,9 +70,9 @@ More in-deep instructions and hints may be found in the "po" folder.
 Compiling and installing
 =====================
 As of version 0.8.4 a custom install script has been introduced thanks to Clive
-Rogers.
+Rogers (install_OSI.bash).
 This script will check for dependencies, (prompt for install if needed), compile 
-and install the program in a suitable folder.
+and install the program in a suitable folder (both GTK2 & GTK3 versions).
 User interaction may be needed to create a menu entry, if so desired.
 
 However should anyone prefer to do all by hands here's what's needed and how to:
@@ -103,9 +103,20 @@ So far several combinations have been tested:
 	  
 To compile your binary, once you got suitable libs as listed above, on the 
 command line issue:
-	make -f gtkImager.mak  -> GTK2 version
-	make -f gtk3Imager.mak -> GTK3 version
+	make GTK_VERSION=2  -> GTK2 version
+	make                -> GTK3 version
 	
+The makefile support "install", "update" and "clean" arguments.
+- Install will wipe any currently installed file (remove the folder actually)
+  make GTK_VERSION=2 install -> GTK2 version
+  make               install -> GTK3 version
+- Update will just overwrite / add what is needed
+  make GTK_VERSION=2 update  -> GTK2 version
+  make               update  -> GTK3 version
+- Clean will cleanup the compile folder from *.o and target binary file.
+  make GTK_VERSION=2 clean   -> GTK2 version
+  make               clean   -> GTK3 version
+
 As of current version features of the two variants are *exactly* the same, while
 appearance may differ a bit, also depending on your "theme" settings.
 

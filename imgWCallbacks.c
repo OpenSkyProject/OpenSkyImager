@@ -624,7 +624,7 @@ void cmd_settings_click(GtkWidget *widget, gpointer data)
  */
 void cmd_about_click(GtkWidget *widget, gpointer data)
 {
-	gchar* authors[]     = { "Giampiero Spezzano ", "Clive Rogers ", "Dan Holler ", "Fabrice Phung", "Andrew Stepanenko","Contributors are always welcome ", NULL };
+	gchar* authors[]     = { "Giampiero Spezzano ", "Clive Rogers ", "Dan Holler ", "Fabrice Phung", "Andrew Stepanenko", "Max Chen","Contributors are always welcome ", NULL };
 	gchar* artists[]     = { "Wanted, a fancy icon and logo would be great! ", NULL };
 	const gchar* translators   = "Giampiero Spezzano (IT), Fabrice Phung (FR-DE), Max Chen (CN)";
 	gchar* documenters[] = { "Clive Rogers", NULL };	
