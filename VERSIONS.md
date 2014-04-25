@@ -92,13 +92,13 @@ already tested (http://sourceforge.net/projects/iastrohub/).
   true temperature match must be confirmed. Beta tester wanted.
 
 *Version 0.8.6*
-- Fix QHY8 Bin2/4 image corrupted (thanks to Daniel Holler for report) 
-- QHY12 image flipped vertically (thanks to Anat Ruangrassamee for report)
-- Fix program crash if setting CFW filters while "Add filter" is selected
+- Fix: QHY8 Bin2/4 image corrupted (thanks to Daniel Holler for report) 
+- Fix: QHY12 image flipped vertically (thanks to Anat Ruangrassamee for report)
+- Fix: program crash if setting CFW filters while "Add filter" is selected
 
 *Version 0.8.7*
-- Fix incorrect date written when using "Add Date" (thanks to Clive Rogers)
-- Fix "Save As" dialog not allowing for new folder (thanks to Clive Rogers)
+- Fix: incorrect date written when using "Add Date" (thanks to Clive Rogers)
+- Fix: "Save As" dialog not allowing for new folder (thanks to Clive Rogers)
 - New: ROI star zoomed into the preview thumbnail
 - Update to the install script from Clive Rogers
 
@@ -114,4 +114,11 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - New: New Makefile to compile and install (please see README for details)
 - update install_OSI to use the new makefile
 - update Simple Chinese translation
+
+*Version 0.8.11*
+- Change: bpp items order in combo box (QHY5L-II)
+- Fix: some gcc versions throwing a warning for missing init of a variable
+  (thanks to Anat Ruangrassamee)
+- Fix: Deprecation warning when compiling against GTK3.10+ (Ubuntu 14.04)
+- Fix: Glib 2.40 throwing a critical sometimes when updating statusbar
 

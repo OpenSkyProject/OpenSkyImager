@@ -297,7 +297,7 @@ int imgpix_load(unsigned char *databuffer, int width, int height, int bytepix, i
 		// Pattern
 		char mask[4];
 		int endh = (height / 2), endw = (width / 2);
-		int pixH, pixR, pixG, pixB;
+		int pixH = 0, pixR = 0, pixG = 0, pixB = 0;
 		GdkPixbuf *pixtmp;
 		
 		// Creates an empty pixbuf using appropriate geometry

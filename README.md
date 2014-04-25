@@ -90,11 +90,13 @@ CFITSIO & LIBUSB1.0 as you get them from repos of a >= Year 2010 distro.
 
 So far several combinations have been tested:
 - GTK2 
+	- Ubuntu 14.04 - unity (GTK2 2.24, Glib 2.40)
 	- Mint13 (GTK2 2.24, Glib 2.32), 
 	- Ubuntu 11.10 (GTK2 2.24 GLib 2.30)
 	- Mint 9 (GTK2 2.20 GLib 2.24)
 	
 - GTK3 
+	- Ubuntu 14.04 - unity (GTK3 3.10, Glib 2.40)
 	- Mint LMDE amd64 (GTK3 3.82, Glib 2.36)
 	- Mint13 (GTK3 3.42, Glib 2.32) 
 	- Ubuntu 11.10 (GTK3 3.2 GLib 2.30)

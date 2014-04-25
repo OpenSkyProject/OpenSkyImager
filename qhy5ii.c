@@ -313,7 +313,7 @@ int qhy5ii_bonjour()
 				imgcam_get_tecp()->istec = 2;
 				strcpy(imgcam_get_camui()->roistr, "1280x960|1024x768|800x600|640x480|320x240:0");
 				strcpy(imgcam_get_camui()->snrstr, "");
-				strcpy(imgcam_get_camui()->bppstr, "1-8Bit|2-12Bit|3-Hdr:0");
+				strcpy(imgcam_get_camui()->bppstr, "2-12Bit|1-8Bit|3-Hdr:1");
 				// Header values
 				imgcam_get_camui()->pszx = 3.75;
 				imgcam_get_camui()->pszy = 3.75;

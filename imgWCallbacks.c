@@ -26,10 +26,25 @@
 
 gboolean tmr_imgstatus_wipe (GtkWidget *widget)
 {
+	const gchar* wdgname;
 	
+	wdgname = gtk_widget_get_name(widget);
 	gtk_statusbar_remove_all(GTK_STATUSBAR(widget), 0);
-	tmrstatusbar = -1;
 	
+	if (strcmp(wdgname, "imgstatus") == 0)
+	{
+		tmrstatusbar = -1;
+	}
+	else if (strcmp(wdgname, "imgstatec") == 0)
+	{
+		tmrstatustec = -1;
+	}
+	else if (strcmp(wdgname, "imgstafit") == 0)
+	{
+		tmrstatusfit = -1;
+	}
+	
+	//free(wdgname);
 	// Change to TRUE for a recurring timer
 	return FALSE;
 }
@@ -512,14 +527,20 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 		else
 		{
 			// 50ms retry
-			g_source_remove(tmrtecrefresh);
+			if (tmrtecrefresh != -1)
+			{
+				g_source_remove(tmrtecrefresh);
+			}
 			tmrtecrefresh = g_timeout_add(50, (GSourceFunc) tmr_tecstatus_write, NULL);	
-			return TRUE;
+			return FALSE;
 		}
 		// Virtual recurring
-		g_source_remove(tmrtecrefresh);
+		if (tmrtecrefresh != -1)
+		{
+			g_source_remove(tmrtecrefresh);
+		}
 		tmrtecrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tecstatus_write, NULL);	
-		return TRUE;
+		return FALSE;
 	}
 	else if (imgcam_get_tecp()->istec == 2)
 	{
@@ -535,6 +556,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatec), 0, imgmsg);
 		// Header update
 		fithdr[HDR_CCDTEMP].dvalue = round(imgcam_get_tecp()->tectemp * 100) / 100;
+		tmrtecrefresh = -1;
 	}
 	
 	return FALSE;

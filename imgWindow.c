@@ -29,18 +29,21 @@
 void imgstatus_build()
 {
 	imgstatus = gtk_statusbar_new();
+	gtk_widget_set_name(imgstatus, "imgstatus");
 	#if GTK_MAJOR_VERSION == 2
 	gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(imgstatus), FALSE);
 	#endif
 	g_signal_connect(G_OBJECT(imgstatus), "text-pushed", G_CALLBACK(imgstatus_push), NULL);
 	
 	imgstatec = gtk_statusbar_new();
+	gtk_widget_set_name(imgstatec, "imgstatec");
 	#if GTK_MAJOR_VERSION == 2
 	gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(imgstatec), FALSE);
 	#endif
 	g_signal_connect(G_OBJECT(imgstatec), "text-pushed", G_CALLBACK(imgstatec_push), NULL);
 
 	imgstafit = gtk_statusbar_new();
+	gtk_widget_set_name(imgstafit, "imgstafit");
 	#if GTK_MAJOR_VERSION == 2
 	gtk_statusbar_set_has_resize_grip(GTK_STATUSBAR(imgstafit), FALSE);
 	#endif

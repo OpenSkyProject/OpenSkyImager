@@ -166,7 +166,7 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 
 void get_filename(char **filename, int mode, char* flt)
 {
-	GtkWidget *dialog = gtk_file_chooser_dialog_new(C_("dialog-open","Open File"), (GtkWindow *) window, ((mode == 1) ? GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER : GTK_FILE_CHOOSER_ACTION_OPEN), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, ((mode == 1) ? GTK_STOCK_SAVE : GTK_STOCK_OPEN), GTK_RESPONSE_ACCEPT, NULL);
+	GtkWidget *dialog = gtk_file_chooser_dialog_new(C_("dialog-open","Open File"), (GtkWindow *) window, ((mode == 1) ? GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER : GTK_FILE_CHOOSER_ACTION_OPEN), "_Cancel", GTK_RESPONSE_CANCEL, ((mode == 1) ? "_Save" : "_Open"), GTK_RESPONSE_ACCEPT, NULL);
 	GtkFileFilter *filter = gtk_file_filter_new();
 
 	if (flt != NULL)
