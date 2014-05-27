@@ -58,7 +58,7 @@ Models that are known to suppor cfw-through connection are QHY7/9/11.
 Remote control
 ==============
 Starting from version 0.8.0 OpenSkyImager offers a remote control feature.
-For further details please see: [a relative link](REMOTE.md)
+For further details please see: [REMOTE.md](REMOTE.md)
 
 Internationalization
 ==================
@@ -157,7 +157,7 @@ to the kind work of Mr. Clive Rogers.
 
 Versions list
 ===========
-Please see: [a relative link](VERSIONS.md)
+Please see: [VERSIONS.md](VERSIONS.md)
 
 Sincerely
 *The OpenSkyProject team*
