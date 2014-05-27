@@ -88,8 +88,8 @@ void qhy10_init()
 	strcpy(imgcam_get_camui()->tecstr, "0:255:1:2");
 	strcpy(imgcam_get_camui()->whlstr, "");
 	// Header values
-	imgcam_get_camui()->pszx = 5.12;
-	imgcam_get_camui()->pszy = 5.12;
+	imgcam_get_camui()->pszx = 6.05;
+	imgcam_get_camui()->pszy = 6.05;
 	
 	imgcam_get_expar()->bitpix  = 16;	
 	imgcam_get_expar()->bytepix = 2;	

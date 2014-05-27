@@ -26,11 +26,11 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Supported camera list
 ==================
-As of version 0.8.8 several QHY camera are actively developed against:
+As of version 0.8.12 several QHY camera are actively developed against:
 QHY2 (old color model),5,5II series,6 (both firmware),7,8(Old),8L,9,10,11,12.
 
-Models that have been 100% tested are: QHY5,5II series,6 (both firmware),7,
-8(Old)8L,9,11,12.
+Models that have been 100% tested are: QHY2(old color model), QHY5, 5II series,
+6 (both firmware),7, 8(Old), 8L, 9, 11, 12.
 
 If your camera make/model does not appear in the list you can try contact us
 and see if it can be add in a near future.
@@ -54,6 +54,11 @@ Color filter wheel support
 As of version 0.6.0 QHY 5 positions 2" is supported, both with serial and 
 through camera connection.
 Models that are known to suppor cfw-through connection are QHY7/9/11.
+
+Remote control
+==============
+Starting from version 0.8.0 OpenSkyImager offers a remote control feature.
+For further details please see: [a relative link](REMOTE.md)
 
 Internationalization
 ==================
@@ -149,6 +154,10 @@ User manual
 ==========
 As of version 0.8.8 the first release of a user manual has been created, thanks
 to the kind work of Mr. Clive Rogers.
+
+Versions list
+===========
+Please see: [a relative link](VERSIONS.md)
 
 Sincerely
 *The OpenSkyProject team*

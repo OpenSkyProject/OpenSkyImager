@@ -66,7 +66,7 @@ gboolean tmr_run(gpointer data)
 	// About the result got
 	if (postReadProcess != NULL)
 	{
-		postReadProcess((int)data);
+		postReadProcess(GPOINTER_TO_INT(data));
 		postReadProcess = NULL;
 	}
 	return FALSE;
@@ -93,7 +93,7 @@ gpointer thd_read_run(gpointer thd_data)
 	// The post process will work on the GUI, hence to be thread safe must be 
 	// Executed from the main loop -> timer.
 	cfwpos = ((ttyret == TTY_OK) && (buf[0] == 0x2D))? cfwpos : -1;
-	g_timeout_add(1, tmr_run, (gpointer)((ttyret == TTY_OK) && (buf[0] == 0x2D)));
+	g_timeout_add(1, tmr_run, GINT_TO_POINTER(((ttyret == TTY_OK) && (buf[0] == 0x2D))));
 	return 0;
 }
 

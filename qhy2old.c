@@ -143,6 +143,7 @@ int  qhy2old_setregisters(qhy_exposure *expar)
 	etime = expar->time;
 	vbe   = expar->mode;
 	speed = expar->speed;
+	expar->wtime = (vbe == 2) ? expar->time * 2 : expar->time;
 
 	//account for general 1% error on exp time for all QHY camera tested so far
 	etime = (int) (etime - (etime / 100));

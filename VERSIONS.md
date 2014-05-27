@@ -122,3 +122,24 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - Fix: Deprecation warning when compiling against GTK3.10+ (Ubuntu 14.04)
 - Fix: Glib 2.40 throwing a critical sometimes when updating statusbar
 
+*Version 0.8.12*
+- Fix: QHY2 fully correct camera operation
+- Fix: QHY10 pixel size reported in fits header file
+- Fix: Some care for a clean compile on 64Bit systems
+- Fix: Language folders renamed to show appropriate language even when 
+       "not main dialect" is in use (eg. Italian for Switzerland)
+- Known issue: I've been reported by two different users that large sized data 
+  transfer lead to a libusb failure **on 64Bit systems**. 
+  This is preventing correct operation when a camera with large CCD (QHY9-10, 
+  but I think also QHY8 can be affected) is used in bin1x1 mode.
+  After an early set of tests it turned out that the "limit" to trigger this
+  malfunction is 12Mb. Therefore a first workaround has been succesfully tested
+  to unpack the big transfer in smaller chunks (something that libusb also does
+  on it's own internally too).
+  However early tests also show that camera don't usually like to setup more 
+  than two "bulk reads" in a row. Thus the current transfer limit in such cases
+  is now 24Mb. This will allow correct operation for QHY9-10, maybe also QHY11, 
+  but larger arrays (namely QHY12) are likely to be still at fault.
+  This issue is still on deep investigation and I'm releasing the workaround as 
+  a temporary fix only.
+  

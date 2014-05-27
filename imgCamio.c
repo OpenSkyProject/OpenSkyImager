@@ -412,8 +412,8 @@ int imgcam_connect()
 					retval = qhy5ii_bonjour();
 				}
 				break;
-			case 6:
 			case 20:
+			case 6:
 			case 60:
 			case 80:
 				retval = qhy_OpenCamera();
@@ -449,12 +449,13 @@ int imgcam_disconnect()
 	cammsg[0] = '\0';
 	switch (camid)
 	{
+		case 20:
 		case 5:
 		case 52:
 		case 6:
-		case 60:
 		case 7:
-		case 80:
+		case 60:
+		case 80:		
 		case 81:
 		case 9:
 		case 10:
@@ -558,6 +559,7 @@ int imgcam_shoot()
 			if ((retval = ((shpar.edit) ? qhy2old_setregisters(&shpar) : 1)) == 1)
 			{
 				retval = qhy_ccdStartExposure(shpar.time);
+				usleep(200000);
 			}
 			break;
 		case 5:
@@ -737,7 +739,7 @@ int imgcam_readout()
 					if (shpar.mode > 0)
 					{
 						// In dark mode
-						// Release shutter go avoid excess strain
+						// Release shutter to avoid excess strain
 						imgcam_shutter(2);
 					}
 					qhy9_decode(databuffer[curdataptr]);	
@@ -928,7 +930,7 @@ int imgcam_shutter(int cmd)
 		case 80:
 		case 81:
 		case 11:
-                case 10:
+		case 10:
 		case 12:
 			break;
 		case 9:

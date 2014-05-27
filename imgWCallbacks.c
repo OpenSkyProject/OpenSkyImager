@@ -2630,7 +2630,7 @@ void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
 {
 	//printf("Got value: %d\n", (int)user_data);
 	//imgcfw_set_slot((int)user_data, NULL);
-	if (imgcfw_set_slot((int)user_data, (gpointer) cfwmsgdestroy))
+	if (imgcfw_set_slot(GPOINTER_TO_INT(user_data), (gpointer) cfwmsgdestroy))
 	{	
 		// Show the change slot message
 		cfwmsg = gtk_message_dialog_new ((GtkWindow *) window, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_NONE, C_("cfw","Please wait for the filter to reach position..."));	
@@ -2653,7 +2653,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 	static char  arg[225];
 	float fval;
 	int   ival, ival2;
-	unsigned int len;
+	gsize len;
 
 	if (condition & G_IO_HUP)
 	{
@@ -3562,7 +3562,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 			}
 			else
 			{
-				printf("Fifo: Unknown command; Read %d bytes; %s\n", len, msg);
+				printf("Fifo: Unknown command; Read %" G_GSIZE_FORMAT " bytes; %s\n", len, msg);
 			}
 		}
 		g_free(msg);

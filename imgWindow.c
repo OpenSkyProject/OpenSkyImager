@@ -917,7 +917,7 @@ void cmd_cfwwhl_build()
 		gtk_widget_set_sensitive(cmd_cfwwhl[i], 0);
 		combo_setlist(cmb_cfwwhl[i], fltstr);		
 	
-		g_signal_connect(G_OBJECT(cmd_cfwwhl[i]), "clicked", G_CALLBACK(cmd_cfwwhl_click),  (gpointer)i);	
+		g_signal_connect(G_OBJECT(cmd_cfwwhl[i]), "clicked", G_CALLBACK(cmd_cfwwhl_click),   GINT_TO_POINTER(i));	
 	}
 }
 
