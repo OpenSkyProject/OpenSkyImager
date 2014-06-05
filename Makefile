@@ -1,9 +1,19 @@
 GTK_VERSION = 3
 PRJ_NAME = gtk$(GTK_VERSION)Imager
 CC = gcc
-CFLAGS =  -Wall `pkg-config --cflags glib-2.0 gtk+-$(GTK_VERSION).0`
+CPU = $(findstring arm, $(shell uname -p))
+#$(info ************ $(CPU) ************)
+ifeq ($(CPU), arm)
+CFLAGS = -Wall `pkg-config --cflags glib-2.0 gtk+-$(GTK_VERSION).0`
+else
+ARCH = $(shell getconf LONG_BIT)
+CFLAGS_32 = -Wall `pkg-config --cflags glib-2.0 gtk+-$(GTK_VERSION).0`
+CFLAGS_64 = -Wall `pkg-config --cflags glib-2.0 gtk+-$(GTK_VERSION).0` -B/usr/lib/x86_64-linux-gnu
+CFLAGS =  $(CFLAGS_$(ARCH))
+endif
 LDFLAGS =
-LDLIBS = `pkg-config --libs glib-2.0 gtk+-$(GTK_VERSION).0` -lcfitsio -lusb-1.0 -lrt -lm
+#LDLIBS = `pkg-config --libs glib-2.0 gtk+-$(GTK_VERSION).0` -lcfitsio -lusb-1.0 -lrt -lm
+LDLIBS = `pkg-config --libs glib-2.0 gtk+-$(GTK_VERSION).0` -lcfitsio -I./libusb-custom/libusb ./libusb-custom/libusb/.libs/libusb-1.0.a -lrt -lm -ludev -lpthread
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)

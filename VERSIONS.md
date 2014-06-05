@@ -138,8 +138,17 @@ already tested (http://sourceforge.net/projects/iastrohub/).
   on it's own internally too).
   However early tests also show that camera don't usually like to setup more 
   than two "bulk reads" in a row. Thus the current transfer limit in such cases
-  is now 24Mb. This will allow correct operation for QHY9-10, maybe also QHY11, 
+  is now 24Mb. This will allow correct operation for QHY9-10, maybe also QHY11,
   but larger arrays (namely QHY12) are likely to be still at fault.
-  This issue is still on deep investigation and I'm releasing the workaround as 
+  This issue is still on deep investigation and I'm releasing the workaround as
   a temporary fix only.
-  
+
+*Version 0.8.13*
+- Revert of the 64Bit temporary fix
+- A customized version of libusb (1.0.19-rc1) was add to the mix and statically
+  linked. Please see comments on top of libusb-custom/libusb/os/linux_usbfs.c
+  for more details. This custom libusb is going to stay until a better fix will
+  be add to original libusb. The library will be kept up to date as relevant 
+  fixes or improvement will be released. Current release will be using high 
+  performance DMA access if kernel and usb chip allow for this.
+

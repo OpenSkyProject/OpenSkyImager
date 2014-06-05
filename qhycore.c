@@ -25,7 +25,6 @@
  */
 
 #define FOURMEG     4194304
-#define WEIRDLIMIT 12582912
 #define SQR3(x) ((x)*(x)*(x))
 #define SQRT3(x) (exp(log(x)/3))
 
@@ -564,49 +563,16 @@ int qhy_setColorWheel(int Pos)
    	return (qhy_cameraIO(endp.write, req.wheel, REG,  sizeof(REG), 0, 0));
 }
 
-#ifdef __x86_64
-	int qhy_getImgData(int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred)
+int qhy_getImgData(int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred)
+{
+	*errcode = libusb_bulk_transfer( hDevice, endp.bulk, databuffer, transfer_size, length_transferred, ((transfer_size > 20000000) ? 60000: 20000));
+	if (*errcode != 0)
 	{
-		// Unpack in 12Mb read as on some systems *very* large transfer happen to fail
-		// Still unlcear why this is needed as libusb should unpack the big size 
-		// in chunks which size is choosen to suit device needs.
-		int chunks = (transfer_size / WEIRDLIMIT) + (fmod(transfer_size, WEIRDLIMIT) > 0.);
-		int i, tfs, ltr = 0;
-		unsigned char *dbf = databuffer;
-	
-		//printf("Unpack transfer in %d chunks total size %d\n", chunks, transfer_size);
-	
-		*length_transferred = 0;
-		for (i = 0; i < chunks; i++)
-		{
-			dbf += (WEIRDLIMIT * i);
-			tfs = (WEIRDLIMIT * (i+1) <= transfer_size) ? WEIRDLIMIT : (transfer_size - WEIRDLIMIT * i);
-			//printf("Get chunk %d of %d, size %d\n", i+1, chunks, tfs);
-			*errcode = libusb_bulk_transfer(hDevice, endp.bulk, dbf, tfs, &ltr, 20000);
-			*length_transferred += ltr;
-			ltr = 0;
-			//printf("Got %d bytes of %d\n", *length_transferred, transfer_size);
-			if (*errcode != 0)
-			{
-				//printf("Bulk errcode: %d\n", *errcode);
-				sprintf(coremsg, C_("qhycore","getImgData failed, error %d"), *errcode);
-				break;
-			}
-		}
-		return (*errcode == 0);
+		//printf("Bulk errcode: %d\n", *errcode);
+		sprintf(coremsg, C_("qhycore","getImgData failed, error %d"), *errcode);
 	}
-#else
-	int qhy_getImgData(int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred)
-	{
-		*errcode = libusb_bulk_transfer( hDevice, endp.bulk, databuffer, transfer_size, length_transferred, ((transfer_size > 20000000) ? 60000: 20000));
-		if (*errcode != 0)
-		{
-			//printf("Bulk errcode: %d\n", *errcode);
-			sprintf(coremsg, C_("qhycore","getImgData failed, error %d"), *errcode);
-		}
-		return (*errcode == 0);
-	}
-#endif
+	return (*errcode == 0);
+}
 
 int qhy_EepromRead(unsigned char addr, unsigned char* data, unsigned short len)
 {

@@ -12,6 +12,12 @@ echo
 
 sudo apt-get install libgtk-3-0 libgtk-3-dev libgtk2.0-0 libgtk2.0-dev libglib2.0-0 libglib2.0-dev libusb-dev libusb-1.0-0-dev libcfitsio3-dev
 
+# configure libusb-custom
+cd libusb-custom
+./configure
+make
+cd ..
+
 #  Make clean first then compile for GTK2,  make clean again then compile for GTK3,  finally make clean again.
 
 echo 
