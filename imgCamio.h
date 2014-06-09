@@ -43,7 +43,7 @@ typedef struct
 
 typedef struct
 {
-	int istec;       // 0 = Not driveable tec or no tec 1 = Driveable tec
+	int istec;       // 0 = Not driveable tec or no tec 1 = Driveable tec 2 = Temp read only
 	int tecerr;      // Error setting / reading PWM
 	int tecpwr;      // Basically tecmin - tecmax
 	int tecmax;      // 0-255
@@ -85,6 +85,7 @@ int             imgcam_loaded();
 int             imgcam_connected();
 char           *imgcam_get_msg();
 void            imgcam_init();
+void            imgcam_end();
 char           *imgcam_init_list(int all);
 int             imgcam_connect();
 int             imgcam_disconnect();

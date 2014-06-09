@@ -431,7 +431,6 @@ void cmb_camera_build()
 {
 	cmb_camera = gtk_combo_box_text_new();
 	gtk_widget_set_size_request(cmb_camera, 120, 30);	
-	imgcam_init();
 	combo_setlist(cmb_camera, imgcam_get_camui()->camstr);
 
 	// Callbacks
@@ -1424,6 +1423,7 @@ void imgwin_build()
 	watchCursor = gdk_cursor_new(GDK_WATCH);
 	
 	// Code Init
+	imgcam_init();
 	imgfit_init();
 	imgcfw_init();
 	fithdr_init(fithdr, FITHDR_SLOTS);

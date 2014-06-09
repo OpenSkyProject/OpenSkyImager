@@ -13,7 +13,7 @@ CFLAGS =  $(CFLAGS_$(ARCH))
 endif
 LDFLAGS =
 #LDLIBS = `pkg-config --libs glib-2.0 gtk+-$(GTK_VERSION).0` -lcfitsio -lusb-1.0 -lrt -lm
-LDLIBS = `pkg-config --libs glib-2.0 gtk+-$(GTK_VERSION).0` -lcfitsio -I./libusb-custom/libusb ./libusb-custom/libusb/.libs/libusb-1.0.a -lrt -lm -ludev -lpthread
+LDLIBS = `pkg-config --libs glib-2.0 gtk+-$(GTK_VERSION).0` -I./libusb-custom/libusb ./libusb-custom/libusb/.libs/libusb-1.0.a -ludev -lcfitsio -lsbigudrv -lrt -lm -lpthread
 
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)

@@ -38,6 +38,7 @@
 #include "qhy11.h"
 #include "qhy12.h"
 #include "dsi2pro.h"
+#include "sbigcore.h"
 
 static char *cammsg;
 static unsigned char* databuffer[2] = {NULL, NULL};
@@ -58,6 +59,8 @@ char *get_core_msg()
 		return qhy_core_msg();
 	if (camid == 1000)
 		return dsi2pro_core_msg();
+	if (camid == 2000)
+		return sbig_GetErrorString();
 	return NULL;
 }
 
@@ -178,7 +181,6 @@ void imgcam_set_model(const char *val)
 	/// Value "No cam" of the models combo
 	if (strcmp(val, C_("camio","None")) == 0)
 	{
-		imgcam_init();
 		camid = 0;
 	}
 	else if (strcmp(val, "QHY2-Old") == 0)
@@ -246,6 +248,21 @@ void imgcam_set_model(const char *val)
 		dsi2pro_init();
 		camid = 1000;
 	}
+	else if (strncmp(val, "SBIG", 4) == 0)
+	{
+		char *devName = strrchr(val,' ');		
+		int i;
+		
+		devName++;
+		for (i = 0; i < sbig_GetCameraList()->camnum; i++)
+		{
+			if (strcmp(sbig_GetCameraList()->listinfo[i].camport, devName) == 0)
+			{
+				camid = 2000; //sbig_GetCameraList()->listinfo[i].camId;
+				break;
+			}
+		}
+	}
 	strcpy(cammodel, val);
 }
 
@@ -273,6 +290,11 @@ void imgcam_init()
 {
 	static int first_time = 1;
 	qhy_core_init();
+	if (!first_time)
+	{
+		sbig_core_close();
+	}
+	sbig_core_init();
 	if (databuffer[0] != NULL)
 	{
 		free(databuffer[0]);
@@ -286,7 +308,7 @@ void imgcam_init()
 	camid = 0;
 	if (first_time)
 	{
-		cammodel = (char*)realloc(cammodel, 16);
+		cammodel = (char*)realloc(cammodel, 64);
 		cammsg = (char*)realloc(cammsg, 1024);
 		first_time = 0;
 	}
@@ -318,6 +340,11 @@ void imgcam_init()
 
 	loaded = 0;
 	connected = 0;
+}
+
+void imgcam_end()
+{
+	sbig_core_close();
 }
 
 char *imgcam_init_list(int all)
@@ -386,6 +413,7 @@ char *imgcam_init_list(int all)
 	{
 		strcat(imgcam_get_camui()->camstr, "|DSI2PRO");
 	}
+	strcat(imgcam_get_camui()->camstr, sbig_GetCameraList()->camlist);
 	strcat(imgcam_get_camui()->camstr, "|:0");
 	return imgcam_get_camui()->camstr;
 }
@@ -393,6 +421,7 @@ char *imgcam_init_list(int all)
 int imgcam_connect()
 {
 	int retval = 1;
+	char *devName;
 	
 	cammsg[0] = '\0';
 	if (camid > 0)
@@ -432,6 +461,48 @@ int imgcam_connect()
 			case 1000:
 				retval = dsi2pro_OpenCamera();
 				break;
+			case 2000:
+				//Sbig camera
+				devName = strrchr(cammodel,' ');		
+				
+				devName++;
+				if ((retval = (sbig_OpenDevice(devName) == 0)) == 1)
+				{
+					if ((retval = (sbig_EstablishLink() == 0)) == 1)
+					{
+						//Set all UI related
+						strcpy(imgcam_get_camui()->binstr, sbig_GetCameraDetails()->binList);
+						strcpy(imgcam_get_camui()->roistr, C_("camio","Full|512x512|256x256:0"));
+						strcpy(imgcam_get_camui()->spdstr, sbig_GetCameraDetails()->spdList);
+						strcpy(imgcam_get_camui()->ampstr, sbig_GetCameraDetails()->ampList);
+						strcpy(imgcam_get_camui()->modstr, sbig_GetCameraDetails()->modList);
+						strcpy(imgcam_get_camui()->moddsc, sbig_GetCameraDetails()->modList[0] == '\0' ? C_("camio","Light/Dark mode") : "");
+						strcpy(imgcam_get_camui()->bppstr, "2-16Bit|:0");
+						sprintf(imgcam_get_camui()->byrstr, "%d", sbig_GetCameraDetails()->colorId);
+						strcpy(imgcam_get_camui()->whlstr, "");
+						// Tec (none for now)
+						imgcam_get_tecp()->istec      = 0;      // Mode see imgCamio.h
+						imgcam_get_tecp()->tecerr     = 0;      // Error reading / setting tec; 
+						imgcam_get_tecp()->tecpwr     = 0;      // Basically 0 - tecmax
+						imgcam_get_tecp()->tecmax     = 0;      // 0-255
+						imgcam_get_tecp()->tecauto    = 0;      // 0 = Manual, 1 = Seek target temp
+						imgcam_get_tecp()->tectemp    = 0.;     // Only meaningful when tecauto = 1; 
+						imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
+						// Header values
+						imgcam_get_camui()->pszx = sbig_GetCameraDetails()->ccdpixW;
+						imgcam_get_camui()->pszy = sbig_GetCameraDetails()->ccdpixH;
+						// Basic expar
+						imgcam_get_expar()->bitpix  = 16;	
+						imgcam_get_expar()->bytepix = 2;	
+						imgcam_get_expar()->tsize   = 0;
+						imgcam_get_expar()->edit    = 0;
+					}
+					else
+					{
+						sbig_CloseDevice();
+					}
+				}
+				break;
 		}
 		if ((retval == 0) && (strlen(cammsg) == 0))
 		{
@@ -461,13 +532,13 @@ int imgcam_disconnect()
 		case 10:
 		case 11:
 		case 12:
-			if ((retval = qhy_CloseCamera()) == 0)
-			{
-				strcpy(cammsg, qhy_core_msg());
-			}
+			retval = qhy_CloseCamera();
 			break;
 		case 1000:
 			retval = dsi2pro_CloseCamera();
+			break;
+		case 2000:
+			retval = (sbig_CloseDevice() == 0);
 			break;
 	}
 	if (retval == 0)
@@ -645,6 +716,9 @@ int imgcam_shoot()
 		case 1000:
 			retval = dsi2pro_StartExposure(&shpar);
 			break;
+		case 2000:
+			retval = (sbig_StartExposure(&shpar) == 0);
+			break;
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
@@ -694,10 +768,21 @@ int imgcam_readout()
 		}
 		retval = qhy_getImgData(shpar.tsize, databuffer[curdataptr], &error, &length_transferred);
 	}
-	else if (camid == 1000)	//plouis
+	else if (camid == 1000) // plouis
 	{
 		//Meade dsi2pro
-		retval = dsi2pro_getImgData();
+		if ((retval = dsi2pro_getImgData()) == 1)
+		{
+			length_transferred = shpar.tsize;
+		}
+	}
+	else if (camid == 2000)
+	{
+		//SBIG
+		if ((retval = (sbig_Readout(&shpar, databuffer[curdataptr]) == 0)) == 1)
+		{
+			length_transferred = shpar.tsize;
+		}
 	}
 	else
 	{
@@ -817,6 +902,9 @@ int imgcam_abort()
 		case 1000:
 			retval = dsi2pro_AbortCapture();
 			usleep(100000);
+			break;
+		case 2000:
+			retval = (sbig_KillExposure() == 0);
 			break;
 	}
 	loaded = (retval == 1) ? 0 : loaded;
@@ -938,6 +1026,9 @@ int imgcam_shutter(int cmd)
 			retval = qhy_Shutter(cmd);
 			break;
 		case 1000:
+			break;
+		case 2000:
+			retval = (sbig_Shutter(cmd) == 0);
 			break;
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))

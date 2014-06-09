@@ -1304,6 +1304,7 @@ gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 				}
 				readout = 0;
 				g_rw_lock_writer_unlock(&thd_caplock);
+				imgcam_end();
 				break;
 			default:
 				break;
@@ -1324,6 +1325,7 @@ gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 					//Press on disconnect
 					gtk_widget_activate(cmd_camera);
 				}
+				imgcam_end();
 				retval = FALSE;
 				break;
 			default:

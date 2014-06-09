@@ -75,6 +75,20 @@ char *rtrim(char *instr)
 	return instr; 
 }
 
+char *strreplace(char *instr, char chold, char chnew) 
+{
+	int i;
+	
+	for (i = 0; i < strlen(instr); i++)
+	{
+		if (instr[i] == chold)
+		{
+			instr[i] = chnew;
+		}
+	}
+	return instr; 
+}
+
 int isdir(char* path)
 {
 	int retval = 0;
