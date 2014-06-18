@@ -38,7 +38,9 @@
 #include "qhy11.h"
 #include "qhy12.h"
 #include "dsi2pro.h"
+#ifdef HAVE_SBIG
 #include "sbigcore.h"
+#endif
 
 static char *cammsg;
 static unsigned char* databuffer[2] = {NULL, NULL};
@@ -59,8 +61,10 @@ char *get_core_msg()
 		return qhy_core_msg();
 	if (camid == 1000)
 		return dsi2pro_core_msg();
+#ifdef HAVE_SBIG
 	if (camid == 2000)
 		return sbig_GetErrorString();
+#endif
 	return NULL;
 }
 
@@ -248,6 +252,7 @@ void imgcam_set_model(const char *val)
 		dsi2pro_init();
 		camid = 1000;
 	}
+#ifdef HAVE_SBIG
 	else if (strncmp(val, "SBIG", 4) == 0)
 	{
 		char *devName = strrchr(val,' ');		
@@ -263,6 +268,7 @@ void imgcam_set_model(const char *val)
 			}
 		}
 	}
+#endif
 	strcpy(cammodel, val);
 }
 
@@ -292,9 +298,14 @@ void imgcam_init()
 	qhy_core_init();
 	if (!first_time)
 	{
+#ifdef HAVE_SBIG
 		sbig_core_close();
+#endif
 	}
+#ifdef HAVE_SBIG
 	sbig_core_init();
+#endif
+
 	if (databuffer[0] != NULL)
 	{
 		free(databuffer[0]);
@@ -344,7 +355,9 @@ void imgcam_init()
 
 void imgcam_end()
 {
+#ifdef HAVE_SBIG
 	sbig_core_close();
+#endif
 }
 
 char *imgcam_init_list(int all)
@@ -413,7 +426,9 @@ char *imgcam_init_list(int all)
 	{
 		strcat(imgcam_get_camui()->camstr, "|DSI2PRO");
 	}
+#ifdef HAVE_SBIG
 	strcat(imgcam_get_camui()->camstr, sbig_GetCameraList()->camlist);
+#endif
 	strcat(imgcam_get_camui()->camstr, "|:0");
 	return imgcam_get_camui()->camstr;
 }
@@ -461,6 +476,7 @@ int imgcam_connect()
 			case 1000:
 				retval = dsi2pro_OpenCamera();
 				break;
+#ifdef HAVE_SBIG
 			case 2000:
 				//Sbig camera
 				devName = strrchr(cammodel,' ');		
@@ -502,6 +518,7 @@ int imgcam_connect()
 						sbig_CloseDevice();
 					}
 				}
+#endif
 				break;
 		}
 		if ((retval == 0) && (strlen(cammsg) == 0))
@@ -537,9 +554,11 @@ int imgcam_disconnect()
 		case 1000:
 			retval = dsi2pro_CloseCamera();
 			break;
+#ifdef HAVE_SBIG
 		case 2000:
 			retval = (sbig_CloseDevice() == 0);
 			break;
+#endif
 	}
 	if (retval == 0)
 	{
@@ -716,9 +735,11 @@ int imgcam_shoot()
 		case 1000:
 			retval = dsi2pro_StartExposure(&shpar);
 			break;
+#ifdef HAVE_SBIG
 		case 2000:
 			retval = (sbig_StartExposure(&shpar) == 0);
 			break;
+#endif
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
@@ -729,8 +750,7 @@ int imgcam_shoot()
 
 int imgcam_readout()
 {
-	int retval = 1;
-	int error = 0, allocsize = (MAX(shpar.tsize, shpar.totsize) + shpar.bytepix), length_transferred = 0;
+	int allocsize = (MAX(shpar.tsize, shpar.totsize) + shpar.bytepix);
 	static int presize[2] = {0, 0};
 	
 	cammsg[0] = '\0';
@@ -747,6 +767,14 @@ int imgcam_readout()
 		databuffer[curdataptr] = (unsigned char*)malloc(allocsize);
 		//printf("Get Data\n");
 	}
+	return imgcam_readout_ext(databuffer[curdataptr]);
+}
+
+
+int imgcam_readout_ext(unsigned char *p)
+{
+	int retval = 1;
+	int error = 0, length_transferred = 0;
 	if (camid < 1000)
 	{
 		// QHY
@@ -766,7 +794,7 @@ int imgcam_readout()
 				}*/
 			}
 		}
-		retval = qhy_getImgData(shpar.tsize, databuffer[curdataptr], &error, &length_transferred);
+		retval = qhy_getImgData(shpar.tsize, p, &error, &length_transferred);
 	}
 	else if (camid == 1000) // plouis
 	{
@@ -776,14 +804,16 @@ int imgcam_readout()
 			length_transferred = shpar.tsize;
 		}
 	}
+#ifdef HAVE_SBIG
 	else if (camid == 2000)
 	{
 		//SBIG
-		if ((retval = (sbig_Readout(&shpar, databuffer[curdataptr]) == 0)) == 1)
+		if ((retval = (sbig_Readout(&shpar, p) == 0)) == 1)
 		{
 			length_transferred = shpar.tsize;
 		}
 	}
+#endif
 	else
 	{
 		// Unknown
@@ -796,29 +826,29 @@ int imgcam_readout()
 			switch (camid)
 			{
 				case 20:
-					qhy2old_decode(databuffer[curdataptr]);
+					qhy2old_decode(p);
 					break;
 				case 5:
-					qhy5_decode(databuffer[curdataptr]);
+					qhy5_decode(p);
 					break;
 				case 52:
-					qhy5ii_decode(databuffer[curdataptr]);
+					qhy5ii_decode(p);
 					break;
 				case 6:
-					qhy6_decode(databuffer[curdataptr]);	
+					qhy6_decode(p);	
 					break;
 				case 60:
 					//printf("Decode\n");
-					qhy6old_decode(databuffer[curdataptr]);	
+					qhy6old_decode(p);	
 					break;
 				case 7:
-					qhy7_decode(databuffer[curdataptr]);	
+					qhy7_decode(p);	
 					break;
 				case 80:
-					qhy8old_decode(databuffer[curdataptr]);	
+					qhy8old_decode(p);	
 					break;
 				case 81:
-					qhy8l_decode(databuffer[curdataptr]);	
+					qhy8l_decode(p);	
 					break;
 				case 9:
 					if (shpar.mode > 0)
@@ -827,19 +857,19 @@ int imgcam_readout()
 						// Release shutter to avoid excess strain
 						imgcam_shutter(2);
 					}
-					qhy9_decode(databuffer[curdataptr]);	
+					qhy9_decode(p);	
 					break;
 				case 10:
-					qhy10_decode(databuffer[curdataptr]);	
+					qhy10_decode(p);	
 					break;
 				case 11:
-					qhy11_decode(databuffer[curdataptr]);	
+					qhy11_decode(p);	
 					break;
 				case 12:
-					qhy12_decode(databuffer[curdataptr]);	
+					qhy12_decode(p);	
 					break;
 				case 1000:	// plouis
-					dsi2pro_decode(databuffer[curdataptr]);	
+					dsi2pro_decode(p);	
 					break;
 			}
 			loaded = 1;
@@ -903,9 +933,12 @@ int imgcam_abort()
 			retval = dsi2pro_AbortCapture();
 			usleep(100000);
 			break;
+#ifdef HAVE_SBIG
 		case 2000:
 			retval = (sbig_KillExposure() == 0);
 			break;
+#endif
+
 	}
 	loaded = (retval == 1) ? 0 : loaded;
 	expar.edit = (retval == 1) ? 1 : expar.edit;
@@ -1027,9 +1060,11 @@ int imgcam_shutter(int cmd)
 			break;
 		case 1000:
 			break;
+#ifdef HAVE_SBIG
 		case 2000:
 			retval = (sbig_Shutter(cmd) == 0);
 			break;
+#endif
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
@@ -1072,6 +1107,15 @@ int imgcam_wheel(int pos)
 		strcpy(cammsg, get_core_msg());
 	}
 	return (retval);
-} 
+}
+
+
+int imgcam_guide(enum GuiderAxis axis, enum GuiderMovement movement)
+{
+  if(camid != 52)
+    return 0;
+  return qhy5lii_guide(axis, movement);
+}
+
 
 

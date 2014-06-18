@@ -1,0 +1,6 @@
+{
+  "name": "OpenSkyImager",
+  "files": [ { "git": 1 } ],
+  "build": "make all",
+  "clean": "make clean"
+}

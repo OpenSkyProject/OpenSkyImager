@@ -1191,7 +1191,7 @@ gpointer thd_capture_run(gpointer thd_data)
 	imgcam_shutter(1);
 	last = time(NULL);
 	// First time read, just in case.
-	if ((tecrun == 1) && (imgcam_get_tecp()->istec == 2))
+	if ((tecrun == 1) && (imgcam_get_tecp()->istec == 2) )
 	{
 		// Camera only allow temp read with no concurrent access
 		imgcam_gettec(&imgcam_get_tecp()->tectemp, NULL); 			
@@ -1208,7 +1208,7 @@ gpointer thd_capture_run(gpointer thd_data)
 		if ((tecrun == 1) && (imgcam_get_tecp()->istec == 2))
 		{
 			ref = time(NULL);
-			if (difftime(ref, last) > 2)
+			if (difftime(ref, last) > 20)
 			{
 				// Camera only allow temp read with no concurrent access
 				// Not more that once every 3 seconds, similar to tec reading threads for other models

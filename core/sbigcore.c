@@ -27,6 +27,8 @@
 */
 
 //==========================================================================
+#ifdef HAVE_SBIG
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -1626,4 +1628,7 @@ int my_ethernet_query(char *list, int *cams)
 	}
 	return (res);
 }
+
+
+#endif // HAVE_SBIG
 

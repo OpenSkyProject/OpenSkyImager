@@ -20,6 +20,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+enum GuiderAxis{GuideRightAscension = 0x1, GuideDeclination = 0x2};
+enum GuiderMovement{GuideStop = 0, GuideIncrease = 1, GuideDecrease = -1};
+
 typedef struct
 {
 	int gain;     // 0-100 gain value
@@ -91,11 +94,14 @@ int             imgcam_connect();
 int             imgcam_disconnect();
 int             imgcam_reset();
 int             imgcam_shoot();
+int             imgcam_readout_ext(unsigned char *p);
 int             imgcam_readout();
 int             imgcam_abort();
 int             imgcam_settec(int pwm);
 int             imgcam_gettec(double *tC, double *mV);
 int             imgcam_shutter(int cmd);
 int             imgcam_wheel(int pos);
+// Guide function, currently QHY5L-II only
+int		imgcam_guide(enum GuiderAxis axis, enum GuiderMovement movement);
 
 

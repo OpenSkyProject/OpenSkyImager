@@ -1574,3 +1574,31 @@ double qhy5lii_setPLL(unsigned char clk)
 	return i;
 }
 
+
+int qhy5lii_guide(enum GuiderAxis axis, enum GuiderMovement direction)
+{
+  unsigned char buf[2] = { 0, 0 };
+  int v = 2;
+  switch(axis)
+  {
+    case GuideRightAscension:
+      v = 1;
+      break;
+    case GuideDeclination:
+      v = 2;
+      break;
+    default:
+      return 0;
+  }
+  switch(direction) {
+    case GuideIncrease:
+      qhy_cameraIO(qhy_core_getendp()->write, 0xc0, buf, 0x02, v, axis == GuideRightAscension ? 0x80 : 0x40);
+      return 1;
+    case GuideDecrease:
+      qhy_cameraIO(qhy_core_getendp()->write, 0xc0, buf, 0x02, v, axis == GuideRightAscension ? 0x10 : 0x20);
+      return 1;
+    default:
+      qhy_cameraIO(qhy_core_getendp()->write, 0xc0, buf, 0x02, v, 0);
+      return 1;
+  }
+}

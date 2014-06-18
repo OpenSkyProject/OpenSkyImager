@@ -50,4 +50,4 @@ void   qhy5lii_set_640x480();
 void   qhy5lii_set_320x240();
 void   qhy5liiInitRegs();
 double qhy5lii_setPLL(unsigned char clk);
-
+int    qhy5lii_guide(enum GuiderAxis, enum GuiderMovement);

@@ -58,4 +58,8 @@
 /libusb-custom/tests/Makefile
 gtkImager
 gtk3Imager
+build*
 *.o
+.kateproject.d
+*.swp
+
