@@ -135,6 +135,11 @@ int sbig_core_init()
  	return(res);
 }
 //==========================================================================
+int sbig_core_reload_list()
+{	
+	return (GetCameraList());
+}	
+//==========================================================================
 int sbig_core_close()
 {
 	int res = CE_NO_ERROR;
@@ -288,7 +293,7 @@ int sbig_StartExposure(qhy_exposure *expar)
 			// 1/100th second on it's own but we need to record for image header
 			// Same if exptime is below minimim ;-)
 			exptime = (exptime < 1) ? 1 : exptime;
-			if ((m_camera_details.camType == ST5C_CAMERA) || (m_camera_details.camType == ST237_CAMERA) || (m_camera_details.minExp == 1))
+			if (m_camera_details.camShutter != 1)
 			{
 				realMinExp = m_camera_details.minExp;
 				shutterState = SC_LEAVE_SHUTTER;
@@ -298,13 +303,13 @@ int sbig_StartExposure(qhy_exposure *expar)
 				// For other model we basically set the shutter to ignore
 				realMinExp = 1;
 				shutterState = (exptime >= m_camera_details.minExp);
-				if (m_camera_details.modList[0] != '\0')
+			}
+			if (m_camera_details.camShutter > 0)
+			{
+				// If it supports in camera dark, also check mode
+				if (mode)
 				{
-					// If it supports in camera dark, also check mode
-					if (mode)
-					{
-						shutterState = SC_CLOSE_SHUTTER;
-					}
+					shutterState = SC_CLOSE_SHUTTER;
 				}
 			}
 		
@@ -527,7 +532,7 @@ int sbig_Shutter(int cmd) //0 Open, 1 Close
 	MiscellaneousControlParams mcp;
 	unsigned short status;
 	
-	if ((cmd > -1) && (cmd < 2) && (m_camera_details.camShutter))
+	if ((cmd > -1) && (cmd < 2) && (m_camera_details.camShutter) > 0)
 	{
 		complete = cmd;
 		// Translate into sbig commands appropriate to camera models
@@ -608,7 +613,7 @@ int sbig_SetTemperatureRegulation(int enable, double temperature)
  	return(res);
 }
 //==========================================================================
-int sbig_QueryTemperatureStatus(int *enabled, double *ccdTemp, double *setpointTemp, double *power)
+int sbig_QueryTemperatureStatus(int *enabled, double *ccdTemp, double *setpointTemp, int *power)
 {
 	int res;
 	if (m_drv_version < 4.65)
@@ -625,7 +630,7 @@ int sbig_QueryTemperatureStatus(int *enabled, double *ccdTemp, double *setpointT
 				*enabled      = qtsr.enabled;
 				*ccdTemp      = CalcTemperature(CCD_THERMISTOR, qtsr.ccdThermistor);
 				*setpointTemp = CalcTemperature(CCD_THERMISTOR, qtsr.ccdSetpoint);
-				*power        = qtsr.power/255.0;
+				*power        = qtsr.power;
 			}
 			else
 			{
@@ -1332,7 +1337,7 @@ int GetCameraDetails()
 				// Pix depth
 		    		m_camera_details.pixDepth  = (gcr3.adSize == 1) ? 12 : 16; 
 		    		m_camera_details.colorId  = -1;
-		    		m_camera_details.camShutter = 0;
+		    		//m_camera_details.camShutter = 0;
 		    	}
 		    	else
 		    	{
@@ -1349,11 +1354,12 @@ int GetCameraDetails()
 		    		//}
 				//m_camera_details.camShutter = !(CHECK_BIT(gcr6.cameraBits, 1));
 		    	}
+		    	//Tec
+		    	m_camera_details.camTec = ((m_camera_details.camType == STI_CAMERA) ? 0 : 1);
 		    	//Min exposure exptime
 		    	if (CHECK_BIT(gcr4.capabilitiesBits, 1))
 		    	{
 		    		m_camera_details.minExp = 1;
-		    		m_camera_details.camShutter = 0;
 		    	}
 		    	else
 		    	{
@@ -1370,31 +1376,42 @@ int GetCameraDetails()
 		    			case ST8_CAMERA:
 		    			case ST9_CAMERA:
 		    			case ST10_CAMERA:
-		    			case ST1K_CAMERA:
 		    				m_camera_details.minExp = MIN_ST7_EXPOSURE * 10;
-					    	strcpy(m_camera_details.modList, C_("camio","0-Light|1-Dark:0"));
+		    				break;
+		    			case ST1K_CAMERA:
+		    			case ST2K_CAMERA:
+		    			case ST4K_CAMERA:
+		    				m_camera_details.minExp = 1;
 		    				break;
 		    			case ST402_CAMERA:
 		    				m_camera_details.minExp = MIN_ST402_EXPOSURE * 10;
-					    	strcpy(m_camera_details.modList, C_("camio","0-Light|1-Dark:0"));
 		    				break;
 		    			case STL_CAMERA:
 		    				m_camera_details.minExp = 110;
-					    	strcpy(m_camera_details.modList, C_("camio","0-Light|1-Dark:0"));
 					    	break;    			
 		    			case STX_CAMERA:
 		    				m_camera_details.minExp = MIN_STX_EXPOSURE * 10;
-					    	strcpy(m_camera_details.modList, C_("camio","0-Light|1-Dark:0"));
 		    				break;
 		    			case STT_CAMERA:
 		    				m_camera_details.minExp = MIN_STT_EXPOSURE * 10;
-					    	strcpy(m_camera_details.modList, C_("camio","0-Light|1-Dark:0"));
 		    				break;
 		    			default:
 		    				m_camera_details.minExp = 90; //MIN_STF8300_EXPOSURE or MIN_ST3200_EXPOSURE
 		    		}
-			    	m_camera_details.camShutter = (m_camera_details.minExp > 1);
 		    	}
+		    	// Shutter
+	    		switch (m_camera_details.camType)
+	    		{
+	    			case ST5C_CAMERA:
+				case ST237_CAMERA:
+		    			m_camera_details.camShutter = 0;
+	    				break;
+		    		default:
+		    			// Shutter 2 is for dark only ;-)
+		    			m_camera_details.camShutter = (m_camera_details.minExp > 1) ? 1 : 2;
+		    			//printf("ShutterMode: %d\n", m_camera_details.camShutter);
+				    	strcpy(m_camera_details.modList, C_("camio","0-Light|1-Dark:0"));
+			}		    	
 		    	switch (m_camera_details.camType)
 		    	{
 				case ST7_CAMERA:

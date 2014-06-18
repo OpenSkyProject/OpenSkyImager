@@ -46,7 +46,7 @@ typedef struct
 
 typedef struct
 {
-	int istec;       // 0 = Not driveable tec or no tec 1 = Driveable tec 2 = Temp read only
+	int istec;       // 0 = Not driveable tec or no tec 1 = Driveable tec 2 = Temp read only 3 = SBIG
 	int tecerr;      // Error setting / reading PWM
 	int tecpwr;      // Basically tecmin - tecmax
 	int tecmax;      // 0-255
@@ -69,6 +69,7 @@ typedef struct
 	char byrstr[256];
 	char tecstr[256];
 	char whlstr[256];
+	int  shutterMode;
 	double pszx; // Pixel size x direction
 	double pszy; // Pixel size y direction
 } qhy_camui;
@@ -98,7 +99,7 @@ int             imgcam_readout_ext(unsigned char *p);
 int             imgcam_readout();
 int             imgcam_abort();
 int             imgcam_settec(int pwm);
-int             imgcam_gettec(double *tC, double *mV);
+int             imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled);
 int             imgcam_shutter(int cmd);
 int             imgcam_wheel(int pos);
 // Guide function, currently QHY5L-II only

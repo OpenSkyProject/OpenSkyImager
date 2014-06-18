@@ -1186,15 +1186,19 @@ gpointer thd_capture_run(gpointer thd_data)
 			ref = time(NULL);
 		}
 	}
-	// We close shutter just in case it's open because of camera position
-	// It's a noop for camera that don't feature a mechanical shutter
-	imgcam_shutter(1);
-	last = time(NULL);
+	if ((imgcam_get_camui()->shutterMode == 1) || (imgcam_get_expar()->mode == 1))
+	{
+		// We close shutter just in case it's open because of camera position
+		// It's a noop for camera that don't feature a mechanical shutter
+		// Or if we are in dark mode
+		imgcam_shutter(1);
+		last = time(NULL);
+	}
 	// First time read, just in case.
 	if ((tecrun == 1) && (imgcam_get_tecp()->istec == 2) )
 	{
 		// Camera only allow temp read with no concurrent access
-		imgcam_gettec(&imgcam_get_tecp()->tectemp, NULL); 			
+		imgcam_gettec(&imgcam_get_tecp()->tectemp, NULL, NULL, NULL); 			
 		// UI update
 		if (tmrtecrefresh != -1)
 		{
@@ -1208,11 +1212,11 @@ gpointer thd_capture_run(gpointer thd_data)
 		if ((tecrun == 1) && (imgcam_get_tecp()->istec == 2))
 		{
 			ref = time(NULL);
-			if (difftime(ref, last) > 20)
+			if (difftime(ref, last) > 2)
 			{
 				// Camera only allow temp read with no concurrent access
 				// Not more that once every 3 seconds, similar to tec reading threads for other models
-				imgcam_gettec(&imgcam_get_tecp()->tectemp, NULL); 			
+				imgcam_gettec(&imgcam_get_tecp()->tectemp, NULL, NULL, NULL); 			
 				// UI update
 				if (tmrtecrefresh != -1)
 				{
@@ -1582,12 +1586,19 @@ gpointer thd_capture_run(gpointer thd_data)
 			thd_pixbuf = NULL;
 		}
 	}
-	// It's a noop for camera that don't feature a mechanical shutter
-	// Close
-	imgcam_shutter(1);
-	// Release
-	imgcam_shutter(2);
-	
+	if (imgcam_get_camui()->shutterMode == 1)
+	{
+		// It's a noop for camera that don't feature a mechanical shutter
+		// Close
+		imgcam_shutter(1);
+		// Release
+		imgcam_shutter(2);
+	}
+	else if (imgcam_get_expar()->mode == 1)
+	{
+		//If wehere in dark mode, we need to open it
+		imgcam_shutter(0);
+	}
 	// Reset fifo feedback anyway
 	/*g_rw_lock_writer_lock(&thd_caplock);
 	fifofbk = 0;

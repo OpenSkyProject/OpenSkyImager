@@ -337,6 +337,7 @@ void imgcam_init()
 	strcpy(imgcam_get_camui()->byrstr, "0");
 	strcpy(imgcam_get_camui()->tecstr, "");
 	strcpy(imgcam_get_camui()->whlstr, "");
+	imgcam_get_camui()->shutterMode = 0;
 	imgcam_get_camui()->pszx = 0;
 	imgcam_get_camui()->pszy = 0;
 
@@ -427,6 +428,7 @@ char *imgcam_init_list(int all)
 		strcat(imgcam_get_camui()->camstr, "|DSI2PRO");
 	}
 #ifdef HAVE_SBIG
+	sbig_core_reload_list();
 	strcat(imgcam_get_camui()->camstr, sbig_GetCameraList()->camlist);
 #endif
 	strcat(imgcam_get_camui()->camstr, "|:0");
@@ -492,18 +494,20 @@ int imgcam_connect()
 						strcpy(imgcam_get_camui()->spdstr, sbig_GetCameraDetails()->spdList);
 						strcpy(imgcam_get_camui()->ampstr, sbig_GetCameraDetails()->ampList);
 						strcpy(imgcam_get_camui()->modstr, sbig_GetCameraDetails()->modList);
-						strcpy(imgcam_get_camui()->moddsc, sbig_GetCameraDetails()->modList[0] == '\0' ? C_("camio","Light/Dark mode") : "");
+						strcpy(imgcam_get_camui()->moddsc, sbig_GetCameraDetails()->modList[0] != '\0' ? C_("camio","Light/Dark mode") : "");
 						strcpy(imgcam_get_camui()->bppstr, "2-16Bit|:0");
 						sprintf(imgcam_get_camui()->byrstr, "%d", sbig_GetCameraDetails()->colorId);
 						strcpy(imgcam_get_camui()->whlstr, "");
 						// Tec (none for now)
-						imgcam_get_tecp()->istec      = 0;      // Mode see imgCamio.h
+						imgcam_get_tecp()->istec      = sbig_GetCameraDetails()->camTec * 3;      // Mode see imgCamio.h
 						imgcam_get_tecp()->tecerr     = 0;      // Error reading / setting tec; 
-						imgcam_get_tecp()->tecpwr     = 0;      // Basically 0 - tecmax
-						imgcam_get_tecp()->tecmax     = 0;      // 0-255
+						imgcam_get_tecp()->tecpwr     = 5;      // Basically 0 - tecmax
+						imgcam_get_tecp()->tecmax     = 255;      // 0-255
 						imgcam_get_tecp()->tecauto    = 0;      // 0 = Manual, 1 = Seek target temp
 						imgcam_get_tecp()->tectemp    = 0.;     // Only meaningful when tecauto = 1; 
 						imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
+						// Shutter
+						imgcam_get_camui()->shutterMode = sbig_GetCameraDetails()->camShutter;
 						// Header values
 						imgcam_get_camui()->pszx = sbig_GetCameraDetails()->ccdpixW;
 						imgcam_get_camui()->pszy = sbig_GetCameraDetails()->ccdpixH;
@@ -973,6 +977,10 @@ int imgcam_settec(int pwm)
 		case 12:
 			retval = qhy_setDC201_i(pwm, 1);
 			break;
+#ifdef HAVE_SBIG
+		case 2000:
+			break;
+#endif
 	}
 	imgcam_get_tecp()->tecerr = (retval == 0) ? 1 : 0;
 	if ((retval == 0) && (strlen(cammsg) == 0))
@@ -982,10 +990,10 @@ int imgcam_settec(int pwm)
 	return (retval);
 } 
 
-int imgcam_gettec(double *tC, double *mV)
+int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 {
 	int retval = 0;
-	double imgtC, imgmV;
+	double *mV;
 	
 	cammsg[0] = '\0';
 	switch (camid)
@@ -997,37 +1005,30 @@ int imgcam_gettec(double *tC, double *mV)
 		case 80:
 			break;
 		case 52:
-			imgtC = qhy5lii_GetTemp();
+			*tC = qhy5lii_GetTemp();
 			retval = 1;
 			break;			
 		case 7:
 		case 81:
 		case 9:
 		case 10:
-			retval = qhy_getDC201_i(&imgtC, &imgmV);
+			retval = qhy_getDC201_i(tC, mV);
 			break;
 		case 11:
 		case 12:
-			retval = qhy_getDC201_i(&imgtC, &imgmV);
+			retval = qhy_getDC201_i(tC, mV);
 			break;
 		case 1000:
-			imgtC = dsi2pro_GetTemp();
+			*tC = dsi2pro_GetTemp();
 			retval = 1;
 			break;
+#ifdef HAVE_SBIG
+		case 2000:
+			retval = (sbig_QueryTemperatureStatus(enabled, tC, setTemp, power) == 0);
+			break;
+#endif
 	}
-	if (retval)
-	{
-		imgcam_get_tecp()->tecerr = 0;
-		*tC = imgtC;
-		if (mV != NULL)
-		{
-			*mV = imgmV;
-		}
-	}
-	else
-	{
-		imgcam_get_tecp()->tecerr = 1;
-	}
+	imgcam_get_tecp()->tecerr = ((retval == 1) ? 0 : 1);
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
 		strcpy(cammsg, get_core_msg());

@@ -349,7 +349,6 @@ gboolean tmr_tecpwr (GtkWidget *widget)
 gboolean tmr_tecstatus_write (GtkWidget *widget)
 {
 	static double oldT;
-	double mV = 0;
 	int setwait = 0, suspect = 0;
 	int pct = 0;
 	
@@ -362,7 +361,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 			//Set the loop reference
 			oldT = imgcam_get_tecp()->tectemp;
 
-			if (imgcam_gettec(&imgcam_get_tecp()->tectemp, &mV))
+			if (imgcam_gettec(&imgcam_get_tecp()->tectemp, NULL, NULL, NULL))
 			{
 				//printf("Temp: %f\n", imgcam_get_tecp()->tectemp);
 				if (imgcam_get_tecp()->tecauto)
@@ -534,13 +533,15 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 			tmrtecrefresh = g_timeout_add(50, (GSourceFunc) tmr_tecstatus_write, NULL);	
 			return FALSE;
 		}
-		// Virtual recurring
+		/* Virtual recurring
 		if (tmrtecrefresh != -1)
 		{
 			g_source_remove(tmrtecrefresh);
 		}
 		tmrtecrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tecstatus_write, NULL);	
 		return FALSE;
+		*/
+		return TRUE;
 	}
 	else if (imgcam_get_tecp()->istec == 2)
 	{
@@ -558,7 +559,45 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 		fithdr[HDR_CCDTEMP].dvalue = round(imgcam_get_tecp()->tectemp * 100) / 100;
 		tmrtecrefresh = -1;
 	}
-	
+	else if (imgcam_get_tecp()->istec == 3)
+	{
+		int enabled = 0;
+		// SBIG mode
+		if (imgcam_gettec(&imgcam_get_tecp()->tectemp, &imgcam_get_tecp()->settemp, &imgcam_get_tecp()->tecpwr, &enabled))
+		{
+			// Set the gui according to status returned from camera		
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), (enabled > 0));						
+			if ((imgcam_get_tecp()->tecauto == 0) && (enabled > 0))
+			{
+				// Set tec to auto
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), TRUE);
+			}
+			gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tectgt), imgcam_get_tecp()->settemp);
+			pct = (int)(((double)imgcam_get_tecp()->tecpwr / (double)imgcam_get_tecp()->tecmax) * 100.);
+			if (imgcam_get_tecp()->tecauto)
+			{
+				/// Statusbar feedback message about cooling status in automatic mode
+				sprintf(imgmsg, C_("main","Tec: %+06.2FC, Target: %+06.2FC, Power: %d%%"), imgcam_get_tecp()->tectemp, imgcam_get_tecp()->settemp, pct);
+			}
+			else
+			{
+				/// Satusbar feedback message about cooling in manual mode
+				sprintf(imgmsg, C_("main","Tec: %+06.2fC, Power: %d%%"), imgcam_get_tecp()->tectemp, pct);
+			}
+			// Main image update
+			sprintf(tecfbk, "%+06.2fC", imgcam_get_tecp()->tectemp);
+			gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
+			// Graph update
+			tec_print_graph();
+			// Slider update
+			gtk_range_set_value(GTK_RANGE(vsc_tecpwr), pct);
+			gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
+			// Header update
+			fithdr[HDR_CCDTEMP].dvalue = round(imgcam_get_tecp()->tectemp * 100) / 100;
+			fithdr[HDR_SETTEMP].dvalue = round(imgcam_get_tecp()->settemp * 100) / 100;
+		}
+		return TRUE;
+	}
 	return FALSE;
 }
 
@@ -2286,7 +2325,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 	{
 		if (imgcam_connected())
 		{
-			if (imgcam_get_tecp()->istec == 1)
+			if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3))
 			{
 				if (status == 1)
 				{

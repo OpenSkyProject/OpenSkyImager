@@ -77,6 +77,7 @@
 		double 			ccdpixW;
 		double			ccdpixH;
 		int				colorId;
+		int				camTec;
 		int				camShutter;
 		int				minExp;
 		char				ampList[256];
@@ -101,6 +102,7 @@
 	//=============================================================================
 	// public
 	int				sbig_core_init();
+	int 				sbig_core_reload_list();
 	int 				sbig_core_close();
 
 	// Driver Related Commands:
@@ -125,7 +127,7 @@
 
 	// Temperature Related Commands:
 	int				sbig_SetTemperatureRegulation(int enable, double temperature);
-	int				sbig_QueryTemperatureStatus(int *enabled, double *ccdTemp, double *setpointT, double *power);
+	int				sbig_QueryTemperatureStatus(int *enabled, double *ccdTemp, double *setpointT, int *power);
 
 	//=============================================================================
 #endif //_SBIG_CAM_
