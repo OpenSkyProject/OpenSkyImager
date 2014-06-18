@@ -6,7 +6,7 @@ set(FORCE_NO_SBIG off CACHE BOOL "Set aside use of SBIG driver")
 set(FORCE_SBIG_UPDATE off CACHE BOOL "Force SBIG driver update")
 
 # For debug only 
-set(CMAKE_INSTALL_PREFIX /home/giampiero)
+# set(CMAKE_INSTALL_PREFIX /home/giampiero)
 
 # http://francesco-cek.com/cmake-and-gtk-3-the-easy-way/
 find_package(PkgConfig REQUIRED)
