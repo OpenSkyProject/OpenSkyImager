@@ -293,24 +293,23 @@ int sbig_StartExposure(qhy_exposure *expar)
 			// 1/100th second on it's own but we need to record for image header
 			// Same if exptime is below minimim ;-)
 			exptime = (exptime < 1) ? 1 : exptime;
-			if (m_camera_details.camShutter != 1)
+			if (m_camera_details.camShutter == 1)
 			{
-				realMinExp = m_camera_details.minExp;
-				shutterState = SC_LEAVE_SHUTTER;
-			}
-			else
-			{
-				// For other model we basically set the shutter to ignore
+				// For other models we basically set the shutter to ignore
 				realMinExp = 1;
-				shutterState = (exptime >= m_camera_details.minExp);
-			}
-			if (m_camera_details.camShutter > 0)
-			{
-				// If it supports in camera dark, also check mode
 				if (mode)
 				{
 					shutterState = SC_CLOSE_SHUTTER;
 				}
+				else
+				{
+					shutterState = (exptime >= m_camera_details.minExp);
+				}
+			}
+			else
+			{
+				realMinExp = m_camera_details.minExp;
+				shutterState = SC_LEAVE_SHUTTER;
 			}
 		
 			if ((exptime < 255) && (exptime >= realMinExp))
@@ -1359,6 +1358,7 @@ int GetCameraDetails()
 		    	//Min exposure exptime
 		    	if (CHECK_BIT(gcr4.capabilitiesBits, 1))
 		    	{
+		    		//printf("Capabilities eshutter\n");
 		    		m_camera_details.minExp = 1;
 		    	}
 		    	else
@@ -1376,29 +1376,36 @@ int GetCameraDetails()
 		    			case ST8_CAMERA:
 		    			case ST9_CAMERA:
 		    			case ST10_CAMERA:
+		    			case ST1K_CAMERA:
 		    				m_camera_details.minExp = MIN_ST7_EXPOSURE * 10;
 		    				break;
-		    			case ST1K_CAMERA:
 		    			case ST2K_CAMERA:
 		    			case ST4K_CAMERA:
 		    				m_camera_details.minExp = 1;
 		    				break;
 		    			case ST402_CAMERA:
-		    				m_camera_details.minExp = MIN_ST402_EXPOSURE * 10;
+		    				m_camera_details.minExp = MIN_ST3200_EXPOSURE * 10;
 		    				break;
 		    			case STL_CAMERA:
-		    				m_camera_details.minExp = 110;
+	    					m_camera_details.minExp = 110;
 					    	break;    			
 		    			case STX_CAMERA:
-		    				m_camera_details.minExp = MIN_STX_EXPOSURE * 10;
+	    					m_camera_details.minExp = MIN_STX_EXPOSURE * 10;
+		    				break;
+		    			case STI_CAMERA:
+		    				m_camera_details.minExp = 1;
 		    				break;
 		    			case STT_CAMERA:
 		    				m_camera_details.minExp = MIN_STT_EXPOSURE * 10;
 		    				break;
+		    			case STF_CAMERA:
+		    				m_camera_details.minExp = MIN_STF8300_EXPOSURE * 10;
+		    				break;
 		    			default:
-		    				m_camera_details.minExp = 90; //MIN_STF8300_EXPOSURE or MIN_ST3200_EXPOSURE
+		    				m_camera_details.minExp = 1;
 		    		}
 		    	}
+		    	//printf("Min exposure %d\n", m_camera_details.minExp);
 		    	// Shutter
 	    		switch (m_camera_details.camType)
 	    		{
@@ -1409,9 +1416,9 @@ int GetCameraDetails()
 		    		default:
 		    			// Shutter 2 is for dark only ;-)
 		    			m_camera_details.camShutter = (m_camera_details.minExp > 1) ? 1 : 2;
-		    			//printf("ShutterMode: %d\n", m_camera_details.camShutter);
 				    	strcpy(m_camera_details.modList, C_("camio","0-Light|1-Dark:0"));
 			}		    	
+    			//printf("ShutterMode: %d\n", m_camera_details.camShutter);
 		    	switch (m_camera_details.camType)
 		    	{
 				case ST7_CAMERA:

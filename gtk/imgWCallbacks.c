@@ -533,15 +533,13 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 			tmrtecrefresh = g_timeout_add(50, (GSourceFunc) tmr_tecstatus_write, NULL);	
 			return FALSE;
 		}
-		/* Virtual recurring
+		// Virtual recurring
 		if (tmrtecrefresh != -1)
 		{
 			g_source_remove(tmrtecrefresh);
 		}
 		tmrtecrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tecstatus_write, NULL);	
 		return FALSE;
-		*/
-		return TRUE;
 	}
 	else if (imgcam_get_tecp()->istec == 2)
 	{
