@@ -253,7 +253,9 @@ bool OSICamera::guide(GuiderAxis axis, GuiderMovement movement)
 OSICamera::Tec OSICamera::tec() const
 {
   Tec t;
-  if(imgcam_gettec(&t.celsius, &t.millivolts) == 0)
+  int enabled;
+  if(imgcam_gettec(&t.celsius, &t.millivolts, &t.power, &enabled) == 0)
     throw runtime_error(imgcam_get_msg() );
+  t.enabled = enabled!=0;
   return t;
 }

@@ -85,6 +85,8 @@ public:
   
   struct Tec {
     double celsius, millivolts;
+    int power;
+    bool enabled;
   };
   
   Tec tec() const;
