@@ -76,18 +76,19 @@ OSICameraRAII::~OSICameraRAII()
 
 class OSICamera::Private {
 public:
-  void setIntField(int &field, int value, const string &desc);
+  void setIntField(int &field, int value, const string &desc = string{}, bool setEditField = true);
   string deviceName;
 };
 
-void OSICamera::Private::setIntField(int &field, int value, const string &desc = string{})
+void OSICamera::Private::setIntField(int &field, int value, const string &desc, bool setEditField )
 {
   if(field == value)
     return;
   //ofstream s("/tmp/osiccd.log", ios_base::app);
   //s << __PRETTY_FUNCTION__ << ": " << desc << ", old=" << field << ", new=" << value << endl;
   field = value;
-  imgcam_get_expar()->edit = 1;
+  if(setEditField)
+    imgcam_get_expar()->edit = 1;
 }
 
 OSICamera::OSICamera(const shared_ptr<OSICameraRAII> &driverInitialization)
@@ -242,7 +243,7 @@ void OSICamera::mode(int newMode)
 
 void OSICamera::exposure(int milliseconds)
 {
-  d->setIntField(imgcam_get_expar()->time, milliseconds, "exposure");
+  d->setIntField(imgcam_get_expar()->time, milliseconds, "exposure", false); // TODO: verify
 }
 
 bool OSICamera::guide(GuiderAxis axis, GuiderMovement movement)

@@ -136,6 +136,7 @@ int main(int argc, char **argv)
   
   auto saveImage = [&saveFit, &askAndSetExposure] {
     askAndSetExposure();
+    saveFit();
   };
   
   auto saveSequence = [&saveFit, &askAndSetExposure] {
