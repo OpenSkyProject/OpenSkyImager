@@ -105,12 +105,12 @@ int main(int argc, char **argv)
     cin >> filename;
   };
   uint64_t sequenceNumber = 0;
-  auto saveImage = [&camera,&filename,&sequenceNumber, askAndSetExposure] {
+  
+  auto saveFit = [&camera,&filename,&sequenceNumber] {
     if(filename.empty() ) {
       cerr << "Error! file name is not set." << endl;
       return;
     }
-    askAndSetExposure();
     stringstream path;
     path << filename << "-" << setw(10) << setfill('0') << sequenceNumber++ << ".fit";
     cout << "Saving to " << path.str() << endl;
@@ -131,6 +131,20 @@ int main(int argc, char **argv)
       cerr << "Error during image acquisition: " << e.what() << endl;
       return;
     }
+  };
+  
+  
+  auto saveImage = [&saveFit, &askAndSetExposure] {
+    askAndSetExposure();
+  };
+  
+  auto saveSequence = [&saveFit, &askAndSetExposure] {
+    askAndSetExposure();
+    uint32_t numberOfImages;
+    cout << "Number of images: ";
+    cin >> numberOfImages;
+    for(uint32_t i = 0; i<numberOfImages; i++)
+      saveFit();
   };
   
   auto fpsTest = [&camera, askAndSetExposure] {
@@ -170,6 +184,7 @@ int main(int argc, char **argv)
     { "i", {"print information", printInformation } },
     { "f", {"set file base name", setFileName } },
     { "s", {"save image", saveImage } },
+    { "e", {"save images sequence", saveSequence } },
     { "u", {"set USB Speed", setUSBSpeed } },
     { "m", {"set camera mode", setCameraMode } },
     { "g", {"set gain", setGain } },
