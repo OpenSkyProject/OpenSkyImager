@@ -1,0 +1,7 @@
+<devGroup group="CCDs">
+	<device label="OSI CCD">
+		<driver name="OSI CCD">indi_osi_ccd</driver>
+		<version>1.0</version>
+	</device>
+</devGroup>
+

@@ -4,6 +4,7 @@ project(OpenSkyImager)
 set(FORCE_GTK2 off CACHE BOOL "Force GTK2 Detection over GTK3")
 set(FORCE_NO_SBIG off CACHE BOOL "Set aside use of SBIG driver")
 set(FORCE_SBIG_UPDATE off CACHE BOOL "Force SBIG driver update")
+set(ENABLE_INDI_DRIVER off CACHE BOOL "Enable experimental INDI driver compilation (default: off)")
 
 # For debug only 
 # set(CMAKE_INSTALL_PREFIX /home/giampiero)
@@ -80,6 +81,14 @@ include_directories(core)
 if(HAVE_GTK_FRONTEND)
   add_subdirectory(gtk)
 endif(HAVE_GTK_FRONTEND)
+
+pkg_check_modules(LIBINDI libindi)
+if(LIBINDI_FOUND AND ENABLE_INDI_DRIVER)
+	include_directories(cpp)
+	add_subdirectory(cpp)
+	add_subdirectory(indi)
+	add_subdirectory(cmdline)
+endif(LIBINDI_FOUND AND ENABLE_INDI_DRIVER)
 
 # add uninstall target
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)
