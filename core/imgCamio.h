@@ -51,7 +51,8 @@ typedef struct
 	int tecmax;      // 0-255
 	int tecauto;     // 0 = Manual, 1 = Seek target temp
 	double tectemp;  // Only meaningful when tecauto = 1; 
-	double settemp;  // Only meaningful when tecauto = 1; 
+	double settemp;  // Only meaningful when tecauto = 1;
+	int tecedit; 
 } qhy_tecpars;
 
 typedef struct
@@ -68,7 +69,7 @@ typedef struct
 	char byrstr[256];
 	char tecstr[256];
 	char whlstr[256];
-	int  shutterMode;
+	int  shutterMode; // 0 = no shutter, 1 = shutter used for imaging, 2 = shutter only used for darks
 	double pszx; // Pixel size x direction
 	double pszy; // Pixel size y direction
 } qhy_camui;
@@ -97,7 +98,7 @@ int             imgcam_shoot();
 int             imgcam_readout_ext(unsigned char *p);
 int             imgcam_readout();
 int             imgcam_abort();
-int             imgcam_settec(int pwm);
+int             imgcam_settec(double setValue, int setMode);
 int             imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled);
 int             imgcam_shutter(int cmd);
 int             imgcam_wheel(int pos);

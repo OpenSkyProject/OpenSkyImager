@@ -349,6 +349,7 @@ void imgcam_init()
 	imgcam_get_tecp()->tecauto    = 0;      // 0 = Manual, 1 = Seek target temp
 	imgcam_get_tecp()->tectemp    = 0.;     // Only meaningful when tecauto = 1; 
 	imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
+	imgcam_get_tecp()->tecedit	= 0;
 
 	loaded = 0;
 	connected = 0;
@@ -438,7 +439,9 @@ char *imgcam_init_list(int all)
 int imgcam_connect()
 {
 	int retval = 1;
+#ifdef HAVE_SBIG
 	char *devName;
+#endif
 	
 	cammsg[0] = '\0';
 	if (camid > 0)
@@ -472,7 +475,7 @@ int imgcam_connect()
 			case 12:
 				if ((retval = qhy_OpenCamera()) == 1)
 				{
-					retval = imgcam_settec(tecp.tecpwr);
+					retval = imgcam_settec(tecp.tecpwr, -1);
 				}
 				break;
 			case 1000:
@@ -516,6 +519,11 @@ int imgcam_connect()
 						imgcam_get_expar()->bytepix = 2;	
 						imgcam_get_expar()->tsize   = 0;
 						imgcam_get_expar()->edit    = 0;
+						// Tec initial set
+						if (imgcam_get_tecp()->istec)
+						{
+							retval = imgcam_settec(imgcam_get_tecp()->tecpwr, 2);
+						}
 					}
 					else
 					{
@@ -953,7 +961,7 @@ int imgcam_abort()
 	return (retval);
 }
 
-int imgcam_settec(int pwm)
+int imgcam_settec(double setValue, int setMode)
 {
 	int retval = 0;
 	
@@ -971,14 +979,21 @@ int imgcam_settec(int pwm)
 		case 81:
 		case 9:
 		case 10:
-			retval = qhy_setDC201_i(pwm, 1);
+			retval = qhy_setDC201_i((int)setValue, 1);
 			break;
 		case 11:
 		case 12:
-			retval = qhy_setDC201_i(pwm, 1);
+			retval = qhy_setDC201_i((int)setValue, 1);
 			break;
 #ifdef HAVE_SBIG
 		case 2000:
+			// Set val can be temp or pwm (0-255) depending on set mode
+			retval = (sbig_SetTemperatureRegulation(setMode, setValue) == 0);
+			if (setMode == 1)
+			{
+				// If in auto mode also set auto-freeze mode
+				sbig_SetTemperatureRegulation(5, setValue);
+			}
 			break;
 #endif
 	}
@@ -993,7 +1008,7 @@ int imgcam_settec(int pwm)
 int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 {
 	int retval = 0;
-	double *mV;
+	double *mV = NULL;
 	
 	cammsg[0] = '\0';
 	switch (camid)

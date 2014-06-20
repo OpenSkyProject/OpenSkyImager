@@ -6,6 +6,8 @@ set(FORCE_NO_SBIG off CACHE BOOL "Set aside use of SBIG driver")
 set(FORCE_SBIG_UPDATE off CACHE BOOL "Force SBIG driver update")
 set(ENABLE_INDI_DRIVER off CACHE BOOL "Enable experimental INDI driver compilation (default: off)")
 
+add_definitions ("-Wall")
+
 # For debug only 
 # set(CMAKE_INSTALL_PREFIX /home/giampiero)
 

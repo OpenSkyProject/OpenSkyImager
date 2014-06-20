@@ -577,7 +577,8 @@ int sbig_SetTemperatureRegulation(int enable, double temperature)
 	 	if(sbig_CheckLink())
 	 	{
 		    	strp.regulation  = enable;
-		    	strp.ccdSetpoint = CalcSetpoint(temperature);
+		    	// This is for manual overraid proper operation
+		    	strp.ccdSetpoint = (enable != 2) ? CalcSetpoint(temperature) : temperature;
 		    	if ((res = UnivDrvCommand(CC_SET_TEMPERATURE_REGULATION, &strp, 0)) != CE_NO_ERROR)
 			{
 				SetErrorString(res);
@@ -1598,7 +1599,7 @@ int my_ethernet_query(char *list, int *cams)
 		{
 			strcat(configfile, "/");
 		}
-		strcat(configfile, "query_ethernet.ini");
+		strcat(configfile, SBIGETHQUERYFIL);
 		//printf("configfile: %s\n", configfile);
 		
 		if ((fp_file = fopen(configfile, "r")) != NULL)

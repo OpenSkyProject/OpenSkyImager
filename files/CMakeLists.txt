@@ -1,4 +1,5 @@
 install(FILES handle_o.png handle_v.png osi.png DESTINATION bin/${PROJECT_NAME}) 
+install(FILES sbig_query_ethernet.ini DESTINATION bin/${PROJECT_NAME}) 
 install(PROGRAMS qhyReset.bash DESTINATION bin/${PROJECT_NAME})
 install(DIRECTORY fr DESTINATION bin/${PROJECT_NAME})
 install(DIRECTORY it DESTINATION bin/${PROJECT_NAME})

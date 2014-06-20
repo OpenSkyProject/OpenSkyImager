@@ -30,6 +30,7 @@
 	
 	#define SBIGLISTINFOLEN 12
 	#define SBIGFRAMINFOLEN 20
+	#define SBIGETHQUERYFIL "sbig_query_ethernet.ini"
 	
 	typedef struct 
 	{
