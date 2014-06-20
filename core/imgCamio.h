@@ -20,8 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-enum GuiderAxis{GuideRightAscension = 0x1, GuideDeclination = 0x2};
-enum GuiderMovement{GuideStop = 0, GuideIncrease = 1, GuideDecrease = -1};
+#include "guider.h"
 
 typedef struct
 {

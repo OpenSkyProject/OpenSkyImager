@@ -23,6 +23,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "guider.h"
+
 void   qhy5ii_init();
 int    qhy5ii_iscamera();
 int    qhy5ii_reset();
