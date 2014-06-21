@@ -595,10 +595,6 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 				if (imgcam_get_tecp()->tecerr == 0)
 				{
 					// Set the gui according to status returned from camera
-					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecenable)) != enabled)
-					{
-						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), enabled);
-					}
 					if (gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_tectgt)) != imgcam_get_tecp()->settemp)
 					{
 						// Set tec target
@@ -607,12 +603,12 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 					pct = (int)(((double)imgcam_get_tecp()->tecpwr / (double)imgcam_get_tecp()->tecmax) * 100.);
 					if (imgcam_get_tecp()->tecauto)
 					{
-						/// Statusbar feedback message about cooling status in automatic mode
+						// Statusbar feedback message about cooling status in automatic mode
 						sprintf(imgmsg, C_("main","Tec: %+06.2FC, Target: %+06.2FC, Power: %d%%"), imgcam_get_tecp()->tectemp, imgcam_get_tecp()->settemp, pct);
 					}
 					else
 					{
-						/// Satusbar feedback message about cooling in manual mode
+						// Satusbar feedback message about cooling in manual mode
 						sprintf(imgmsg, C_("main","Tec: %+06.2fC, Power: %d%%"), imgcam_get_tecp()->tectemp, pct);
 					}
 					// Main image update
@@ -2491,6 +2487,14 @@ void cmd_tecauto_click(GtkWidget *widget, gpointer data)
 	{
 		gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Auto mode"));
 		gtk_widget_set_sensitive(spn_tectgt, 1);
+		if (imgcam_get_tecp()->istec == 1)
+		{
+			gtk_widget_set_sensitive(vsc_tecpwr, 1);
+		}
+		else
+		{
+			gtk_widget_set_sensitive(vsc_tecpwr, 0);		
+		}
 		g_rw_lock_reader_lock(&thd_teclock);
 		imgcam_get_tecp()->tecauto = status;
 		imgcam_get_tecp()->settemp = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_tectgt));
@@ -2503,6 +2507,7 @@ void cmd_tecauto_click(GtkWidget *widget, gpointer data)
 	{
 		gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Manual mode"));
 		gtk_widget_set_sensitive(spn_tectgt, 0);
+		gtk_widget_set_sensitive(vsc_tecpwr, 1);
 		g_rw_lock_reader_lock(&thd_teclock);
 		imgcam_get_tecp()->tecauto = status;
 		imgcam_get_tecp()->tecedit = 1;
