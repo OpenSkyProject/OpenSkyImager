@@ -6,11 +6,13 @@ extern "C" {
 }
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
+#include <boost/program_options.hpp>
 #include <iomanip>
 #include <map>
 #include <sstream>
 
 using namespace std;
+namespace po = boost::program_options;
 
 int main(int argc, char **argv)
 {
