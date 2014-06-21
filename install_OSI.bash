@@ -8,7 +8,7 @@ echo
 echo "Checking for needed libraries and installing if needed"
 echo
 
-libs="libgtk-3-0 libgtk-3-dev libgtk2.0-0 libgtk2.0-dev libglib2.0-0 libglib2.0-dev libcfitsio3-dev cmake" #libusb-1.0-0-dev
+libs="libgtk-3-0 libgtk-3-dev libgtk2.0-0 libgtk2.0-dev libglib2.0-0 libglib2.0-dev libcfitsio3-dev libudev-dev cmake" #libusb-1.0-0-dev
 if [ -e `which apt-get` ]; then
 	sudo apt-get install $libs
 elif [ -e `which yum` ]; then

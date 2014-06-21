@@ -3,7 +3,7 @@
 basedir=$1
 cpu=`uname -p`
 bit=`getconf LONG_BIT`
-if [[ armebarmel == *$cpu* ]]
+if [[ $cpu == *arm* ]]
 then
 	sudo cp $basedir/arm-32/libsbigudrv.so /usr/lib/
 else

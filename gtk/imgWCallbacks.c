@@ -2875,7 +2875,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 			else if (strcmp(cmd, "TECAUTO") == 0)
 			{
 				// Enable disable tec feedback mode (using current target temp)
-				if (imgcam_get_tecp()->istec == 1)
+				if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3))
 				{
 					if (gtk_widget_get_sensitive(cmd_tecenable))
 					{
@@ -2902,7 +2902,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 			else if (strcmp(cmd, "SETTEMP") == 0)
 			{
 				// Set target temperature (if tecread & tecauto are not set already, it will do)
-				if (imgcam_get_tecp()->istec == 1)
+				if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3))
 				{
 					if (gtk_widget_get_sensitive(cmd_tecenable))
 					{
