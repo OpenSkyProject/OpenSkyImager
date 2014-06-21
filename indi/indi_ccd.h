@@ -71,11 +71,13 @@ protected:
   virtual bool GuideWest(float);
 private:
   std::unique_ptr<OSICamera> osiCamera;
-  char name[32];
   std::string osiName;
 
   ISwitch ResetS[1];
   ISwitchVectorProperty ResetSP;
+  
+  std::vector<ISwitch> DevicesS;
+  ISwitchVectorProperty DevicesSP;
   
   INumberVectorProperty GainNP;
   INumber GainN[1];
