@@ -85,6 +85,9 @@ if(HAVE_GTK_FRONTEND)
   add_subdirectory(gtk)
 endif(HAVE_GTK_FRONTEND)
 
+add_subdirectory(cpp)
+include_directories(cpp)
+
 if (ENABLE_INDI_DRIVER)
 	pkg_check_modules(LIBINDI libindi)
 	if(LIBINDI_FOUND)
