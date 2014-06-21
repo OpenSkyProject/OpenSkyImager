@@ -68,28 +68,28 @@ void ISInit() {
 
 void ISGetProperties(const char *dev) {
   ISInit();
-  if (dev == NULL || !strcmp(dev, camera->name)) {
+  if (dev == NULL || string{dev} == camera->getDeviceName() ) {
     camera->ISGetProperties(dev);
   }
 }
 
 void ISNewSwitch(const char *dev, const char *name, ISState *states, char *names[], int num) {
   ISInit();
-  if (dev == NULL || !strcmp(dev, camera->name)) {
+  if (dev == NULL || string{dev} == camera->getDeviceName() ) {
     camera->ISNewSwitch(dev, name, states, names, num);
   }
 }
 
 void ISNewText(const char *dev, const char *name, char *texts[], char *names[], int num) {
   ISInit();
-  if (dev == NULL || !strcmp(dev, camera->name)) {
+  if (dev == NULL || string{dev} == camera->getDeviceName() ) {
     camera->ISNewText(dev, name, texts, names, num);
   }
 }
 
 void ISNewNumber(const char *dev, const char *name, double values[], char *names[], int num) {
   ISInit();
-  if (dev == NULL || !strcmp(dev, camera->name)) {
+  if (dev == NULL || string{dev} == camera->getDeviceName() ) {
     camera->ISNewNumber(dev, name, values, names, num);
   }
 }
@@ -110,17 +110,17 @@ void ISSnoopDevice(XMLEle *root) {
 
 OSICCD::OSICCD(const std::string &name) : osiCamera(new OSICamera(initializeDriver)), osiName(name) {
   DEBUG(INDI::Logger::DBG_DEBUG, __PRETTY_FUNCTION__);
-  snprintf(this->name, 32, "OSI CCD %s", name.c_str() );
-  setDeviceName(this->name);
-
+  setDeviceName("OSI CCD");
   sim = false;
 }
+
+
 
 OSICCD::~OSICCD() {
 }
 
 const char * OSICCD::getDefaultName() {
-  return name;
+  return "OSI CCD";
 }
 
 bool OSICCD::initProperties() {
@@ -132,6 +132,12 @@ bool OSICCD::initProperties() {
 
   IUFillSwitch(&ResetS[0], "RESET", "Reset", ISS_OFF);
   IUFillSwitchVector(&ResetSP, ResetS, 1, getDeviceName(), "FRAME_RESET", "Frame Values", IMAGE_SETTINGS_TAB, IP_WO, ISR_1OFMANY, 0, IPS_IDLE);
+  
+  auto devices = initializeDriver->connectedCameras();
+  DevicesS.resize(devices.size());
+  for(int i=0; i<devices.size(); i++)
+    IUFillSwitch(&DevicesS[i], devices[i].c_str(), devices[i].c_str(), i==2?ISS_ON:ISS_OFF);
+  IUFillSwitchVector(&DevicesSP, DevicesS.data(), DevicesS.size(), getDeviceName(), "DEVICE_MODEL_VECTOR", "Device", MAIN_CONTROL_TAB, IP_WO, ISR_1OFMANY, 0, IPS_IDLE);
   
   IUFillNumber(&GainN[0], "GAIN", "Gain", "%0.f", 1., 255, 1., osiCamera->gain() );
   IUFillNumberVector(&GainNP, GainN, 1, getDeviceName(), "CCD_GAIN", "Gain", IMAGE_SETTINGS_TAB, IP_RW, 60, IPS_IDLE);
@@ -194,6 +200,7 @@ void OSICCD::ISGetProperties(const char *dev) {
   // Add Debug, Simulator, and Configuration controls
   addDebugControl();
   addConfigurationControl();
+  defineSwitch (&DevicesSP);
   // addSimulationControl();
 }
 
@@ -201,6 +208,7 @@ bool OSICCD::updateProperties() {
   DEBUG(INDI::Logger::DBG_DEBUG, __PRETTY_FUNCTION__);
   INDI::CCD::updateProperties();
 
+  defineSwitch (&DevicesSP);
   if (isConnected()) {
     defineSwitch(&ResetSP);
     // Let's get parameters now from CCD
@@ -224,7 +232,7 @@ bool OSICCD::updateProperties() {
 }
 
 bool OSICCD::ISNewSwitch(const char *dev, const char *name, ISState *states, char *names[], int n) {
-  DEBUG(INDI::Logger::DBG_DEBUG, __PRETTY_FUNCTION__);
+  DEBUGF(INDI::Logger::DBG_DEBUG,"%s: dev=%s, name=%s, n=%d", __PRETTY_FUNCTION__, dev, name, n);
   if (strcmp(dev, getDeviceName()) == 0) {
 
     /* Reset */
@@ -233,6 +241,17 @@ bool OSICCD::ISNewSwitch(const char *dev, const char *name, ISState *states, cha
         return false;
       resetFrame();
       return true;
+    }
+    
+    if(string{name} == DevicesSP.name) {
+      if(osiCamera->connected())
+	return false;
+      bool updated = IUUpdateSwitch(&DevicesSP, states, names, n) == 0;
+      if(updated)
+	osiName = names[0];
+      IDSetSwitch(&DevicesSP, NULL);
+      ResetSP.s = updated==0?IPS_IDLE : IPS_ALERT;
+      return updated;
     }
 
   }
@@ -258,15 +277,16 @@ bool OSICCD::Connect() {
     return false;
   }
   
-  IDMessage(getDeviceName(), "Attempting to find the Generic CCD...");
+  IDMessage(getDeviceName(), "Attempting to find the CCD device %s...", osiName.c_str());
 
   if (isDebug()) {
-    DEBUG(INDI::Logger::DBG_DEBUG, "Connecting CCD");
-    DEBUG(INDI::Logger::DBG_DEBUG, "Attempting to find the camera");
+    DEBUGF(INDI::Logger::DBG_DEBUG, "Connecting CCD: Attempting to find the camera %s", osiName.c_str());
   }
-  
-  if(! osiCamera->connect(osiName) ) {
-    IDMessage(getDeviceName(), "Error, connecting to camera");
+  try {
+    osiCamera->connect(osiName)
+  } catch(std::exception &e)
+  {
+    IDMessage(getDeviceName(), "Error, connecting to camera %s: %s", osiName.c_str(), e.what() );
     return false;
   }
 

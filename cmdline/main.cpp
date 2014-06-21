@@ -4,26 +4,35 @@ extern "C" {
 #include "imgFitsio.h"
 //#include "imgCamio.h"
 }
-#include <thread>
+#include <boost/thread.hpp>
+#include <boost/chrono.hpp>
+#include <boost/program_options.hpp>
 #include <iomanip>
 #include <map>
 #include <sstream>
 
 using namespace std;
+namespace po = boost::program_options;
 
 int main(int argc, char **argv)
 {
   imgfit_init();
   shared_ptr<OSICameraRAII> driver(new OSICameraRAII);
   auto connectedCameras = driver->connectedCameras();
+  if(connectedCameras.size() ==  0) {
+    cerr << "Error: no cameras found" << endl;
+    return 1;
+  }
   for(auto cam: connectedCameras)
     cout << "Found camera: " << cam << endl;
-  if(connectedCameras.empty())
-    return 1;
   OSICamera camera(driver);
-  bool connected = camera.connect(connectedCameras[0]);
-  cout << "connected to " << connectedCameras[0] << ": " << boolalpha << connected << endl;
-  if(!connected) return 1;
+  try {
+    camera.connect(connectedCameras[0]);
+  } catch(std::exception &e) {
+    cerr << "Error connecting to " << connectedCameras[0] << ": " << e.what() << endl;
+    return 1;
+  }
+  cout << "connected to " << connectedCameras[0] << endl;
   
   camera.setResolution(camera.supportedResolutions()[0]);
   
@@ -105,20 +114,20 @@ int main(int argc, char **argv)
     cin >> filename;
   };
   uint64_t sequenceNumber = 0;
-  auto saveImage = [&camera,&filename,&sequenceNumber, askAndSetExposure] {
+  
+  auto saveFit = [&camera,&filename,&sequenceNumber] {
     if(filename.empty() ) {
       cerr << "Error! file name is not set." << endl;
       return;
     }
-    askAndSetExposure();
     stringstream path;
     path << filename << "-" << setw(10) << setfill('0') << sequenceNumber++ << ".fit";
     cout << "Saving to " << path.str() << endl;
     try {
-      auto start = chrono::system_clock::now();
+      auto start = boost::chrono::system_clock::now();
       camera.shoot();
-      while(chrono::system_clock::now() - start <= chrono::milliseconds(camera.exposure() ))
-	this_thread::sleep_for(chrono::milliseconds(10));
+      while(boost::chrono::system_clock::now() - start <= boost::chrono::milliseconds(camera.exposure() ))
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
       imgfit_set_width(camera.resolution().width);
       imgfit_set_height(camera.resolution().height);
       imgfit_set_bytepix(camera.resolution().bytesPerPixel);
@@ -133,24 +142,39 @@ int main(int argc, char **argv)
     }
   };
   
+  
+  auto saveImage = [&saveFit, &askAndSetExposure] {
+    askAndSetExposure();
+    saveFit();
+  };
+  
+  auto saveSequence = [&saveFit, &askAndSetExposure] {
+    askAndSetExposure();
+    uint32_t numberOfImages;
+    cout << "Number of images: ";
+    cin >> numberOfImages;
+    for(uint32_t i = 0; i<numberOfImages; i++)
+      saveFit();
+  };
+  
   auto fpsTest = [&camera, askAndSetExposure] {
     askAndSetExposure();
     bool keepGoing = true;
     string typeQToStop;
-    thread t([&keepGoing, &camera] {
+    boost::thread t([&keepGoing, &camera] {
       uint64_t frames = 0;
       uint64_t lastFPS = 0;
-      auto start = chrono::system_clock::now();
+      auto start = boost::chrono::system_clock::now();
       while(keepGoing) {
 	try {
 	  camera.shoot();
 	  camera.readData();
 	  frames++;
 	  if(lastFPS == 0 || frames/lastFPS > 2) {
-	    chrono::duration<double> elapsed = chrono::system_clock::now() - start;
+	    boost::chrono::duration<double> elapsed = boost::chrono::system_clock::now() - start;
 	    lastFPS = static_cast<double>(frames) / elapsed.count();
 	    cout << setw(6) << frames << " frames in " << setw(6) << fixed << setprecision(3) << elapsed.count() << " seconds: " << setw(4) << lastFPS << " FPS; type 'q' and enter to stop." << endl;
-	    start = chrono::system_clock::now();
+	    start = boost::chrono::system_clock::now();
 	    frames = 0;
 	  }
 	} catch(exception &e) {
@@ -170,6 +194,7 @@ int main(int argc, char **argv)
     { "i", {"print information", printInformation } },
     { "f", {"set file base name", setFileName } },
     { "s", {"save image", saveImage } },
+    { "e", {"save images sequence", saveSequence } },
     { "u", {"set USB Speed", setUSBSpeed } },
     { "m", {"set camera mode", setCameraMode } },
     { "g", {"set gain", setGain } },

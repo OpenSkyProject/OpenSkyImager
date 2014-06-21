@@ -5,6 +5,7 @@ set(FORCE_GTK2 off CACHE BOOL "Force GTK2 Detection over GTK3")
 set(FORCE_NO_SBIG off CACHE BOOL "Set aside use of SBIG driver")
 set(FORCE_SBIG_UPDATE off CACHE BOOL "Force SBIG driver update")
 set(ENABLE_INDI_DRIVER off CACHE BOOL "Enable experimental INDI driver compilation (default: off)")
+set(ENABLE_CMDLINE off CACHE BOOL "Enable command line frontend (default: off)")
 
 add_definitions ("-Wall")
 
@@ -84,15 +85,20 @@ if(HAVE_GTK_FRONTEND)
   add_subdirectory(gtk)
 endif(HAVE_GTK_FRONTEND)
 
+add_subdirectory(cpp)
+include_directories(cpp)
+
 if (ENABLE_INDI_DRIVER)
 	pkg_check_modules(LIBINDI libindi)
 	if(LIBINDI_FOUND)
-		include_directories(cpp)
-		add_subdirectory(cpp)
 		add_subdirectory(indi)
-		add_subdirectory(cmdline)
 	endif(LIBINDI_FOUND)
 endif(ENABLE_INDI_DRIVER)
+if(ENABLE_CMDLINE)
+  find_package(Boost 1.49 REQUIRED COMPONENTS thread chrono system program_options )
+  include_directories(${Boost_INCLUDE_DIRS})
+  add_subdirectory(cmdline)
+endif(ENABLE_CMDLINE)
 
 # add uninstall target
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)

@@ -76,18 +76,19 @@ OSICameraRAII::~OSICameraRAII()
 
 class OSICamera::Private {
 public:
-  void setIntField(int &field, int value, const string &desc);
+  void setIntField(int &field, int value, const string &desc = string{}, bool setEditField = true);
   string deviceName;
 };
 
-void OSICamera::Private::setIntField(int &field, int value, const string &desc = string{})
+void OSICamera::Private::setIntField(int &field, int value, const string &desc, bool setEditField )
 {
   if(field == value)
     return;
   //ofstream s("/tmp/osiccd.log", ios_base::app);
   //s << __PRETTY_FUNCTION__ << ": " << desc << ", old=" << field << ", new=" << value << endl;
   field = value;
-  imgcam_get_expar()->edit = 1;
+  if(setEditField)
+    imgcam_get_expar()->edit = 1;
 }
 
 OSICamera::OSICamera(const shared_ptr<OSICameraRAII> &driverInitialization)
@@ -121,10 +122,11 @@ bool OSICamera::disconnect()
   return imgcam_disconnect() != 0;
 }
 
-bool OSICamera::connect(const string &cameraModel)
+void OSICamera::connect(const string &cameraModel)
 {
   imgcam_set_model(cameraModel.c_str());
-  return imgcam_connect() != 0 && connected();
+  if( imgcam_connect() == 0 || !connected())
+    throw runtime_error(imgcam_get_msg());
 }
 
 bool OSICamera::editMode() const
@@ -242,7 +244,7 @@ void OSICamera::mode(int newMode)
 
 void OSICamera::exposure(int milliseconds)
 {
-  d->setIntField(imgcam_get_expar()->time, milliseconds, "exposure");
+  d->setIntField(imgcam_get_expar()->time, milliseconds, "exposure", false); // TODO: verify
 }
 
 bool OSICamera::guide(GuiderAxis axis, GuiderMovement movement)
@@ -253,7 +255,9 @@ bool OSICamera::guide(GuiderAxis axis, GuiderMovement movement)
 OSICamera::Tec OSICamera::tec() const
 {
   Tec t;
-  if(imgcam_gettec(&t.celsius, &t.millivolts) == 0)
+  int enabled;
+  if(imgcam_gettec(&t.celsius, &t.millivolts, &t.power, &enabled) == 0)
     throw runtime_error(imgcam_get_msg() );
+  t.enabled = enabled!=0;
   return t;
 }

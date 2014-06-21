@@ -20,7 +20,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libusb-1.0/libusb.h>
+/* #include <libusb-1.0/libusb.h> */
+#include "libusb.h"
 
 int find_camera(int vendorid, int productid);
 int open_camera(int vendorid, int productid, libusb_device_handle **handle, char *msg);
