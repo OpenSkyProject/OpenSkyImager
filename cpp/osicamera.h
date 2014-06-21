@@ -42,7 +42,7 @@ public:
   OSICamera(const std::shared_ptr<OSICameraRAII> &driverInitialization);
   ~OSICamera();
   void reset();
-  bool connect(const std::string &cameraModel);
+  void connect(const std::string &cameraModel);
   bool disconnect();
   void shoot();
   void abort();

@@ -122,10 +122,11 @@ bool OSICamera::disconnect()
   return imgcam_disconnect() != 0;
 }
 
-bool OSICamera::connect(const string &cameraModel)
+void OSICamera::connect(const string &cameraModel)
 {
   imgcam_set_model(cameraModel.c_str());
-  return imgcam_connect() != 0 && connected();
+  if( imgcam_connect() == 0 || !connected())
+    throw runtime_error(imgcam_get_msg());
 }
 
 bool OSICamera::editMode() const

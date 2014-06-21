@@ -282,9 +282,11 @@ bool OSICCD::Connect() {
   if (isDebug()) {
     DEBUGF(INDI::Logger::DBG_DEBUG, "Connecting CCD: Attempting to find the camera %s", osiName.c_str());
   }
-  
-  if(! osiCamera->connect(osiName) ) {
-    IDMessage(getDeviceName(), "Error, connecting to camera %s", osiName.c_str());
+  try {
+    osiCamera->connect(osiName)
+  } catch(std::exception &e)
+  {
+    IDMessage(getDeviceName(), "Error, connecting to camera %s: %s", osiName.c_str(), e.what() );
     return false;
   }
 
