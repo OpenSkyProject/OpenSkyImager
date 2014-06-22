@@ -253,7 +253,6 @@ bool OSICCD::ISNewSwitch(const char *dev, const char *name, ISState *states, cha
       ResetSP.s = updated==0?IPS_IDLE : IPS_ALERT;
       return updated;
     }
-
   }
 
   //  Nobody has claimed this, so, ignore it
@@ -525,9 +524,12 @@ bool OSICCD::StartExposure(float duration)
   DEBUGF(INDI::Logger::DBG_SESSION, "Taking a %g seconds frame...", duration);
   
   try {
+    InExposure = false;
     osiCamera->shoot();
-    exposureStarted = std::chrono::steady_clock::now();
     InExposure = true;
+    exposureTimerId = IEAddTimer(osiCamera->exposureRemaining(), ::OSIExposureCallback, this);
+
+    exposureStarted = std::chrono::steady_clock::now();
     DEBUGF(INDI::Logger::DBG_SESSION, "shoot started correctly (edit=%d)", osiCamera->editMode());
   } catch(std::exception &e) {
     InExposure = false;
@@ -553,7 +555,10 @@ bool OSICCD::AbortExposure() {
    *
    *
    **********************************************************/
+  if(!InExposure)
+    return false;
   DEBUGF(INDI::Logger::DBG_SESSION, "%s (edit=%d)", __PRETTY_FUNCTION__, osiCamera->editMode());
+  IERmTimer(exposureTimerId);
   osiCamera->abort();
   InExposure = false;
   DEBUGF(INDI::Logger::DBG_SESSION, "%s: exit (edit=%d)", __PRETTY_FUNCTION__, osiCamera->editMode());
@@ -742,6 +747,39 @@ void OSICCD::resetFrame() {
   return;
 }
 
+
+void OSIExposureCallback(void *p)
+{
+  ((OSICCD *) p)->exposureCompleted();
+}
+
+void OSICCD::exposureCompleted()
+{
+  std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now()-exposureStarted;
+  DEBUGF(INDI::Logger::DBG_DEBUG, "%s: elapsed: %f seconds, timeLeft: %f...\n", __PRETTY_FUNCTION__, elapsed_seconds, CalcTimeLeft() );
+  // TODO: original code was hitting timer almost every second (or even faster?), and updating the time left using
+  //       PrimaryCCD.setExposureLeft(timeleft);
+  // Should we add a second timer for that?
+
+  /* We're done exposing */
+  IDMessage(getDeviceName(), "Exposure done, downloading image...");
+
+  if (isDebug()) {
+    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now()-exposureStarted;
+    DEBUGF(INDI::Logger::DBG_DEBUG, "Exposure done, elapsed: %f seconds, downloading image...\n", elapsed_seconds.count() );
+  }
+
+  PrimaryCCD.setExposureLeft(0);
+  InExposure = false;
+  /* grab and save image */
+  if(!grabImage())
+  {
+    DEBUGF(INDI::Logger::DBG_ERROR, "Marking exposure as failed (edit mode: %d).", osiCamera->editMode() );
+    PrimaryCCD.setExposureFailed();
+  }
+}
+
+
 void OSICCD::TimerHit() {
   int timerID = -1;
   int err = 0;
@@ -750,66 +788,6 @@ void OSICCD::TimerHit() {
 
   if (isConnected() == false)
     return;  //  No need to reset timer if we are not connected anymore
-
-  if (InExposure) {
-    timeleft = CalcTimeLeft();
-
-    if (timeleft < 1.0) {
-      if (timeleft > 0.25) {
-        //  a quarter of a second or more
-        //  just set a tighter timer
-        timerID = SetTimer(250);
-      } else {
-        if (timeleft > 0.07) {
-          //  use an even tighter timer
-          timerID = SetTimer(50);
-        } else {
-          //  it's real close now, so spin on it
-          while (!sim && timeleft > 0) {
-
-            /**********************************************************
-             *
-             *  IMPORRANT: If supported by your CCD API
-             *  Add a call here to check if the image is ready for download
-             *  If image is ready, set timeleft to 0. Some CCDs (check FLI)
-             *  also return timeleft in msec.
-             *
-             **********************************************************/
-
-            int slv;
-            slv = 100000 * timeleft;
-            usleep(slv);
-          }
-
-          /* We're done exposing */
-          IDMessage(getDeviceName(), "Exposure done, downloading image...");
-
-          if (isDebug())
-            DEBUG(INDI::Logger::DBG_DEBUG, "Exposure done, downloading image...\n");
-
-          PrimaryCCD.setExposureLeft(0);
-          InExposure = false;
-          /* grab and save image */
-          if(!grabImage())
-	  {
-	    DEBUGF(INDI::Logger::DBG_ERROR, "Marking exposure as failed (edit mode: %d).", osiCamera->editMode() );
-	    PrimaryCCD.setExposureFailed();
-	  }
-
-        }
-      }
-    } else {
-
-      if (isDebug()) {
-        DEBUGF(INDI::Logger::DBG_DEBUG, "With time left %ld\n", timeleft);
-        DEBUG(INDI::Logger::DBG_DEBUG, "image not yet ready....\n");
-      }
-
-      PrimaryCCD.setExposureLeft(timeleft);
-
-    }
-
-  }
 
   switch (TemperatureNP.s) {
   case IPS_IDLE:
