@@ -18,6 +18,35 @@ int main(int argc, char **argv)
 {
   imgfit_init();
   shared_ptr<OSICameraRAII> driver(new OSICameraRAII);
+  
+  po::options_description desc("Allowed options");
+  desc.add_options()
+      ("help", "produce help message")
+      ("list-drivers", "list all available camera drivers")
+  ;
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);    
+
+  if(vm.count("help")) {
+    cout << "Usage: " << argv[0] << " [options]" << endl;
+    cout << desc << endl;
+    cout << "Without options, the application will run a wizard-like interface." << endl;
+    return 0;
+  }
+  
+  if(vm.count("list-drivers")) {
+    cout << "Available drivers: ";
+    string separator;
+    for(auto d: driver->allCameras()) {
+      cout << separator << d;
+      separator = ", ";
+    }
+    cout << endl;
+    return 0;
+  }
+  
   auto connectedCameras = driver->connectedCameras();
   if(connectedCameras.size() ==  0) {
     cerr << "Error: no cameras found" << endl;

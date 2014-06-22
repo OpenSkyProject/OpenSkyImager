@@ -31,6 +31,7 @@ public:
   OSICameraRAII();
   ~OSICameraRAII();
   std::vector<std::string> connectedCameras() const;
+  std::vector<std::string> allCameras() const;
 private:
   class Private;
   friend class Private;

@@ -68,6 +68,10 @@ vector<string> OSICameraRAII::connectedCameras() const
 {
   return split(imgcam_init_list(0), "|", [](const string &token) { return token != ":0" && token != "None"; } );
 }
+vector<string> OSICameraRAII::allCameras() const
+{
+  return split(imgcam_init_list(1), "|", [](const string &token) { return token != ":0" && token != "None"; } );
+}
 
 OSICameraRAII::~OSICameraRAII()
 {

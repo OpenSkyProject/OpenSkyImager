@@ -135,7 +135,7 @@ bool OSICCD::initProperties() {
   
   auto devices = initializeDriver->connectedCameras();
   DevicesS.resize(devices.size());
-  for(int i=0; i<devices.size(); i++)
+  for(uint32_t i=0; i<devices.size(); i++)
     IUFillSwitch(&DevicesS[i], devices[i].c_str(), devices[i].c_str(), i==2?ISS_ON:ISS_OFF);
   IUFillSwitchVector(&DevicesSP, DevicesS.data(), DevicesS.size(), getDeviceName(), "DEVICE_MODEL_VECTOR", "Device", MAIN_CONTROL_TAB, IP_WO, ISR_1OFMANY, 0, IPS_IDLE);
   
@@ -283,7 +283,7 @@ bool OSICCD::Connect() {
     DEBUGF(INDI::Logger::DBG_DEBUG, "Connecting CCD: Attempting to find the camera %s", osiName.c_str());
   }
   try {
-    osiCamera->connect(osiName)
+    osiCamera->connect(osiName);
   } catch(std::exception &e)
   {
     IDMessage(getDeviceName(), "Error, connecting to camera %s: %s", osiName.c_str(), e.what() );
