@@ -505,7 +505,6 @@ bool OSICCD::StartExposure(float duration)
    **********************************************************/
 
   PrimaryCCD.setExposureDuration(duration);
-  ExposureRequest = duration;
 
   gettimeofday(&ExpStart, NULL);
   osiCamera->exposure(duration * 1000.);
@@ -523,10 +522,11 @@ bool OSICCD::StartExposure(float duration)
       osiCamera->editMode()
     );
   
-  DEBUGF(INDI::Logger::DBG_SESSION, "Taking a %g seconds frame...", ExposureRequest);
+  DEBUGF(INDI::Logger::DBG_SESSION, "Taking a %g seconds frame...", duration);
   
   try {
     osiCamera->shoot();
+    exposureStarted = std::chrono::steady_clock::now();
     InExposure = true;
     DEBUGF(INDI::Logger::DBG_SESSION, "shoot started correctly (edit=%d)", osiCamera->editMode());
   } catch(std::exception &e) {
@@ -686,16 +686,8 @@ bool OSICCD::UpdateCCDBin(int binx, int biny) {
 }
 
 float OSICCD::CalcTimeLeft() {
-  double timesince;
-  double timeleft;
-  struct timeval now;
-  gettimeofday(&now, NULL);
-
-  timesince = (double) (now.tv_sec * 1000.0 + now.tv_usec / 1000) - (double) (ExpStart.tv_sec * 1000.0 + ExpStart.tv_usec / 1000);
-  timesince = timesince / 1000;
-
-  timeleft = ExposureRequest - timesince;
-  return timeleft;
+  std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - exposureStarted;
+  return (static_cast<double>(osiCamera->exposureRemaining()) / 1000.) - elapsed_seconds.count();
 }
 
 /* Downloads the image from the CCD.

@@ -27,6 +27,7 @@
 #include <indiccd.h>
 #include <iostream>
 #include <mutex>
+#include <chrono>
 
 using namespace std;
 class OSICamera;
@@ -96,7 +97,6 @@ private:
 
   struct timeval ExpStart;
 
-  float ExposureRequest;
   float TemperatureRequest;
 
   float CalcTimeLeft();
@@ -105,7 +105,7 @@ private:
   void resetFrame();
 
   bool sim;
-  std::mutex mutex;
+   std::chrono::time_point<std::chrono::steady_clock> exposureStarted;
 
   friend void ::ISGetProperties(const char *dev);
   friend void ::ISNewSwitch(const char *dev, const char *name, ISState *states, char *names[], int num);
