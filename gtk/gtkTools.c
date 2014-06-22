@@ -122,11 +122,11 @@ GtkWidget *gtk_paned_new_with_handle(GtkOrientation orientation)
 	gtk_style_context_lookup_color(context, "bg_color", &clrSel);
 	if (orientation == GTK_ORIENTATION_HORIZONTAL)
 	{
-		sprintf(css, "* {\n -GtkPaned-handle-size: 3; \n } \n .pane-separator.horizontal {\n background-image: -gtk-gradient (linear, left top, left bottom, from (%s), color-stop (0.5, shade (%s, 0.95)), to (%s)); \n -unico-centroid-texture: url(\"%s\");\n }\n", gdk_rgba_to_string(&clrSel), gdk_rgba_to_string(&clrSel), gdk_rgba_to_string(&clrSel), ORZHND);
+		sprintf(css, "* {\n -GtkPaned-handle-size: 3; \n } \n .pane-separator.horizontal {\n background-image: -gtk-gradient (linear, left top, left bottom, from (%s), color-stop (0.5, shade (%s, 0.95)), to (%s)); \n -unico-centroid-texture: url(\"%s\");\n }\n", gdk_rgba_to_string(&clrSel), gdk_rgba_to_string(&clrSel), gdk_rgba_to_string(&clrSel), imgOrzHnd);
 	}
 	else
 	{
-		sprintf(css, "* {\n -GtkPaned-handle-size: 3; \n } \n \n .pane-separator.vertical {\n background-image: -gtk-gradient (linear, left top, right top, from (%s), color-stop (0.5, shade (%s, 0.95)), to (%s)); \n -unico-centroid-texture: url(\"%s\");\n }\n", gdk_rgba_to_string(&clrSel), gdk_rgba_to_string(&clrSel), gdk_rgba_to_string(&clrSel), VRTHND);
+		sprintf(css, "* {\n -GtkPaned-handle-size: 3; \n } \n \n .pane-separator.vertical {\n background-image: -gtk-gradient (linear, left top, right top, from (%s), color-stop (0.5, shade (%s, 0.95)), to (%s)); \n -unico-centroid-texture: url(\"%s\");\n }\n", gdk_rgba_to_string(&clrSel), gdk_rgba_to_string(&clrSel), gdk_rgba_to_string(&clrSel), imgVrtHnd);
 	}
 	gtk_style_context_remove_provider(context, GTK_STYLE_PROVIDER (cssprv));
 	gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER (cssprv), GTK_STYLE_PROVIDER_PRIORITY_USER);

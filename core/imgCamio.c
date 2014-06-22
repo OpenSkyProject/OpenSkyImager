@@ -303,7 +303,7 @@ void imgcam_init()
 #endif
 	}
 #ifdef HAVE_SBIG
-	sbig_core_init();
+	sbig_core_init(imgBasePath);
 #endif
 
 	if (databuffer[0] != NULL)
@@ -1008,7 +1008,7 @@ int imgcam_settec(double setValue, int setMode)
 int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 {
 	int retval = 0;
-	double *mV = NULL;
+	double mV = 0;
 	
 	cammsg[0] = '\0';
 	switch (camid)
@@ -1027,11 +1027,11 @@ int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 		case 81:
 		case 9:
 		case 10:
-			retval = qhy_getDC201_i(tC, mV);
+			retval = qhy_getDC201_i(tC, &mV);
 			break;
 		case 11:
 		case 12:
-			retval = qhy_getDC201_i(tC, mV);
+			retval = qhy_getDC201_i(tC, &mV);
 			break;
 		case 1000:
 			*tC = dsi2pro_GetTemp();

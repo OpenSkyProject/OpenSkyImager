@@ -81,6 +81,7 @@ static int			m_dev_type	= DEV_NONE;
 static int			m_dev_ip		= 0;
 static char			m_dev_name[16];
 static char 			coremsg[128];
+static char 			basePath[PATH_MAX];
 // Camera details
 static sbig_list		m_camera_list;
 static sbig_camdetails	m_camera_details;
@@ -113,12 +114,13 @@ double  			BcdPixel2double(ulong bcd);
 float			bcd2float(unsigned short bcd);
 
 //==========================================================================
-int sbig_core_init()
+int sbig_core_init(char *path)
 {	
 	int res;
 	
 	InitVars(VARLST);
 	InitVars(VARALL);
+	strcpy(basePath, path);
 	if ((res = OpenDriver()) == CE_NO_ERROR)
 	{
 		if ((res = GetDriverVersion()) == CE_NO_ERROR)
@@ -754,7 +756,8 @@ void InitVars(int section)
 		if (section >= VARDRV)
 		{
 			m_drv_handle = INVALID_HANDLE_VALUE;	
-			coremsg[0] = '\0'; 	
+			coremsg[0] = '\0';
+			basePath[0] = '\0';
 		}
 		if (section >= VARCAM)
 		{
@@ -1593,64 +1596,58 @@ int my_ethernet_query(char *list, int *cams)
 	unsigned int ip1, ip2, ip3, ip4, camip;
 	FILE *fp_file;
 	
-	if (getcwd(configfile, PATH_MAX) != NULL)
+	strcpy(configfile, basePath);
+	strcat(configfile, SBIGETHQUERYFIL);
+	//printf("configfile: %s\n", configfile);
+	
+	if ((fp_file = fopen(configfile, "r")) != NULL)
 	{
-		if (configfile[strlen(configfile)] != '/')
+		while (configstr == fgets(configstr, 80, fp_file))
 		{
-			strcat(configfile, "/");
-		}
-		strcat(configfile, SBIGETHQUERYFIL);
-		//printf("configfile: %s\n", configfile);
-		
-		if ((fp_file = fopen(configfile, "r")) != NULL)
-		{
-			while (configstr == fgets(configstr, 80, fp_file))
+			if (configstr[0] != '*')
 			{
-				if (configstr[0] != '*')
+				i += 1;
+				sprintf(cureth, "eth%d", i);
+				configptr = strstr(configstr, cureth);
+				if ( configptr != NULL)
 				{
-					i += 1;
-					sprintf(cureth, "eth%d", i);
-					configptr = strstr(configstr, cureth);
+					configptr = strstr(configstr,"=");
 					if ( configptr != NULL)
 					{
-						configptr = strstr(configstr,"=");
-						if ( configptr != NULL)
+						configptr = configptr + 1;
+						sscanf(configptr,"%d.%d.%d.%d",&ip1, &ip2, &ip3, &ip4);
+						//printf("read %d.%d.%d.%d\n", ip1, ip2, ip3, ip4);
+						ip1 = ip1 << 24;
+						ip2 = ip2 << 16;
+						ip3 = ip3 << 8;
+						camip = ip1 + ip2 + ip3 + ip4;
+						//printf("Opening %u\n", camip);
+						if (OpenDevice(DEV_ETH, camip) == CE_NO_ERROR)
 						{
-							configptr = configptr + 1;
-							sscanf(configptr,"%d.%d.%d.%d",&ip1, &ip2, &ip3, &ip4);
-							//printf("read %d.%d.%d.%d\n", ip1, ip2, ip3, ip4);
-							ip1 = ip1 << 24;
-							ip2 = ip2 << 16;
-							ip3 = ip3 << 8;
-							camip = ip1 + ip2 + ip3 + ip4;
-							//printf("Opening %u\n", camip);
-							if (OpenDevice(DEV_ETH, camip) == CE_NO_ERROR)
+							//printf("%u open\n", camip);
+							if (sbig_EstablishLink() == CE_NO_ERROR)
 							{
-								//printf("%u open\n", camip);
-								if (sbig_EstablishLink() == CE_NO_ERROR)
-								{
-									strcpy(tmpnam1, m_camera_details.camName);
-									m_camera_list.listinfo[*cams].camportId	= DEV_ETH;
-									m_camera_list.listinfo[*cams].camIp 	= camip;
-									m_camera_list.listinfo[*cams].camId	= m_camera_details.camId;
-									strcpy(m_camera_list.listinfo[*cams].camName, tmpnam1);
-									sprintf(m_camera_list.listinfo[*cams].camport, "%s", cureth);
-									// UI list
-									sprintf(tmpname, "%s %s", tmpnam1, cureth);
-									strcat(list, "|");
-									strcat(list, tmpname);
-									// Totcams
-									*cams += 1;
-								}
-								sbig_CloseDevice();
+								strcpy(tmpnam1, m_camera_details.camName);
+								m_camera_list.listinfo[*cams].camportId	= DEV_ETH;
+								m_camera_list.listinfo[*cams].camIp 	= camip;
+								m_camera_list.listinfo[*cams].camId	= m_camera_details.camId;
+								strcpy(m_camera_list.listinfo[*cams].camName, tmpnam1);
+								sprintf(m_camera_list.listinfo[*cams].camport, "%s", cureth);
+								// UI list
+								sprintf(tmpname, "%s %s", tmpnam1, cureth);
+								strcat(list, "|");
+								strcat(list, tmpname);
+								// Totcams
+								*cams += 1;
 							}
+							sbig_CloseDevice();
 						}
 					}
 				}
 			}
-			fclose(fp_file);
-		}	
-	}
+		}
+		fclose(fp_file);
+	}	
 	return (res);
 }
 

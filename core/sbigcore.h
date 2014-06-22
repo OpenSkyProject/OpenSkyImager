@@ -102,7 +102,7 @@
 
 	//=============================================================================
 	// public
-	int				sbig_core_init();
+	int				sbig_core_init(char *path);
 	int 				sbig_core_reload_list();
 	int 				sbig_core_close();
 

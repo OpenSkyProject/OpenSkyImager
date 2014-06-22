@@ -1378,7 +1378,7 @@ void window_build()
 	gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 0);
 	gtk_window_set_geometry_hints(GTK_WINDOW(window), window, &hints, (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE));
-	icopixbuf = gdk_pixbuf_new_from_file(APPICO, &error);
+	icopixbuf = gdk_pixbuf_new_from_file(imgAppIco, &error);
 	if(icopixbuf) 
 	{
 		gtk_window_set_icon(GTK_WINDOW(window), icopixbuf);
