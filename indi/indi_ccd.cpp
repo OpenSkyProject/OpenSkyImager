@@ -804,7 +804,8 @@ void OSICCD::TimerHit() {
      *
      *
      **********************************************************/
-
+    if(InExposure)
+      break;
     ccdTemp = osiCamera->tec().celsius;
     if (fabs(TemperatureN[0].value - ccdTemp) >= TEMP_THRESHOLD) {
       TemperatureN[0].value = ccdTemp;
