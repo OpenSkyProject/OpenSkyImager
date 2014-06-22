@@ -128,10 +128,12 @@ int main(int argc, char **argv)
       auto now = boost::posix_time::microsec_clock::local_time();
       string filename = boost::posix_time::to_iso_extended_string(now) + ".fit";
       try {
-        auto start = boost::chrono::system_clock::now();
+//         auto start = boost::chrono::system_clock::now();
         camera.shoot();
-        while(boost::chrono::system_clock::now() - start <= boost::chrono::milliseconds(camera.exposure() ))
-          boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
+//         while(boost::chrono::system_clock::now() - start <= boost::chrono::milliseconds(camera.exposure() ))
+//           boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(camera.exposureRemaining()));
+
         imgfit_set_width(camera.resolution().width);
         imgfit_set_height(camera.resolution().height);
         imgfit_set_bytepix(camera.resolution().bytesPerPixel);
