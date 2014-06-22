@@ -35,6 +35,7 @@ class OSICamera;
 void GuideTimerCallbackAR(void *p);
 void GuideTimerCallbackDEC(void *p);
 void OSIExposureCallback(void *p);
+void OSIExposureInProgressCallback(void *p);
 
 class OSICCD: public INDI::CCD {
 public:
@@ -114,8 +115,10 @@ private:
   friend void ::ISNewNumber(const char *dev, const char *name, double values[], char *names[], int num);
   friend void ::ISNewBLOB(const char *dev, const char *name, int sizes[], int blobsizes[], char *blobs[], char *formats[], char *names[], int n);
   friend void ::OSIExposureCallback(void *p);
+  friend void ::OSIExposureInProgressCallback(void *p);
   void exposureCompleted();
   int exposureTimerId;
+  void exposureInProgress();
 };
 
 #endif // GENERIC_CCD_H

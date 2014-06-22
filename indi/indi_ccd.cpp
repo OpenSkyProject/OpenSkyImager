@@ -527,6 +527,7 @@ bool OSICCD::StartExposure(float duration)
     InExposure = false;
     osiCamera->shoot();
     InExposure = true;
+    IEAddTimer(100, ::OSIExposureInProgressCallback, this);
     exposureTimerId = IEAddTimer(osiCamera->exposureRemaining(), ::OSIExposureCallback, this);
 
     exposureStarted = std::chrono::steady_clock::now();
@@ -753,6 +754,22 @@ void OSIExposureCallback(void *p)
   ((OSICCD *) p)->exposureCompleted();
 }
 
+void OSIExposureInProgressCallback(void *p)
+{
+  ((OSICCD *) p)->exposureInProgress();
+}
+
+void OSICCD::exposureInProgress()
+{
+  if(!InExposure)
+    return;
+  double remainingTime = CalcTimeLeft();
+  if(remainingTime <= 0.10)
+    return;
+  PrimaryCCD.setExposureLeft(remainingTime);
+  if(remainingTime >= 0.20)
+    IEAddTimer(100, ::OSIExposureInProgressCallback, this);
+}
 void OSICCD::exposureCompleted()
 {
   std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now()-exposureStarted;
