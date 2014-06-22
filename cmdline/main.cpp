@@ -8,6 +8,7 @@ extern "C" {
 #include <boost/chrono.hpp>
 #include <boost/program_options.hpp>
 #include <boost/date_time.hpp>
+#include <boost/filesystem.hpp>
 #include <iomanip>
 #include <map>
 #include <sstream>
@@ -43,16 +44,24 @@ int main(int argc, char **argv)
       ("Bpp,B", po::value<int>()->default_value(1), "bytes per pixel (1=8 bit, 2=16 bit)")
       ("exposure,e", po::value<int>()->default_value(100), "exposure time, in milliseconds")
   ;
-
+  po::options_description outputSettings("Output Settings");
+  outputSettings.add_options()
+    ("directory", po::value<string>(), "fits output directory (default: current directory)")
+  ;
   po::options_description cmdline_options;
-  cmdline_options.add(generic).add(actions).add(cameraSettings);
+  cmdline_options.add(generic).add(actions).add(cameraSettings).add(outputSettings);
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, cmdline_options), vm);
-  po::notify(vm);    
-
-  if(vm.count("help")) {
+  po::notify(vm);
+  
+  
+  auto help = [=,&cmdline_options] {
     cout << "Usage: " << argv[0] << " [options]" << endl;
     cout << cmdline_options << endl;
+  };
+
+  if(vm.count("help") || (!vm.count("list-drivers") && ! vm.count("list-cameras") && ! vm.count("information") && ! vm.count("save") && ! vm.count("fps-test") ) ) {
+    help();
     return 0;
   }
   
@@ -121,17 +130,25 @@ int main(int argc, char **argv)
   }
   
   if(vm.count("save")) {
-    // TODO: option for file name/path
+    boost::filesystem::path outputDirectory = vm.count("directory") ? boost::any_cast<string>(vm["directory"].value() ) : boost::filesystem::current_path();
+    try {
+      boost::filesystem::create_directories(outputDirectory);
+    } catch(exception &e) {
+      cerr << "Error creating output directory " << outputDirectory << ": " << e.what() << endl;
+      help();
+      return 1;
+    }
+    if(! boost::filesystem::is_directory(outputDirectory)) {
+      help();
+      return 1;
+    }
     int count = boost::any_cast<int>(vm["save"].value());
-    cout << "Saving " << count << " images to current directory." << endl;
+    cout << "Saving " << count << " images to directory " << outputDirectory << endl;
     for(int i=0; i<count; i++) {
       auto now = boost::posix_time::microsec_clock::local_time();
-      string filename = boost::posix_time::to_iso_extended_string(now) + ".fit";
+      boost::filesystem::path filename = outputDirectory / (boost::posix_time::to_iso_extended_string(now) + ".fit");
       try {
-//         auto start = boost::chrono::system_clock::now();
         camera.shoot();
-//         while(boost::chrono::system_clock::now() - start <= boost::chrono::milliseconds(camera.exposure() ))
-//           boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
         boost::this_thread::sleep_for(boost::chrono::milliseconds(camera.exposureRemaining()));
 
         imgfit_set_width(camera.resolution().width);
@@ -140,7 +157,7 @@ int main(int argc, char **argv)
         auto data = camera.readData();
         imgfit_set_data( data );
         fit_rowhdr header;
-        imgfit_save_file((char*) filename.c_str(), &header, 0);
+        imgfit_save_file((char*) filename.string().c_str(), &header, 0);
         cout << "Saved " << filename << endl;
       } catch(exception &e) {
         cerr << "Error during image acquisition: " << e.what() << endl;
