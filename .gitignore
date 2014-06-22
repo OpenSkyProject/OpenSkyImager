@@ -62,4 +62,4 @@ build*
 *.o
 .kateproject.d
 *.swp
-
+*kdev4*
