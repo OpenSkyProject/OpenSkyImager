@@ -32,10 +32,21 @@
 #include <glib/gi18n.h>
 #include "tools.h"
 
-#define APPICO "./ico.png"
-#define ORZHND "./handle_v.png"
-#define VRTHND "./handle_o.png"
+#define APPICO "osi.png"
+#define ORZHND "handle_v.png"
+#define VRTHND "handle_o.png"
 #define APPNAM "OpenSkyImager"
 #define APPTIT "OpenSkyImager (c) 2013 JP & C AstroSoftware"
 #define APPVER "0.8.13"
 
+#ifdef DECLARE_MAIN
+	char imgBasePath[PATH_MAX];
+	char imgAppIco[PATH_MAX];
+	char imgOrzHnd[PATH_MAX];
+	char imgVrtHnd[PATH_MAX];
+#else
+	extern char imgBasePath[PATH_MAX];
+	extern char imgAppIco[PATH_MAX];
+	extern char imgOrzHnd[PATH_MAX];
+	extern char imgVrtHnd[PATH_MAX];
+#endif

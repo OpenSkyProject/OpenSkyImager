@@ -595,10 +595,13 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 				if (imgcam_get_tecp()->tecerr == 0)
 				{
 					// Set the gui according to status returned from camera
-					if (gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_tectgt)) != imgcam_get_tecp()->settemp)
+					if (imgcam_get_tecp()->tecauto)
 					{
-						// Set tec target
-						gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tectgt), imgcam_get_tecp()->settemp);
+						if (gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_tectgt)) != imgcam_get_tecp()->settemp)
+						{
+							// Set tec target
+							gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tectgt), imgcam_get_tecp()->settemp);
+						}
 					}
 					pct = (int)(((double)imgcam_get_tecp()->tecpwr / (double)imgcam_get_tecp()->tecmax) * 100.);
 					if (imgcam_get_tecp()->tecauto)

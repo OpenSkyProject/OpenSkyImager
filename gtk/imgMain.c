@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#define DECLARE_MAIN
 #include "imgBase.h"
 #include "imgFifoio.h"
 #include "imgWindow.h"
@@ -44,7 +44,21 @@ int main(int argc, char* argv[])
 	setlocale(LC_ALL,"en_US");
 	bindtextdomain(APPNAM,".");
 	textdomain(APPNAM);
-
+	
+	// Set app path
+	readlink("/proc/self/exe", imgBasePath, PATH_MAX);
+	strcpy(imgBasePath, g_path_get_dirname(imgBasePath));
+	strcat(imgBasePath, "/");
+	//printf("%s\n", imgBasePath);
+	
+	// Set ico and handles
+	strcpy(imgAppIco, imgBasePath);
+	strcat(imgAppIco, APPICO);
+	strcpy(imgOrzHnd, imgBasePath);
+	strcat(imgOrzHnd, ORZHND);
+	strcpy(imgVrtHnd, imgBasePath);
+	strcat(imgVrtHnd, VRTHND);
+	
 	#if GLIB_MINOR_VERSION < 32
 	if(!g_thread_supported())
 	{
