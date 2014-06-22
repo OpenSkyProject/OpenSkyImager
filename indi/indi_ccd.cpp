@@ -284,6 +284,9 @@ bool OSICCD::Connect() {
   }
   try {
     osiCamera->connect(osiName);
+    osiCamera->gain(10);
+    osiCamera->mode(250);
+    osiCamera->speed(0);
   } catch(std::exception &e)
   {
     IDMessage(getDeviceName(), "Error, connecting to camera %s: %s", osiName.c_str(), e.what() );
