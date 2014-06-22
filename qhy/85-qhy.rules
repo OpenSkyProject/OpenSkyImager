@@ -1,0 +1,81 @@
+# Udev rules for QHY CCD cameras
+# QHY2,  QHY5, QHY6, QHY6Pro and QHY8
+# Clive Rogers.  2 May 2009
+
+# Camera inserted.
+# Vendorid & Prodid: QHY VOTI
+
+ACTION!="add", GOTO="qhy_vidpid_end"
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", GOTO="qhy_vidpid_test"
+SUBSYSTEM!="usb_device", GOTO="qhy_vidpid_end"
+
+LABEL="qhy_vidpid_test"
+
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0412", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy2.hex -D $env{DEVNAME}"
+#ATTRS{idVendor}=="1618", ATTRS{idProduct}=="2850", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/img2pro.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="b618", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/img0h.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="b285", RUN+="/sbin/fxload -t fx2lp -I /etc/qhyccd/img2s.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0901", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="1002", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
+ATTRS{idVendor}=="0547", ATTRS{idProduct}=="1002", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
+ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="8613", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
+ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="081a", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
+ATTRS{idVendor}=="1856", ATTRS{idProduct}=="0011", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0920", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5ii.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0259", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy6.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="2980", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy6pro.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="4022", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy7.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6000", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy8.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6002", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy8pro.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6004", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy8l.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="8300", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy9.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="8310", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy9l.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="1000", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy10.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="1110", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy11.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="1200", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy12.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6740", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy21.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6940", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy22.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="8140", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy23.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="8613", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy16000.hex -D $env{DEVNAME}"
+
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0005", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/slavefifo.hex -D $env{DEVNAME}"
+
+LABEL="qhy_vidpid_end"
+
+# This is the ID presented once the firmware has been loaded.
+# idVendor and idProduct match Cypress FX2 USB chips.
+
+ACTION!="add", GOTO="qhy-rules-end"
+SUBSYSTEMS=="usb", GOTO="qhy-vipi"
+GOTO="qhy-rules-end"
+
+LABEL="qhy-vipi"
+
+
+ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="081e*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY2"
+#ATTRS{idVendor}=="1618", ATTRS{idProduct}=="2851*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="IMG2PRO"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="b618*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="IMG0H"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="a285*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="IMG2S"
+ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="296d*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY5"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0921*", OWNER="root", GROUP="video", MODE="0660", SYMLINK+="QHY5II"
+ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="081d*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY6o"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="025a*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY6"
+ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="2981*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY6pro"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="4023*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY7"
+ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="2972*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY8"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6005*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY8l"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6003*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY8pro"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="8301*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY9"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="8311*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY9"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="1001*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY10"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="1111*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY11"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="1201*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY12"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6741*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY21"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6941*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY22"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="8141*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY22"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="1611*", OWNER="root", GROUP="video", MODE="0664", SYMLINK+="QHY16000"
+
+ATTRS{modalias}=="usb:v1618p666A*",OWNER="root", GROUP="video", MODE="0660", SYMLINK+="IMG132E"
+
+LABEL="qhy-rules-end"
+
