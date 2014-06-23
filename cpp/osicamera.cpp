@@ -88,8 +88,6 @@ void OSICamera::Private::setIntField(int &field, int value, const string &desc, 
 {
   if(field == value)
     return;
-  //ofstream s("/tmp/osiccd.log", ios_base::app);
-  //s << __PRETTY_FUNCTION__ << ": " << desc << ", old=" << field << ", new=" << value << endl;
   field = value;
   if(setEditField)
     imgcam_get_expar()->edit = 1;
@@ -248,7 +246,7 @@ void OSICamera::mode(int newMode)
 
 void OSICamera::exposure(int milliseconds)
 {
-  d->setIntField(imgcam_get_expar()->time, milliseconds, "exposure", false); // TODO: verify
+  d->setIntField(imgcam_get_expar()->time, milliseconds, "exposure");
 }
 
 bool OSICamera::guide(GuiderAxis axis, GuiderMovement movement)
