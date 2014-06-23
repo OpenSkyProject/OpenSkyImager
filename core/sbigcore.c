@@ -272,7 +272,6 @@ int sbig_StartExposure(qhy_exposure *expar)
 	unsigned int ulExposure;
 	unsigned int	shutterState;
 	unsigned int ccd;
-	int realMinExp;
 	int readoutMode, top, left, width, height;
 	int exptime = expar->time;	//In millisecond
 	int speed   = expar->speed; 
@@ -294,27 +293,25 @@ int sbig_StartExposure(qhy_exposure *expar)
 			// For exposures above 255 millisecond driver will use nearest 
 			// 1/100th second on it's own but we need to record for image header
 			// Same if exptime is below minimim ;-)
-			exptime = (exptime < 1) ? 1 : exptime;
-			if (m_camera_details.camShutter == 1)
+			exptime = (exptime < m_camera_details.minExp) ? m_camera_details.minExp : ((exptime < 1) ? 1 : exptime);
+			if (m_camera_details.camShutter != 0)
 			{
 				// For other models we basically set the shutter to ignore
-				realMinExp = 1;
-				if (mode)
+				if (mode == 1)
 				{
 					shutterState = SC_CLOSE_SHUTTER;
 				}
 				else
 				{
-					shutterState = (exptime >= m_camera_details.minExp);
+					shutterState = SC_OPEN_SHUTTER;
 				}
 			}
 			else
 			{
-				realMinExp = m_camera_details.minExp;
 				shutterState = SC_LEAVE_SHUTTER;
 			}
 		
-			if ((exptime < 255) && (exptime >= realMinExp))
+			if (exptime < 255)
 			{
 				ulExposure = (unsigned int)exptime;
 				ulExposure |= EXP_MS_EXPOSURE;

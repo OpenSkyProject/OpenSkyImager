@@ -1186,11 +1186,13 @@ gpointer thd_capture_run(gpointer thd_data)
 			ref = time(NULL);
 		}
 	}
-	if ((imgcam_get_camui()->shutterMode == 1) || (imgcam_get_expar()->mode == 1))
+	//if ((imgcam_get_camui()->shutterMode == 1) || (imgcam_get_expar()->mode == 1))
+		// Or if we are in dark mode
+	if ((imgcam_get_camui()->shutterMode == 1) && imgcam_get_camid() < 1000)
 	{
+		// For QHY only
 		// We close shutter just in case it's open because of camera position
 		// It's a noop for camera that don't feature a mechanical shutter
-		// Or if we are in dark mode
 		imgcam_shutter(1);
 		last = time(NULL);
 	}
@@ -1586,19 +1588,21 @@ gpointer thd_capture_run(gpointer thd_data)
 			thd_pixbuf = NULL;
 		}
 	}
-	if (imgcam_get_camui()->shutterMode == 1)
+	//if (imgcam_get_camui()->shutterMode == 1)
+	if ((imgcam_get_camui()->shutterMode == 1) && imgcam_get_camid() < 1000)
 	{
+		// For QHY only
 		// It's a noop for camera that don't feature a mechanical shutter
 		// Close
 		imgcam_shutter(1);
 		// Release
 		imgcam_shutter(2);
 	}
-	else if (imgcam_get_expar()->mode == 1)
-	{
-		//If wehere in dark mode, we need to open it
-		imgcam_shutter(0);
-	}
+	//else if (imgcam_get_expar()->mode == 1)
+	//{
+	//	//If wehere in dark mode, we need to open it
+	//	imgcam_shutter(0);
+	//}
 	// Reset fifo feedback anyway
 	/*g_rw_lock_writer_lock(&thd_caplock);
 	fifofbk = 0;
