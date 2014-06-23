@@ -585,47 +585,51 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 						// Manual
 						imgcam_settec(imgcam_get_tecp()->tecpwr, 2);							
 					}
-					imgcam_get_tecp()->tecedit = 0;
-				}
-				
-				// Try read
-				imgcam_gettec(&imgcam_get_tecp()->tectemp, &imgcam_get_tecp()->settemp, &imgcam_get_tecp()->tecpwr, &enabled);
-				g_rw_lock_writer_unlock(&thd_teclock);
-
-				if (imgcam_get_tecp()->tecerr == 0)
-				{
-					// Set the gui according to status returned from camera
-					if (imgcam_get_tecp()->tecauto)
-					{
-						if (gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_tectgt)) != imgcam_get_tecp()->settemp)
-						{
-							// Set tec target
-							gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tectgt), imgcam_get_tecp()->settemp);
-						}
-					}
+					g_rw_lock_writer_unlock(&thd_teclock);
 					pct = (int)(((double)imgcam_get_tecp()->tecpwr / (double)imgcam_get_tecp()->tecmax) * 100.);
-					if (imgcam_get_tecp()->tecauto)
-					{
-						// Statusbar feedback message about cooling status in automatic mode
-						sprintf(imgmsg, C_("main","Tec: %+06.2FC, Target: %+06.2FC, Power: %d%%"), imgcam_get_tecp()->tectemp, imgcam_get_tecp()->settemp, pct);
-					}
-					else
-					{
-						// Satusbar feedback message about cooling in manual mode
-						sprintf(imgmsg, C_("main","Tec: %+06.2fC, Power: %d%%"), imgcam_get_tecp()->tectemp, pct);
-					}
-					// Main image update
-					sprintf(tecfbk, "%+06.2fC", imgcam_get_tecp()->tectemp);
-					gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
-					// Graph update
-					tec_print_graph();
-					// Slider update
-					gtk_range_set_value(GTK_RANGE(vsc_tecpwr), pct);
-					gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
-					// Header update
-					fithdr[HDR_CCDTEMP].dvalue = round(imgcam_get_tecp()->tectemp * 100) / 100;
-					fithdr[HDR_SETTEMP].dvalue = round(imgcam_get_tecp()->settemp * 100) / 100;
 				}
+				else
+				{
+					// Try read
+					imgcam_gettec(&imgcam_get_tecp()->tectemp, &imgcam_get_tecp()->settemp, &imgcam_get_tecp()->tecpwr, &enabled);
+					g_rw_lock_writer_unlock(&thd_teclock);
+
+					if (imgcam_get_tecp()->tecerr == 0)
+					{
+						// Set the gui according to status returned from camera
+						if (imgcam_get_tecp()->tecauto)
+						{
+							if (gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_tectgt)) != imgcam_get_tecp()->settemp)
+							{
+								// Set tec target
+								gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tectgt), imgcam_get_tecp()->settemp);
+							}
+						}
+						pct = (int)(((double)imgcam_get_tecp()->tecpwr / (double)imgcam_get_tecp()->tecmax) * 100.);
+					}
+				}
+				if (imgcam_get_tecp()->tecauto)
+				{
+					// Statusbar feedback message about cooling status in automatic mode
+					sprintf(imgmsg, C_("main","Tec: %+06.2FC, Target: %+06.2FC, Power: %d%%"), imgcam_get_tecp()->tectemp, imgcam_get_tecp()->settemp, pct);
+				}
+				else
+				{
+					// Satusbar feedback message about cooling in manual mode
+					sprintf(imgmsg, C_("main","Tec: %+06.2fC, Power: %d%%"), imgcam_get_tecp()->tectemp, pct);
+				}
+				// Main image update
+				sprintf(tecfbk, "%+06.2fC", imgcam_get_tecp()->tectemp);
+				gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
+				// Graph update
+				tec_print_graph();
+				// Slider update
+				gtk_range_set_value(GTK_RANGE(vsc_tecpwr), pct);
+				gtk_range_set_value(GTK_RANGE(vsc_tectemp), imgcam_get_tecp()->tectemp);
+				imgcam_get_tecp()->tecedit = 0;
+				// Header update
+				fithdr[HDR_CCDTEMP].dvalue = round(imgcam_get_tecp()->tectemp * 100) / 100;
+				fithdr[HDR_SETTEMP].dvalue = round(imgcam_get_tecp()->settemp * 100) / 100;
 				gtk_statusbar_write(GTK_STATUSBAR(imgstatec), 0, imgmsg);
 			}
 			else
