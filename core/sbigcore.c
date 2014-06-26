@@ -85,7 +85,6 @@ static char 			basePath[PATH_MAX];
 // Camera details
 static sbig_list		m_camera_list;
 static sbig_camdetails	m_camera_details;
-static int			m_cfw_type;
 //==========================================================================
 inline int		IsDeviceOpen(){return((m_fd == -1) ? 0 : 1);}
 //
@@ -203,6 +202,16 @@ int sbig_CloseDevice()
 
  	if(IsDeviceOpen())
  	{	
+ 		if (m_link_status == 1)
+ 		{
+ 			// Close CFW
+			CFWParams  	cfwp;
+			CFWResults	cfwr;
+
+			cfwp.cfwModel   = m_camera_details.cfwType;
+			cfwp.cfwCommand = CFWC_CLOSE_DEVICE;
+			UnivDrvCommand(CC_CFW, &cfwp, &cfwr);
+ 		}
  		if((res = UnivDrvCommand(CC_CLOSE_DEVICE, 0, 0)) == CE_NO_ERROR)
  		{
 			InitVars(VARCAM);
@@ -569,8 +578,8 @@ int sbig_Shutter(int cmd) //0 Open, 1 Close
 int sbig_SetTemperatureRegulation(int enable, double temperature)
 {
 	int res;
-	if (m_drv_version < 4.65)
-	{
+	//if (m_drv_version < 4.65)
+	//{
 	 	SetTemperatureRegulationParams strp;
 
 	 	if(sbig_CheckLink())
@@ -588,7 +597,7 @@ int sbig_SetTemperatureRegulation(int enable, double temperature)
 			res = CE_DEVICE_NOT_OPEN;
 			SetErrorString(res);
 		}
-	}
+	/*}
 	else
 	{
 	 	SetTemperatureRegulationParams2 strp;
@@ -607,7 +616,7 @@ int sbig_SetTemperatureRegulation(int enable, double temperature)
 			res = CE_DEVICE_NOT_OPEN;
 			SetErrorString(res);
 		}
-	}
+	}*/
 	//printf("SetTemperatureRegulation status: %d, %s\n", res, GetErrorString(res));
  	return(res);
 }
@@ -615,8 +624,8 @@ int sbig_SetTemperatureRegulation(int enable, double temperature)
 int sbig_QueryTemperatureStatus(int *enabled, double *ccdTemp, double *setpointTemp, int *power)
 {
 	int res;
-	if (m_drv_version < 4.65)
-	{
+	//if (m_drv_version < 4.65)
+	//{
 		QueryTemperatureStatusParams  qtrq;
 	 	QueryTemperatureStatusResults qtsr;
 
@@ -641,7 +650,7 @@ int sbig_QueryTemperatureStatus(int *enabled, double *ccdTemp, double *setpointT
 			res = CE_DEVICE_NOT_OPEN;
 			SetErrorString(res);
 		}
-	}
+	/*}
 	else
 	{
 		QueryTemperatureStatusParams   qtrq;
@@ -682,15 +691,63 @@ int sbig_QueryTemperatureStatus(int *enabled, double *ccdTemp, double *setpointT
 			res = CE_DEVICE_NOT_OPEN;
 			SetErrorString(res);
 		}
-	}
+	}*/
 	//printf("QueryTemperatureStatus status: %d, %s\n", res, GetErrorString(res));	
  	return(res);
 }
-
 //==========================================================================
-int sbig_GetCfwType()
+int sbig_CfwGoto(int position)
 {
-	return m_cfw_type;
+	int 			res;
+	CFWParams  	cfwp;
+	CFWResults	cfwr;
+
+	cfwp.cfwModel   = m_camera_details.cfwType;
+	cfwp.cfwCommand = CFWC_GOTO;
+	cfwp.cfwParam1  = position;
+ 	if ((res = UnivDrvCommand(CC_CFW, &cfwp, &cfwr)) == CE_CFW_ERROR)
+	{
+		sprintf(coremsg, "CFW error: %d", cfwr.cfwError);
+	}
+	return (res == CE_CFW_ERROR);
+}
+//==========================================================================
+int sbig_CfwQueryStatus(int *status, int *position)
+{
+	int 			res;
+	CFWParams  	cfwp;
+	CFWResults	cfwr;
+
+	cfwp.cfwModel   = m_camera_details.cfwType;
+	cfwp.cfwCommand = CFWC_QUERY;
+ 	if ((res = UnivDrvCommand(CC_CFW, &cfwp, &cfwr)) != CE_CFW_ERROR)
+ 	{
+ 		*status = cfwr.cfwStatus;
+ 		if ((m_camera_details.cfwType != CFWSEL_CFW6A) && ((m_camera_details.cfwType != CFWSEL_CFW8)))
+ 		{
+ 			*position = cfwr.cfwPosition;
+ 		}
+ 	}
+	else
+	{
+		sprintf(coremsg, "CFW error: %d", cfwr.cfwError);
+	}
+	return (res == CE_CFW_ERROR);
+}
+//==========================================================================
+int sbig_CfwReset()
+{
+	int 			res;
+	CFWParams  	cfwp;
+	CFWResults	cfwr;
+
+	cfwp.cfwModel   = m_camera_details.cfwType;
+	cfwp.cfwCommand = CFWC_INIT;
+ 	if ((res = UnivDrvCommand(CC_CFW, &cfwp, &cfwr)) == CE_CFW_ERROR)
+	{
+		sprintf(coremsg, "CFW error: %d", cfwr.cfwError);
+	}
+	return (res == CE_CFW_ERROR);
 }
 //==========================================================================
 int sbig_CheckLink()
@@ -782,9 +839,11 @@ void InitVars(int section)
 			m_camera_details.colorId		= -1;
 			m_camera_details.camShutter	= 0;
 			m_camera_details.minExp		= 0;
+			m_camera_details.cfwType		= CFWSEL_AUTO;
 			m_camera_details.ampList[0]	= '\0';
 			m_camera_details.spdList[0]	= '\0';
 			m_camera_details.modList[0]	= '\0';
+			m_camera_details.cfwList[0]	= '\0';
 			for(i = 0; i < SBIGFRAMINFOLEN; i++)
 			{
 				m_camera_details.frameInfo[SBIGFRAMINFOLEN].modeId	= 0;
@@ -795,7 +854,6 @@ void InitVars(int section)
 				m_camera_details.frameInfo[SBIGFRAMINFOLEN].pixH 	= 0.;
 			}
 		}
-		m_cfw_type = -1;
 	}
 }
 //==========================================================================
@@ -1434,6 +1492,90 @@ int GetCameraDetails()
 					break;
 		    	}
 		}
+
+		// Cfw
+		CFWParams  	cfwp;
+		CFWResults	cfwr;
+	
+		cfwp.cfwModel   = CFWSEL_AUTO;
+		cfwp.cfwCommand = CFWC_OPEN_DEVICE;
+	 	if ((res = UnivDrvCommand(CC_CFW, &cfwp, &cfwr)) != CE_CFW_ERROR)
+	 	{
+	 		m_camera_details.cfwType  = cfwr.cfwModel;
+	 		switch (m_camera_details.cfwType)
+	 		{
+	 			case CFWSEL_UNKNOWN:
+	 				// Unknown
+	 				break;
+	 			case CFWSEL_CFW2:
+	 				// CFW2
+	 				strcpy(m_camera_details.cfwList, "2-CFW2|:0");
+	 				break;
+	 			case CFWSEL_CFW5:
+	 				// CFW5
+	 				strcpy(m_camera_details.cfwList, "5-CFW5|:0");
+	 				break;
+	 			case CFWSEL_CFW8:
+	 				// CFW8
+	 				strcpy(m_camera_details.cfwList, "5-CFW8|:0");
+	 				break;
+	 			case CFWSEL_CFWL:
+	 				// CFWL
+	 				strcpy(m_camera_details.cfwList, "5-CFWL|:0");
+	 				break;
+	 			case CFWSEL_CFW402:
+	 				// CFW402
+	 				strcpy(m_camera_details.cfwList, "4-CFW402|:0");
+	 				break;
+	 			case CFWSEL_AUTO:
+	 				// Unknown
+	 				break;
+				case CFWSEL_CFW6A: 
+	 				// CFW6A
+	 				strcpy(m_camera_details.cfwList, "6-CFW6A|:0");
+	 				break;
+				case CFWSEL_CFW10:
+	 				// CFW10
+	 				strcpy(m_camera_details.cfwList, "10-CFW10|:0");
+	 				break;
+				case CFWSEL_CFW9: 
+	 				// CFW10
+	 				strcpy(m_camera_details.cfwList, "5-CFW9|:0");
+	 				break;
+				case CFWSEL_CFWL8: 
+	 				// CFW8L
+	 				strcpy(m_camera_details.cfwList, "8-CFW8L|:0");
+	 				break;
+				case CFWSEL_CFWL8G:
+	 				// CFWL8G
+	 				strcpy(m_camera_details.cfwList, "8-CFW8LG|:0");
+	 				break;
+				case CFWSEL_CFW1603: 
+	 				// CFW1603???
+	 				strcpy(m_camera_details.cfwList, "4-CFW1603|:0");
+	 				break;
+				case CFWSEL_FW5_STX: 
+	 				// FW5STX
+	 				strcpy(m_camera_details.cfwList, "5-FW5STX|:0");
+	 				break;
+				case CFWSEL_FW5_8300:
+	 				// FW58300
+	 				strcpy(m_camera_details.cfwList, "5-FW58300|:0");
+	 				break;
+				case CFWSEL_FW8_8300: 
+	 				// FW88300
+	 				strcpy(m_camera_details.cfwList, "8-FW88300|:0");
+	 				break;
+				case CFWSEL_FW7_STX: 
+	 				// FW7STX
+	 				strcpy(m_camera_details.cfwList, "7-FW7STX|:0");
+	 				break;
+				case CFWSEL_FW8_STT:
+	 				// FW8STT
+	 				strcpy(m_camera_details.cfwList, "8-FW8STT|:0");
+	 				break;
+	 		}
+	 	}
 	}
 	else
 	{

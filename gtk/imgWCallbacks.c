@@ -648,7 +648,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 	}
 	else
 	{
-		printf("Stop\n");
+		//printf("Stop\n");
 		tmrtecrefresh = -1;
 	}
 	return FALSE;
@@ -2631,7 +2631,8 @@ void cmd_cfwtty_click(GtkWidget *widget, gpointer data)
 void cmd_cfw_click(GtkWidget *widget, gpointer data)
 {
 	static int error = 0;
-	
+	int i = 0;
+
 	if (error == 0)
 	{
 		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)
@@ -2641,8 +2642,17 @@ void cmd_cfw_click(GtkWidget *widget, gpointer data)
 			{
 				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
 				gtk_widget_set_sensitive(cmd_cfwrst, (imgcfw_get_mode() == 1));
+				
 				combo_setlist(cmb_cfwcfg, imgcfw_get_models());
 				gtk_button_set_label(GTK_BUTTON(widget), C_("cfw","Disconnect"));
+
+				gtk_widget_set_sensitive(cmd_cfwrst, imgcfw_is_reset());
+				for (i = 0; i < CFW_SLOTS; i++)
+				{
+					gtk_widget_set_sensitive(cmb_cfwwhl[i], (i < imgcfw_get_slotcount()));
+					gtk_widget_set_sensitive(cmd_cfwwhl[i], (i < imgcfw_get_slotcount()));
+				}
+
 				sprintf(imgmsg, C_("cfw","Filter wheel connected to %s"), imgcfw_get_tty());
 			}
 			else
@@ -2660,6 +2670,14 @@ void cmd_cfw_click(GtkWidget *widget, gpointer data)
 				gtk_widget_set_sensitive(cmb_cfwcfg, 0);
 				gtk_widget_set_sensitive(cmd_cfwrst, 0);
 				gtk_button_set_label(GTK_BUTTON(widget), C_("cfw","Connect"));
+
+				gtk_widget_set_sensitive(cmd_cfwrst, FALSE);
+				for (i = 0; i < CFW_SLOTS; i++)
+				{
+					gtk_widget_set_sensitive(cmb_cfwwhl[i], FALSE);
+					gtk_widget_set_sensitive(cmd_cfwwhl[i], FALSE);
+				}
+
 				sprintf(imgmsg, C_("cfw","Filter wheel disconnected"));
 			}
 			else
@@ -2679,16 +2697,9 @@ void cmd_cfw_click(GtkWidget *widget, gpointer data)
 
 void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
 {
-	int i = 0;
-	
 	if ((gtk_combo_box_get_active(widget) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(widget))))
 	{
 		imgcfw_set_model(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
-		for (i = 0; i < CFW_SLOTS; i++)
-		{
-			gtk_widget_set_sensitive(cmb_cfwwhl[i], (i < imgcfw_get_slotcount()));
-			gtk_widget_set_sensitive(cmd_cfwwhl[i], (i < imgcfw_get_slotcount()));
-		}
 		sprintf(imgmsg, C_("cfw","Filter wheel configuration: %d slots, %s model"), imgcfw_get_slotcount(), imgcfw_get_model());
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
@@ -2979,10 +2990,6 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)) == FALSE)
 					{
-						// Set fifo feedback on (will print ack each newly available image)
-						/*g_rw_lock_writer_lock(&thd_caplock);
-						fifofbk = 1;
-						g_rw_lock_writer_unlock(&thd_caplock);*/
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), TRUE);
 						printf("Fifo: %s=ACK\n", cmd);				
 					}

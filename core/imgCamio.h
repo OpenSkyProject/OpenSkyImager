@@ -102,6 +102,8 @@ int             imgcam_settec(double setValue, int setMode);
 int             imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled);
 int             imgcam_shutter(int cmd);
 int             imgcam_wheel(int pos);
+int             imgcam_wheel_reset();
+int             imgcam_wheel_getstatus(int *status);
 // Guide function, currently QHY5L-II only
 int		imgcam_guide(enum GuiderAxis axis, enum GuiderMovement movement);
 

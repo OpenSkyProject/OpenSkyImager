@@ -35,17 +35,38 @@ int get_cpu_cores(void)
 	FILE *cmdline = fopen("/proc/cpuinfo", "rb");
 	char *arg = 0;
 	size_t size = 0;
-	int curid = -1, newid = 0, val = 0, cpu = 0, retval = 0;
+	int curid = -1, newid = 0, val = 0, arm = 0, prc = 0, cpu = 0, retval = 0;
 	
 	while(getdelim(&arg, &size, '\n', cmdline) != -1)
 	{
 		retval = 1;
-		if (strstr(arg, "physical id") != NULL)
+		// For arm we have to count processors, 
+		// for others we need to count physical cores
+		if (strstr(arg, "Processor") != NULL)
+		{
+			if (strstr(arg, "ARM") != NULL)
+			{
+				arm = 1;
+			}
+		}
+		else if (strstr(arg, "processor") != NULL)
+		{
+				prc++;
+		}
+		else if (strstr(arg, "model name") != NULL)
+		{
+			if (strstr(arg, "ARM") != NULL)
+			{
+				arm = 1;
+			}
+		}
+		else if (strstr(arg, "physical id") != NULL)
 		{
 			sscanf(arg, "physical id	:%d", &newid);
 		}
 		else if(strstr(arg, "cpu cores") != NULL)
 		{
+			arm = 0;
 			if (curid != newid)
 			{
 				curid = newid;
@@ -56,7 +77,7 @@ int get_cpu_cores(void)
 	}
 	free(arg);
 	fclose(cmdline);
-	return (retval == 1) ? ((cpu > 0) ? cpu : 1) : 0;
+	return (retval == 1)? ((arm == 1) ? ((prc > 0) ? prc : 1) : ((cpu > 0) ? cpu : 1)) : 0;
 }
 //
 

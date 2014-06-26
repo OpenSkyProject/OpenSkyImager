@@ -81,9 +81,11 @@
 		int				camTec;
 		int				camShutter;
 		int				minExp;
+		int				cfwType;
 		char				ampList[256];
 		char				spdList[256];
 		char				modList[256];
+		char				cfwList[256];
 	} sbig_camdetails;
 	
 	//=============================================================================
@@ -118,7 +120,6 @@
 	sbig_camdetails    *sbig_GetCameraDetails();
 	void 			sbig_GetFrameSize(int modeId, int *mode, int *width, int *height);
 	char			    *sbig_GetErrorString();
-	int 				sbig_GetCfwType();
 	
 	// Exposure Related Commands:
 	int				sbig_StartExposure(qhy_exposure *expar);
@@ -130,6 +131,10 @@
 	int				sbig_SetTemperatureRegulation(int enable, double temperature);
 	int				sbig_QueryTemperatureStatus(int *enabled, double *ccdTemp, double *setpointT, int *power);
 
+	// Cfw
+	int				sbig_CfwGoto(int position);
+	int				sbig_CfwQueryStatus(int *status, int *position);
+	int				sbig_CfwReset();
 	//=============================================================================
 #endif //_SBIG_CAM_
 

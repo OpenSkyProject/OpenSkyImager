@@ -44,7 +44,7 @@
 #define TAB_CFW       6
 #define TAB_CALC      7
 
-#define CFW_SLOTS     8
+#define CFW_SLOTS     10
 
 #define FITHDR_SLOTS  26
 #define HDR_SWCREATE  0

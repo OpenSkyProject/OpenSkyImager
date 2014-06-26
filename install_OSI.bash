@@ -3,6 +3,7 @@
 #  OpenSkyImager (OSI)
 
 #  Install libraries needed for compiling.
+cmake_params=$1
 
 echo
 echo "Checking for needed libraries and installing if needed"
@@ -30,7 +31,7 @@ fi
 cd ./build
 
 # configuring the environment
-cmake ..
+cmake $cmake_params ..
 if [ $? -gt 0 ]; then
     exit 1
 fi

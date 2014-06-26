@@ -500,7 +500,8 @@ int imgcam_connect()
 						strcpy(imgcam_get_camui()->moddsc, sbig_GetCameraDetails()->modList[0] != '\0' ? C_("camio","Light/Dark mode") : "");
 						strcpy(imgcam_get_camui()->bppstr, "2-16Bit|:0");
 						sprintf(imgcam_get_camui()->byrstr, "%d", sbig_GetCameraDetails()->colorId);
-						strcpy(imgcam_get_camui()->whlstr, "");
+						// Cfw
+						strcpy(imgcam_get_camui()->whlstr, sbig_GetCameraDetails()->cfwList);
 						// Tec (none for now)
 						imgcam_get_tecp()->istec      = sbig_GetCameraDetails()->camTec * 3;      // Mode see imgCamio.h
 						imgcam_get_tecp()->tecerr     = 0;      // Error reading / setting tec; 
@@ -1113,9 +1114,39 @@ int imgcam_wheel(int pos)
 		case 7:
 		case 11:
 			cammsg[0] = '\0';
-			retval = qhy_setColorWheel(pos);
+			retval = qhy_setColorWheel(pos+1);
 			break;
 		case 1000:
+			break;
+#ifdef HAVE_SBIG
+		case 2000:
+			// Sbig
+			retval = (sbig_CfwGoto(pos) == 0);
+			break;
+#endif
+	}
+	if ((retval == 0) && (strlen(cammsg) == 0))
+	{
+		strcpy(cammsg, get_core_msg());
+	}
+	return (retval);
+}
+
+int imgcam_wheel_reset()
+{
+	int retval = 1;
+	
+	cammsg[0] = '\0';
+	switch (camid)
+	{
+#ifdef HAVE_SBIG
+		case 2000:
+			// Sbig
+			retval = (sbig_CfwReset() == 0);
+			break;
+#endif
+		default:
+			// QHY has no reset feature when driven through camera
 			break;
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
@@ -1125,6 +1156,40 @@ int imgcam_wheel(int pos)
 	return (retval);
 }
 
+int imgcam_wheel_getstatus(int *status)
+{
+	int retval = 1;
+	int position = -1;
+	
+	cammsg[0] = '\0';
+	switch (camid)
+	{
+#ifdef HAVE_SBIG
+		case 2000:
+			// Sbig
+			if (sbig_CfwQueryStatus(status, &position) == 0)
+			{
+				retval = 1;
+				*status -= 1;
+			}
+			else
+			{
+				retval = 0;
+				*status = -1;
+			}
+			break;
+#endif
+		default:
+			// QHY has no query feature when driven through camera
+			*status = 0; //Idle
+			break;
+	}
+	if ((retval == 0) && (strlen(cammsg) == 0))
+	{
+		strcpy(cammsg, get_core_msg());
+	}
+	return (retval);
+}
 
 int imgcam_guide(enum GuiderAxis axis, enum GuiderMovement movement)
 {
