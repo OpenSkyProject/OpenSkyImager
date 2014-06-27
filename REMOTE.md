@@ -34,7 +34,7 @@ While running "focus" or "capture" a message will be sent on the stdout to
 confirm a new preview image is available:
 "Fifo: PREVIEW=New preview image available".
 
-*As of version 0.8.0* the following commands are available:
+*As of version 0.8.14* the following commands are available:
 
 - EXPTIME:ms, Exposure time in ms
 - TOTSHOTS:number, Shots to do in a run
@@ -153,4 +153,24 @@ confirm a new preview image is available:
 - LOADFILE:filename-and-path, will load specified fit file. Program will report
   error if capture thread is running, if cfitsio can't load file, the pixel
   buffer can't be loaded or the file can't be found.
+- CFWMODELIST: Prints the cfw (pipe separated) modes list to the command line
+  CFWMODESET must use ordinal position (0 based) from this list
+  That is CFWMODESET:1 will set the second element
+- CFWMODESET:number Set active the nth element in the cfw mode combobox
+- CFWTTYLIST: Prints the cfw (pipe separated) modes list to the command line
+  CFWTTYSET must use ordinal position (0 based) from this list
+  That is CFWTTYSET:1 will set the second element
+- CFWTTYSET:number Set active the nth element in the cfw tty combobox
+- CFWTTYREFRESH: Refresh cfw tty list
+- CFWCONNECT:number // Connect / disconnect selected CFW
+- CFWCFGLIST: Prints the cfw (pipe separated) modes list to the command line
+  CFWCFGSET must use ordinal position (0 based) from this list
+  That is CFWCFGSET:1 will set the second element
+- CFWCFGSET:number Set the CFW geometry
+- CFWRESET: Reset currently selected cfw
+- CFWSETFILTERS:string Sets a custom config for filters
+  e.g. CFWSETFILTERS:R|G|B|L set filters for a 4 positions wheel
+- CFWGOTO: Goto position the currently selected cfw
+- CFWISIDLE: Return the current Idle status for CFW
+- CFWGETPOS: Get current position of the currently selected cfw
 

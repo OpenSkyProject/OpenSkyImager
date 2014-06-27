@@ -2562,7 +2562,7 @@ void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 		switch (tmp)
 		{
 			case 0:
-				// GFW not in use, reset default filter list
+				// CFW not in use, reset default filter list
 				combo_setlist(cmb_flt, fltstr);
 				break;
 				
@@ -2572,17 +2572,19 @@ void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 				combo_ttylist(cmb_cfwtty);
 				gtk_widget_set_sensitive(cmd_cfwtty, 1);
 				gtk_widget_set_sensitive(cmd_cfw, 1);
-				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
+				//gtk_widget_set_sensitive(cmb_cfwcfg, 1);
 				// This will read the configuration from the wheel itself
 				break;
 			
 			case 99:
 				// This is manufacturer specific so we load the list of choices 
 				// from the camera UI.
-				combo_setlist(cmb_cfwcfg, imgcam_get_camui()->whlstr);
+				//combo_setlist(cmb_cfwcfg, imgcam_get_camui()->whlstr);
 				// Then only connect button and list of models are active
 				gtk_widget_set_sensitive(cmd_cfw, 1);
-				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
+				//gtk_widget_set_sensitive(cmb_cfwcfg, 1);
+				gtk_widget_set_sensitive(cmb_cfwtty, 0);
+				gtk_widget_set_sensitive(cmd_cfwtty, 0);
 				break;
 		
 			default:
@@ -2640,8 +2642,12 @@ void cmd_cfw_click(GtkWidget *widget, gpointer data)
 			// Not connected
 			if (imgcfw_connect())
 			{
+				// CFW in use, ser filter list if all configured
+				cmb_cfwwhl_changed (GTK_COMBO_BOX(cmb_cfwwhl[0]), cmb_cfwwhl);
+				// Set UI
+				gtk_widget_set_sensitive(cmb_cfw, 0);
 				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
-				gtk_widget_set_sensitive(cmd_cfwrst, (imgcfw_get_mode() == 1));
+				gtk_widget_set_sensitive(cmd_cfwrst, (imgcfw_is_reset() == 1));
 				
 				combo_setlist(cmb_cfwcfg, imgcfw_get_models());
 				gtk_button_set_label(GTK_BUTTON(widget), C_("cfw","Disconnect"));
@@ -2667,6 +2673,10 @@ void cmd_cfw_click(GtkWidget *widget, gpointer data)
 			// Connected
 			if (imgcfw_disconnect())
 			{
+				// CFW not in use, reset default filter list
+				combo_setlist(cmb_flt, fltstr);
+				// Set UI
+				gtk_widget_set_sensitive(cmb_cfw, 1);
 				gtk_widget_set_sensitive(cmb_cfwcfg, 0);
 				gtk_widget_set_sensitive(cmd_cfwrst, 0);
 				gtk_button_set_label(GTK_BUTTON(widget), C_("cfw","Connect"));
@@ -2721,24 +2731,39 @@ void cmd_cfwrst_click(GtkWidget *widget, gpointer data)
 void cmb_cfwwhl_changed (GtkComboBox *widget, GtkWidget **awidget)
 {
 	char cfwfltstr[256];
-	int  i;
+	int  i, doit = 0;
 
 	if ((gtk_combo_box_get_active(widget) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(widget))))
 	{
-		// If current combo has a meaningful value, recalc cmb_flt content
-		cfwfltstr[0] = '\0';
+		// If current combo has a meaningful value, try recalc cmb_flt content
 		for (i = 0; i < imgcfw_get_slotcount(); i++)
 		{
-			if ((gtk_combo_box_get_active(GTK_COMBO_BOX(awidget[i])) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(awidget[i]))))
+			if ((gtk_combo_box_get_active(GTK_COMBO_BOX(awidget[i])) > 0) && (gtk_widget_get_sensitive(GTK_WIDGET(awidget[i]))))
 			{
-				strcat(cfwfltstr, "|");
-				strcat(cfwfltstr, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(awidget[i])));
+				doit++;
 			}
 		}
-		combo_setlist(cmb_flt, cfwfltstr);
-		if ((i = imgcfw_get_slot()) > -1)
+		if (doit == imgcfw_get_slotcount())
 		{
-			gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), i);
+			cfwfltstr[0] = '\0';
+			for (i = 0; i < imgcfw_get_slotcount(); i++)
+			{
+				if ((gtk_combo_box_get_active(GTK_COMBO_BOX(awidget[i])) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(awidget[i]))))
+				{
+					strcat(cfwfltstr, "|");
+					strcat(cfwfltstr, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(awidget[i])));
+				}
+			}
+			combo_setlist(cmb_flt, cfwfltstr);
+			if ((i = imgcfw_get_slot()) > -1)
+			{
+				gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), i);
+			}
+		}
+		else
+		{
+			// Configuration not complete, reset default
+			combo_setlist(cmb_flt, fltstr);
 		}
 	}
 }
@@ -3458,6 +3483,243 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					printf("Fifo: ERROR=Bayer matrix index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_debayer)-1);
 				}
 			}
+			// CFW
+			else if (strcmp(cmd, "CFWMODELIST") == 0)
+			{
+				// Prints the cfw (pipe separated) modes list to the command line
+				// CFWMODESET must use ordinal position (0 based) from this list
+				// That is CFWMODESET:1 will set the second element
+				combo_getlist(cmb_cfw, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CFWMODESET") == 0)
+			{	
+				// Set active the nth element in the cfw mode combobox
+				if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_cfw)) == FALSE)
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_cfw)))
+					{
+						gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), ival);
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=CFW index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_cfw)-1);
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=CFW is connected already\n");
+				}
+			}
+			else if (strcmp(cmd, "CFWTTYLIST") == 0)
+			{
+				// Prints the cfw (pipe separated) modes list to the command line
+				// CFWTTYSET must use ordinal position (0 based) from this list
+				// That is CFWTTYSET:1 will set the second element
+				combo_getlist(cmb_cfwtty, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CFWTTYSET") == 0)
+			{	
+				// Set active the nth element in the cfw tty combobox
+				if (imgcfw_get_mode() == 1)
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_cfwtty)))
+					{
+						gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfwtty), ival);
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=CFW tty index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_cfwtty)-1);
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=CFW is not in tty mode\n");
+				}
+			}
+			else if (strcmp(cmd, "CFWTTYREFRESH") == 0)
+			{
+				// Refresh cfw tty list
+				if (imgcfw_get_mode() == 1)
+				{
+					gtk_button_clicked(GTK_BUTTON(cmd_cfwtty));
+					printf("Fifo: %s=ACK\n", cmd);
+				}
+				else
+				{
+					printf("Fifo: ERROR=CFW is not in tty mode\n");
+				}				
+			}
+			else if (strcmp(cmd, "CFWCONNECT") == 0)
+			{	
+				// Connect / disconnect selected CFW
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (ival == 1)
+				{
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_cfw)) == FALSE)
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_cfw), TRUE);
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=CFW is connected already\n");
+					}
+				}
+				else if (ival == 0)
+				{
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_cfw)) == TRUE)
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_camera), FALSE);
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=CFW is not connected\n");
+					}				
+				}
+				else
+				{
+					printf("Fifo: ERROR=Invalid value (0-1)\n");
+				}
+			}
+			else if (strcmp(cmd, "CFWCFGLIST") == 0)
+			{
+				// Prints the cfw (pipe separated) modes list to the command line
+				// CFWCFGSET must use ordinal position (0 based) from this list
+				// That is CFWCFGSET:1 will set the second element
+				combo_getlist(cmb_cfwcfg, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "CFWCFGSET") == 0)
+			{	
+				// Set the CFW geometry
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_cfwcfg)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfwcfg), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=CFW cfg index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_cfwcfg)-1);
+				}
+			}
+			else if (strcmp(cmd, "CFWRESET") == 0)
+			{
+				// Reset currently selected cfw
+				if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_cfw)) == TRUE)
+				{
+					gtk_button_clicked(GTK_BUTTON(cmd_cfwrst));
+					printf("Fifo: %s=ACK\n", cmd);
+				}
+				else
+				{
+					printf("Fifo: ERROR=CFW is not connected\n");
+				}				
+			}
+			else if (strcmp(cmd, "CFWSETFILTERS") == 0)
+			{
+				// Sets a custom config for filters
+				if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_cfw)) == TRUE)
+				{
+					char flt[225];	
+					char *pch;
+					char *saveptr;				
+					int  n = 0, fpos = 0;
+					
+					strcpy(flt, arg);
+					pch = strtok_r(flt,"|", &saveptr);
+					while ((pch != NULL) && (n < CFW_SLOTS))
+					{
+						if ((fpos = gtk_combo_box_seek(cmb_cfwwhl[n], pch)) != -1)
+						{
+							gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfwwhl[n]), fpos);
+						}
+						else
+						{
+							printf("Fifo: ERROR=Unknown filter %s\n", pch);
+						}
+						n++;
+						pch = strtok_r(NULL,"|", &saveptr);
+					}
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=CFW is not connected\n");
+				}				
+			}
+			else if (strcmp(cmd, "CFWGOTO") == 0)
+			{
+				// Goto position the currently selected cfw
+				if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_cfw)) == TRUE)
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if ((ival >= 0) && (ival < imgcfw_get_slotcount()))
+					{
+						if (gtk_widget_get_sensitive(cmd_cfwwhl[ival]) == 1)
+						{
+							gtk_button_clicked(GTK_BUTTON(cmd_cfwwhl[ival]));
+							printf("Fifo: %s=ACK\n", cmd);
+						}
+						else
+						{
+							printf("Fifo: ERROR=CFW position %d is not valid\n", ival);
+						}
+					}
+					else
+					{
+						printf("Fifo: ERROR=CFW position %d is not valid\n", ival);
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=CFW is not connected\n");
+				}				
+			}
+			else if (strcmp(cmd, "CFWISIDLE") == 0)
+			{
+				// Return the current Idle status for CFW
+				if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_cfw)) == TRUE)
+				{
+					printf("Fifo: %s=%d\n", cmd, imgcfw_is_idle());
+				}
+				else
+				{
+					printf("Fifo: ERROR=CFW is not connected\n");
+				}				
+			}
+			else if (strcmp(cmd, "CFWGETPOS") == 0)
+			{
+				// Get current position of the currently selected cfw
+				if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_cfw)) == TRUE)
+				{
+					if (imgcfw_is_idle())
+					{
+						printf("Fifo: %s=%d\n", cmd, imgcfw_get_slot());
+					}
+					else
+					{
+						printf("Fifo: ERROR=CFW is not idle\n");
+					}									
+				}
+				else
+				{
+					printf("Fifo: ERROR=CFW is not connected\n");
+				}				
+			}
+			//
 			else if (strcmp(cmd, "GETPRVWIDTH") == 0)
 			{
 				g_rw_lock_reader_lock(&pixbuf_lock);

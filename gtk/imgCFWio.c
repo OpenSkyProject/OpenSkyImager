@@ -48,6 +48,7 @@ static int  cfwmodid;
 static int  cfwslotc;
 static int  cfwslots[16];
 static int  cfwpos;
+static int  cfwIdle;
 static int  cfwHasReset;
 
 // Tty-Read thread
@@ -80,6 +81,7 @@ gpointer thd_qhy_tty_idle_run(gpointer thd_data)
 	int nbrw = 0;
 	int i = 0;
 	
+	cfwIdle = 0;
 	// Attempts 3 reads of 5 seconds each, to allow enough time for to the CFW
 	// to settle.
 	while ((ttyret = tty_read(cfwttyfd, buf, sizeof(buf), READ_TIME, &nbrw)) == TTY_TIME_OUT)
@@ -93,6 +95,7 @@ gpointer thd_qhy_tty_idle_run(gpointer thd_data)
 	// About the result got
 	// The post process will work on the GUI, hence to be thread safe must be 
 	// Executed from the main loop -> timer.
+	cfwIdle = 1;
 	cfwpos = ((ttyret == TTY_OK) && (buf[0] == 0x2D))? cfwpos : -1;
 	g_timeout_add(1, tmr_run, GINT_TO_POINTER(((ttyret == TTY_OK) && (buf[0] == 0x2D))));
 	return 0;
@@ -102,6 +105,7 @@ gpointer thd_get_idle_run(gpointer thd_data)
 {
 	int i, status = -1;
 	
+	cfwIdle = 0;
 	for (i = 0; i < 60; i++)
 	{
 		g_usleep(1000000);
@@ -113,6 +117,7 @@ gpointer thd_get_idle_run(gpointer thd_data)
 			break;
 		}
 	}
+	cfwIdle = 1;
 	// Executes the post process to inform the user (and rest of application)
 	// About the result got
 	// The post process will work on the GUI, hence to be thread safe must be 
@@ -135,6 +140,7 @@ void imgcfw_init()
 	memset(cfwslots, 0, 16);
 	cfwpos = -1;
 	cfwHasReset = 0;
+	cfwIdle = 1;
 	postReadProcess = NULL;
 }
 
@@ -465,6 +471,11 @@ char *imgcfw_get_models()
 int imgcfw_is_reset()
 {
 	return cfwHasReset;
+}
+
+int imgcfw_is_idle()
+{
+	return cfwIdle;
 }
 
 int imgcfw_get_slotcount()

@@ -936,8 +936,11 @@ void cfwmsgdestroy(int response)
 	
 	if (response == 1)
 	{
-		// All ok, select the filter name for the naming convention
-		gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), imgcfw_get_slot());
+		// All ok, select the filter name for the naming convention (if config is complete and valid)
+		if (gtk_combo_box_element_count(cmb_flt) == imgcfw_get_slot())
+		{
+			gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), imgcfw_get_slot());
+		}
 	}
 	else
 	{

@@ -42,6 +42,7 @@ int   imgcfw_set_model(char *model);
 char *imgcfw_get_model();
 char *imgcfw_get_models();
 int   imgcfw_is_reset();
+int   imgcfw_is_idle();
 int   imgcfw_get_slotcount();
 int   imgcfw_get_slot();
 int   imgcfw_set_slot(int slot, gpointer (*postProcess)(int));

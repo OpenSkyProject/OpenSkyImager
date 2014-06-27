@@ -221,3 +221,28 @@ int  gtk_combo_box_element_count(GtkWidget *cmb)
 {
 	return gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb))), NULL);
 }
+int gtk_combo_box_seek(GtkWidget *cmb, char *strval)
+{
+	GtkTreeIter iter;
+	GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(cmb));
+	gchar *stritem;
+	gboolean valid; 
+	int retval = -1, item = -1;
+	
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	while (valid)
+	{
+		item++;
+		gtk_tree_model_get(model, &iter, 0, &stritem, -1);
+		if (strstr(strval, stritem) != NULL)
+		{
+			retval = item;
+			valid = FALSE;
+		}
+		else
+		{
+			valid = gtk_tree_model_iter_next(model, &iter);
+		}
+	}
+	return (retval);
+}
