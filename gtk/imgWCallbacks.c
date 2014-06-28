@@ -2642,8 +2642,6 @@ void cmd_cfw_click(GtkWidget *widget, gpointer data)
 			// Not connected
 			if (imgcfw_connect())
 			{
-				// CFW in use, ser filter list if all configured
-				cmb_cfwwhl_changed (GTK_COMBO_BOX(cmb_cfwwhl[0]), cmb_cfwwhl);
 				// Set UI
 				gtk_widget_set_sensitive(cmb_cfw, 0);
 				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
@@ -2658,6 +2656,8 @@ void cmd_cfw_click(GtkWidget *widget, gpointer data)
 					gtk_widget_set_sensitive(cmb_cfwwhl[i], (i < imgcfw_get_slotcount()));
 					gtk_widget_set_sensitive(cmd_cfwwhl[i], (i < imgcfw_get_slotcount()));
 				}
+				// CFW in use, ser filter list if all configured
+				cmb_cfwwhl_changed (GTK_COMBO_BOX(cmb_cfwwhl[0]), cmb_cfwwhl);
 
 				sprintf(imgmsg, C_("cfw","Filter wheel connected to %s"), imgcfw_get_tty());
 			}
