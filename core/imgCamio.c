@@ -1121,7 +1121,7 @@ int imgcam_wheel(int pos)
 #ifdef HAVE_SBIG
 		case 2000:
 			// Sbig
-			retval = (sbig_CfwGoto(pos) == 0);
+			retval = (sbig_CfwGoto(pos+1) == 0);
 			break;
 #endif
 	}
