@@ -707,7 +707,7 @@ int sbig_CfwGoto(int position)
 	cfwp.cfwParam1  = position;
  	if ((res = UnivDrvCommand(CC_CFW, &cfwp, &cfwr)) == CE_CFW_ERROR)
 	{
-		sprintf(coremsg, "CFW error: %d", cfwr.cfwError);
+		sprintf(coremsg, C_("sbigcore", "CFW error: %d"), cfwr.cfwError);
 	}
 	return (res == CE_CFW_ERROR);
 }
@@ -730,7 +730,7 @@ int sbig_CfwQueryStatus(int *status, int *position)
  	}
 	else
 	{
-		sprintf(coremsg, "CFW error: %d", cfwr.cfwError);
+		sprintf(coremsg, C_("sbigcore", "CFW error: %d"), cfwr.cfwError);
 	}
 	return (res == CE_CFW_ERROR);
 }
@@ -745,7 +745,7 @@ int sbig_CfwReset()
 	cfwp.cfwCommand = CFWC_INIT;
  	if ((res = UnivDrvCommand(CC_CFW, &cfwp, &cfwr)) == CE_CFW_ERROR)
 	{
-		sprintf(coremsg, "CFW error: %d", cfwr.cfwError);
+		sprintf(coremsg, C_("sbigcore", "CFW error: %d"), cfwr.cfwError);
 	}
 	return (res == CE_CFW_ERROR);
 }
@@ -877,7 +877,7 @@ void SetErrorString(int err)
 	}
 	else
 	{
-		sprintf(coremsg, "No error string found! Error code: %d", err);
+		sprintf(coremsg, C_("sbigcore", "No error string found! Error code: %d"), err);
 	}
 }
 //==========================================================================

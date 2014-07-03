@@ -215,20 +215,30 @@ int qhy_opencamera()
 		libusb_set_debug(NULL,0);
 		if (open_camera(camp.vid, camp.pid, &hDevice, coremsg))
 		{
-			if (libusb_claim_interface(hDevice, 0) != 0) 
+			if (libusb_kernel_driver_active(hDevice, 0) == 1)
 			{
-				sprintf(coremsg, C_("qhycore","Error: Could not claim interface."));
+				libusb_detach_kernel_driver(hDevice, 0);
+			}
+			if ((retcode = libusb_claim_interface(hDevice, 0)) == 0) 
+			{
+				retcode = 1;
+			}
+			else
+			{
+				libusb_close(hDevice);
+				sprintf(coremsg, C_("qhycore","Error %d: Could not claim interface."), retcode);
 				retcode = 0;
 			}
 		}
 		else
 		{
+			libusb_close(hDevice);
 			retcode = 0;
 		}
 	}
 	else
 	{
-		sprintf(coremsg, C_("qhycore","Error: Could not initialise libusb."));
+		sprintf(coremsg, C_("qhycore","Error %d: Could not initialise libusb."), retcode);
 		retcode = 0;
 	}
 	return retcode;
@@ -250,18 +260,29 @@ int qhy_OpenCamera()
 		libusb_set_debug(NULL,0);
 		if (open_camera(camp.vid, camp.pid, &hDevice, coremsg))
 		{
-			if (libusb_set_configuration(hDevice, 1) == 0) 
+			if (libusb_kernel_driver_active(hDevice, 0) == 1)
 			{
-				if (libusb_claim_interface(hDevice, 0) != 0) 
+				libusb_detach_kernel_driver(hDevice, 0);
+			}
+			if ((retcode = libusb_set_configuration(hDevice, 1)) == 0) 
+			{
+				if ((retcode = libusb_claim_interface(hDevice, 0)) == 0) 
 				{
-					sprintf(coremsg, C_("qhycore","Error: Could not claim interface."));
+					retcode = 1;
+				}
+				else
+				{
+					libusb_close(hDevice);
+					sprintf(coremsg, C_("qhycore","Error %d: Could not claim interface."), retcode);
 					retcode = 0;
 				}
 			}
 			else
 			{
-				sprintf(coremsg, C_("qhycore","Error: Could not set device configuration."));
+				libusb_close(hDevice);
+				sprintf(coremsg, C_("qhycore","Error %d: Could not set device configuration."), retcode);
 				retcode = 0;
+				
 			}
 		}
 		else
@@ -271,7 +292,7 @@ int qhy_OpenCamera()
 	}
 	else
 	{
-		sprintf(coremsg, C_("qhycore","Error: Could not initialise libusb."));
+		sprintf(coremsg, C_("qhycore","Error %d: Could not initialise libusb."), retcode);
 		retcode = 0;
 	}
 	return retcode;

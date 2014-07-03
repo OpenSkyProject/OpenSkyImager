@@ -27,8 +27,6 @@
 #define PRODUCT_ID  0x0921
 #define SHORTEXP    0
 #define FWFILE      "qhy5ii.hex"
-#define MAXW        1280
-#define MAXH        960
 #define IMGOFFSET   5
 #define USBTRAFFIC  30 // The higher the slower, max 255. (30, suggested)
 
@@ -38,10 +36,30 @@
 #include "imgCamio.h"
 #include "qhy5ii.h"
 
+// Not meant to be used elsewhere
+int    qhy5ii_SetSpeed(int i);
+int    qhy5ii_SetUSBTraffic(int i);
+int    qhy5lii_SetHDR(int on);
+int    qhy5lii_SetDepth(int Bpp);
+int    qhy5ii_SetExposureTime(int etime);
+int    qhy5ii_SetGain(int gain);
+void   qhy5lii_SetGainMono(double gain);
+void   qhy5lii_SetGainColor(double gain, double RG, double BG);
+int    qhy5ii_set_imgsize(int width, int height);
+void   qhy5ii_set_Resolution(int width, int height);
+void   qhy5lii_set_1280x960();
+void   qhy5lii_set_1024x768();
+void   qhy5lii_set_800x600();
+void   qhy5lii_set_640x480();
+void   qhy5lii_set_320x240();
+void   qhy5liiInitRegs();
+double qhy5lii_setPLL(unsigned char clk);
+
 static int camvariant = 0, camcolor = 0;
 
 // These are shared within the module and set from setRegisters
 static int exptime, gain, bin, speed, bytepix, hdr, width, height, totalsize, transfer_size;
+static int maxwidth, maxheight;
 static int longExpMode, usbspd;
 static int setgain[73]={0x004,0x005,0x006,0x007,0x008,0x009,0x00A,0x00B,
 				   0x00C,0x00D,0x00E,0x00F,0x010,0x011,0x012,0x013,0x014,
@@ -162,7 +180,8 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 		width   = expar->width;
 		height  = expar->height;
 		usbspd  = expar->mode;
-		exptime = (expar->time > 1000) ? expar->time / 1.3 : expar->time; // Temporary fix for clock inaccuracy
+		//exptime = (expar->time > 1000) ? expar->time / 1.3 : expar->time; // Temporary fix for clock inaccuracy
+		exptime = (expar->time > 1000) ? expar->time / 1.4 : expar->time; // Temporary fix for clock inaccuracy
 		gain    = expar->gain;
 		bin     = expar->bin;
 		speed   = expar->speed;
@@ -211,7 +230,7 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 		// Reg set
 		totalsize      = width * height * bytepix;
 		// IMGOFFSET bytes are not returned when in 800x600 mode. Firmware issue?
-		transfer_size  = totalsize + ((width != 800) ? IMGOFFSET : 0);
+		transfer_size  = totalsize + (((width != 800) && (width != 2592)) ? IMGOFFSET : 0);
 		expar->totsize = totalsize;
 		expar->tsize   = transfer_size;
 
@@ -289,18 +308,8 @@ int qhy5ii_bonjour()
 
 	if ((retval = qhy_EepromRead(0x10, buf, 16)) == 1)
 	{
-		if(buf[1] == 1)
-		{
-			// Color
-			camcolor = 1;
-			strcpy(imgcam_get_camui()->byrstr, "3");
-		}
-		else 
-		{
-			// Mono
-			camcolor = 0;
-			strcpy(imgcam_get_camui()->byrstr, "-1");
-		}
+		// Color mode?
+		camcolor = (buf[1] == 1);
 		// This will reset and "wake" the camera
 		if ((retval = qhy5ii_AbortCapture()) == 1)
 		{
@@ -314,14 +323,52 @@ int qhy5ii_bonjour()
 				strcpy(imgcam_get_camui()->roistr, "1280x960|1024x768|800x600|640x480|320x240:0");
 				strcpy(imgcam_get_camui()->snrstr, "");
 				strcpy(imgcam_get_camui()->bppstr, "2-12Bit|1-8Bit|3-Hdr:1");
+				if(camcolor == 1)
+				{
+					strcpy(imgcam_get_camui()->byrstr, "3");
+				}
+				else 
+				{
+					strcpy(imgcam_get_camui()->byrstr, "-1");
+				}
 				// Header values
 				imgcam_get_camui()->pszx = 3.75;
 				imgcam_get_camui()->pszy = 3.75;
+				maxwidth  = 1280;
+				maxheight =  960;
 				width   = 1280;
 				height  = 960;
 				bytepix = 1;
 				hdr     = 0;
 				retval = qhy5lii_SetDepth(bytepix);
+			}
+			if(buf[0] == 5)
+			{
+				// QHY5P-II
+				camvariant = 2;
+				// Positively no tec
+				imgcam_get_tecp()->istec = 0;
+				strcpy(imgcam_get_camui()->roistr, "2592x1944|2048x1536|1920x1080|1600x1200|1280x1024|1280x720|1024x768|800x600|640x480|320x240:0");
+				strcpy(imgcam_get_camui()->snrstr, "");
+				strcpy(imgcam_get_camui()->bppstr, "1-8Bit|:0");
+				if(camcolor == 1)
+				{
+					strcpy(imgcam_get_camui()->byrstr, "2");
+				}
+				else 
+				{
+					strcpy(imgcam_get_camui()->byrstr, "-1");
+				}
+				// Header values
+				imgcam_get_camui()->pszx = 2.20;
+				imgcam_get_camui()->pszy = 2.20;
+				maxwidth  = 2592;
+				maxheight = 1944;
+				width   = 2592;
+				height  = 1944;
+				bytepix = 1;
+				hdr     = 0;
+				retval  = 1;
 			}
 			else if(buf[0] == 1)
 			{
@@ -333,9 +380,19 @@ int qhy5ii_bonjour()
 				/// Combo box values list, keep N-<desc> format. Just translate <desc>
 				strcpy(imgcam_get_camui()->snrstr, C_("camio","0-Off|1-On:0"));
 				strcpy(imgcam_get_camui()->bppstr, "1-8Bit|:0");
+				if(camcolor == 1)
+				{
+					strcpy(imgcam_get_camui()->byrstr, "3");
+				}
+				else 
+				{
+					strcpy(imgcam_get_camui()->byrstr, "-1");
+				}
 				// Header values
 				imgcam_get_camui()->pszx = 5.20;
 				imgcam_get_camui()->pszy = 5.20;
+				maxwidth  = 1280;
+				maxheight = 1024;
 				width   = 1280;
 				height  = 1024;
 				bytepix = 1;
@@ -444,7 +501,7 @@ int qhy5lii_SetDepth(int Bpp)
 int qhy5ii_SetExposureTime(int etime) 
 {
 	// Both variants
-	if (camvariant == 0)
+	if ((camvariant == 0) || (camvariant == 2))
 	{
 		//QHY5-II
 		// Required input parameters: CMOSCLK  REG04  REG05 REG0C REG09
@@ -504,7 +561,6 @@ int qhy5ii_SetExposureTime(int etime)
 			ExpTime = (unsigned long)(ExpTime + MaxShortExpTime);
 			longExpMode = 1;
 		}
-
 		else 
 		{
 			buf[0] = 0;
@@ -632,7 +688,7 @@ int qhy5ii_SetExposureTime(int etime)
 
 int qhy5ii_SetGain(int gain)
 {
-	if (camvariant == 0)
+	if ((camvariant == 0) || (camvariant == 2))
 	{
 		//QHY5-II
 	    int i = (int)(72. * (gain / 100.));
@@ -952,53 +1008,15 @@ void qhy5lii_SetGainColor(double gain, double RG, double BG)
 	qhy_I2CTwoWrite(0x3056, baseDGain);
 }
 
-int qhy5ii_set_imgsize(int wdt, int hgt)
+int qhy5ii_set_imgsize(int width, int height)
 {
 	// Both variants
 	int retval = 1;
 	
-	if (camvariant == 0)
+	if ((camvariant == 0) || (camvariant == 2))
 	{
 		//QHY5-II
-		switch (width)
-		{
-			case 1280:
-				if (height == 1024)
-				{
-					qhy5ii_set_Resolution();
-				}
-				else if (height == 720)
-				{
-					qhy5ii_set_Resolution();
-				}
-				break;
-			case 1024:
-				qhy5ii_set_Resolution();
-			case 960:
-				qhy5ii_set_Resolution();
-				break;
-			case 800:
-				if (height == 800)
-				{
-					qhy5ii_set_Resolution();
-				}
-				else if (height == 600)
-				{
-					qhy5ii_set_Resolution();
-				}
-				break;
-			case 640:
-				qhy5ii_set_Resolution();
-			case 400:
-				qhy5ii_set_Resolution();
-				break;
-			case 320:
-				qhy5ii_set_Resolution();
-				break;
-			default:
-				retval = 0;
-				break;
-		}
+		qhy5ii_set_Resolution(width, height);
 	}
 	else if (camvariant == 1)
 	{
@@ -1054,11 +1072,11 @@ double qhy5lii_GetTemp()
 	return slope * sensed - T0;
 }
 
-void qhy5ii_set_Resolution()
+void qhy5ii_set_Resolution(int width, int height)
 {	
 	qhy_I2CTwoWrite(0x09, 200);
-	qhy_I2CTwoWrite(0x01, 8 + (1024 - height) / 2); // y start
-	qhy_I2CTwoWrite(0x02, 16 + (1280 - width) / 2); // x start
+	qhy_I2CTwoWrite(0x01, 8 + (maxheight - height) / 2); // y start
+	qhy_I2CTwoWrite(0x02, 16 + (maxwidth - width) / 2); // x start
 	qhy_I2CTwoWrite(0x03, (unsigned short)(height - 1)); // y size
 	qhy_I2CTwoWrite(0x04, (unsigned short)(width - 1)); // x size
 	qhy_I2CTwoWrite(0x22, 0x00); // normal bin
@@ -1089,8 +1107,8 @@ void qhy5lii_set_1024x768()
 	qhy5liiInitRegs();
 	pllratio = qhy5lii_setPLL(0);
 
-	int xstart = 4 + (MAXW - width) / 2;
-	int ystart = 4 + (MAXH - height) / 2;
+	int xstart = 4 + (maxwidth - width) / 2;
+	int ystart = 4 + (maxheight - height) / 2;
 	int xsize = width - 1;
 	int ysize = height - 1;
 
@@ -1108,8 +1126,8 @@ void qhy5lii_set_800x600()
 	qhy5liiInitRegs();
      pllratio = qhy5lii_setPLL(2);
 
-	int xstart = 4 + (MAXW - width) / 2; ;
-	int ystart = 4 + (MAXH - height) / 2; ;
+	int xstart = 4 + (maxwidth - width) / 2; ;
+	int ystart = 4 + (maxheight - height) / 2; ;
 	int xsize = width - 1;
 	int ysize = height - 1;
 
@@ -1127,8 +1145,8 @@ void qhy5lii_set_640x480()
 	qhy5liiInitRegs();
 	pllratio = qhy5lii_setPLL(1);
 
-	int xstart = 4 + (MAXW - width) / 2; ;
-	int ystart = 4 + (MAXH - height) / 2; ;
+	int xstart = 4 + (maxwidth - width) / 2; ;
+	int ystart = 4 + (maxheight - height) / 2; ;
 	int xsize = width - 1;
 	int ysize = height - 1;
 
@@ -1146,8 +1164,8 @@ void qhy5lii_set_320x240()
 	qhy5liiInitRegs();
 	pllratio = qhy5lii_setPLL(1);
 
-	int xstart = 4 + (MAXW - width) / 2; ;
-	int ystart = 4 + (MAXH - height) / 2; ;
+	int xstart = 4 + (maxwidth - width) / 2; ;
+	int ystart = 4 + (maxheight - height) / 2; ;
 	int xsize = width - 1;
 	int ysize = height - 1;
 

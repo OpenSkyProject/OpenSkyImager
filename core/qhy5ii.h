@@ -32,24 +32,5 @@ int    qhy5ii_setregisters(qhy_exposure *expar);
 void   qhy5ii_decode(unsigned char *databuffer);
 int    qhy5ii_AbortCapture();
 int    qhy5ii_bonjour();
-int    qhy5ii_set_imgsize(int wdt, int hgt);
 double qhy5lii_GetTemp();
-
-// Not meant to be used elsewhere
-int    qhy5ii_SetSpeed(int i);
-int    qhy5ii_SetUSBTraffic(int i);
-int    qhy5lii_SetHDR(int on);
-int    qhy5lii_SetDepth(int Bpp);
-int    qhy5ii_SetExposureTime(int etime);
-int    qhy5ii_SetGain(int gain);
-void   qhy5lii_SetGainMono(double gain);
-void   qhy5lii_SetGainColor(double gain, double RG, double BG);
-void   qhy5ii_set_Resolution();
-void   qhy5lii_set_1280x960();
-void   qhy5lii_set_1024x768();
-void   qhy5lii_set_800x600();
-void   qhy5lii_set_640x480();
-void   qhy5lii_set_320x240();
-void   qhy5liiInitRegs();
-double qhy5lii_setPLL(unsigned char clk);
 int    qhy5lii_guide(enum GuiderAxis, enum GuiderMovement);

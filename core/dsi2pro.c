@@ -156,7 +156,7 @@ static int rc_responseImage(unsigned char *data, int len)
 	// result	
 	if (r < 0) 
 	{
-		sprintf(coremsg, "rc_responseImage error: %d\n", r);
+		sprintf(coremsg, C_("dsi2pro", "rc_responseImage error: %d\n"), r);
 	}
 	return (r == 0);
 }
@@ -203,7 +203,7 @@ static int send_command(int cmd, int arg, int in, int out)
 			ret = libusb_bulk_transfer(rc_dev_dsi, EP_IN, data, 7, &t, 0);
 			break;
 		default:
-			sprintf(coremsg, "Unknown IN: %d\n", in);
+			sprintf(coremsg, C_("dsi2pro", "Unknown IN: %d\n"), in);
 			ret = 1;
 	}
 	
@@ -235,7 +235,7 @@ static int send_command(int cmd, int arg, int in, int out)
 				retval = value; 
 				break;
 			default:
-				sprintf(coremsg, "Unknown OUT: %d\n", out);
+				sprintf(coremsg, C_("dsi2pro", "Unknown OUT: %d\n"), out);
 				ret = 1;
 		}
 	}
@@ -377,8 +377,9 @@ int dsi2pro_OpenCamera()
 		libusb_set_debug(NULL,0);
 		if (open_camera(VENDOR_ID, PRODUCT_ID, &rc_dev_dsi, coremsg))
 		{
-			if (libusb_claim_interface(rc_dev_dsi, 0) == 0) 
+			if ((retcode = libusb_claim_interface(rc_dev_dsi, 0)) == 0) 
 			{
+				retcode = 1;
 				// Send bonjour to the camera
 				RESET();
 				//        SET_GAIN(0);
@@ -396,14 +397,18 @@ int dsi2pro_OpenCamera()
 			}
 			else
 			{
-				sprintf(coremsg, C_("dsi2pro","Error: Could not claim interface."));
+				sprintf(coremsg, C_("qhycore","Error %d: Could not claim interface."), retcode);
 				retcode = 0;
 			}
+		}
+		else
+		{
+			retcode = 0;
 		}
 	}
 	else
 	{
-		sprintf(coremsg, C_("dsi2pro","Error: Could not initialise libusb."));
+		sprintf(coremsg, C_("qhycore","Error %d: Could not initialise libusb."), retcode);
 		retcode = 0;
 	}
 	return retcode;

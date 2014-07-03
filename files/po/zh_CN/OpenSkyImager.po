@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenSkyImager 0.7.3\n"
+"Project-Id-Version: OpenSkyImager 0.8.14\n"
 "Report-Msgid-Bugs-To: gspezzano@gmail.com\n"
-"POT-Creation-Date: 2014-01-19 16:42+0100\n"
+"POT-Creation-Date: 2014-07-03 11:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,250 +17,524 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../imgAvi.c:176
+#: ../../core/dsi2pro.c:159
+#, c-format
+msgctxt "dsi2pro"
+msgid "rc_responseImage error: %d\n"
+msgstr ""
+
+#: ../../core/dsi2pro.c:206
+#, c-format
+msgctxt "dsi2pro"
+msgid "Unknown IN: %d\n"
+msgstr ""
+
+#: ../../core/dsi2pro.c:238
+#, c-format
+msgctxt "dsi2pro"
+msgid "Unknown OUT: %d\n"
+msgstr ""
+
+#: ../../core/dsi2pro.c:339
+msgctxt "camio"
+msgid "0-Auto|1-AmpOn|2-AmpOff:0"
+msgstr ""
+
+#: ../../core/dsi2pro.c:340
+msgctxt "camio"
+msgid "0-Double|1-Single:1"
+msgstr ""
+
+#. / Descriptiopn for "mode" combo box
+#: ../../core/dsi2pro.c:342 ../../core/qhy2old.c:89 ../../core/qhy6old.c:89
+msgctxt "camio"
+msgid "Mode S/D Image"
+msgstr ""
+
+#: ../../core/dsi2pro.c:400 ../../core/qhycore.c:229 ../../core/qhycore.c:272
+#, c-format
+msgctxt "qhycore"
+msgid "Error %d: Could not claim interface."
+msgstr "错误 %d: 无法认领接口"
+
+#: ../../core/dsi2pro.c:411 ../../core/qhycore.c:241 ../../core/qhycore.c:291
+#, c-format
+msgctxt "qhycore"
+msgid "Error %d: Could not initialise libusb."
+msgstr "错误 %d: 无法初始化libusb"
+
+#: ../../core/dsi2pro.c:502 ../../core/qhy10.c:118 ../../core/qhy11.c:118
+#: ../../core/qhy12.c:118 ../../core/qhy2old.c:123 ../../core/qhy5.c:132
+#: ../../core/qhy5ii.c:149 ../../core/qhy6.c:118 ../../core/qhy6old.c:123
+#: ../../core/qhy7.c:119 ../../core/qhy8l.c:118 ../../core/qhy8old.c:122
+#: ../../core/qhy9.c:121
+msgctxt "camio"
+msgid "Camera still not found after reset"
+msgstr "重置后还是没有找到相机"
+
+#: ../../core/dsi2pro.c:505 ../../core/qhy10.c:121 ../../core/qhy11.c:121
+#: ../../core/qhy12.c:121 ../../core/qhy2old.c:126 ../../core/qhy5.c:135
+#: ../../core/qhy5ii.c:152 ../../core/qhy6.c:121 ../../core/qhy6old.c:126
+#: ../../core/qhy7.c:122 ../../core/qhy8l.c:121 ../../core/qhy8old.c:125
+#: ../../core/qhy9.c:124
+msgctxt "camio"
+msgid "Neither raw device nor programmed camera found."
+msgstr "原始设备或者相机都无法找到"
+
+#: ../../core/dsi2pro.c:508 ../../core/qhy10.c:124 ../../core/qhy11.c:124
+#: ../../core/qhy12.c:124 ../../core/qhy2old.c:129 ../../core/qhy5.c:138
+#: ../../core/qhy5ii.c:155 ../../core/qhy6.c:124 ../../core/qhy6old.c:129
+#: ../../core/qhy7.c:125 ../../core/qhy8l.c:124 ../../core/qhy8old.c:128
+#: ../../core/qhy9.c:127
+msgctxt "camio"
+msgid "This camera also needs a loader that was not found"
+msgstr "无法找到此相机的固件载入程序"
+
+#: ../../core/imgAvi.c:176
 #, c-format
 msgctxt "avi"
 msgid "Unable to write file %s. Check permissions"
 msgstr "无法写入到文件 %s。请检查权限。"
 
-#: ../imgAvi.c:180
+#: ../../core/imgAvi.c:180
 #, c-format
 msgctxt "avi"
 msgid "A component of the file path %s is not a folder"
 msgstr "文件路径 %s 中有不是目录的部分"
 
-#: ../imgAvi.c:186
+#: ../../core/imgAvi.c:186
 #, c-format
 msgctxt "avi"
 msgid "A component of the file path %s could not be created, check permissions"
 msgstr "无法创建文件路径 %s，请检查权限"
 
-#: ../imgCFWio.c:142 ../imgCFWio.c:236
+#: ../../core/imgCFWio.c:175 ../../core/imgCFWio.c:273
 msgctxt "cfw"
 msgid "Camera is not connected"
 msgstr "相机没有连接"
 
-#: ../imgCFWio.c:146 ../imgCFWio.c:240
+#: ../../core/imgCFWio.c:179 ../../core/imgCFWio.c:277
 msgctxt "cfw"
 msgid "Camera does not support direct CFW connection"
 msgstr "相机不支持直接连接滤镜轮"
 
-#: ../imgCFWio.c:172
+#: ../../core/imgCFWio.c:206
 msgctxt "cfw"
 msgid "Serial port does not exist"
 msgstr "串口不存在"
 
 #. / This will complete: "Filter wheel connected to %s"
-#: ../imgCFWio.c:191
+#: ../../core/imgCFWio.c:225
 msgctxt "cfw"
 msgid "camera"
 msgstr "相机"
 
-#: ../imgCFWio.c:222
+#: ../../core/imgCFWio.c:256
 #, c-format
 msgctxt "cfw"
 msgid "Could not connect to CFW on serial port %s, error: %s"
 msgstr "无法通过串口 %s 连接滤镜轮，错误：%s"
 
-#: ../imgCFWio.c:271
+#: ../../core/imgCFWio.c:309
 #, c-format
 msgctxt "cfw"
 msgid "Could not disconnect from CFW on serial port %s, error: %s"
 msgstr "无法从串口 %s 与滤镜轮断开连接，错误：%s"
 
 #. / Model name
-#: ../imgCFWio.c:311
+#: ../../core/imgCFWio.c:356
 msgctxt "cfw"
 msgid "5-QHY 5 slots 2\""
-msgstr ""
+msgstr "5-QHY 5槽"
 
-#: ../imgCFWio.c:312
+#: ../../core/imgCFWio.c:357
 msgctxt "cfw"
 msgid "|5-QHY 5 slots 2\""
 msgstr "|5-QHY 5槽"
 
 #. / Model name
-#: ../imgCFWio.c:323
+#: ../../core/imgCFWio.c:368
 msgctxt "cfw"
 msgid "8-QHY serial"
 msgstr "8-QHY串口"
 
-#: ../imgCFWio.c:324
+#: ../../core/imgCFWio.c:369
 msgctxt "cfw"
 msgid "|8-QHY serial"
 msgstr "|8-QHY串口"
 
-#: ../imgCFWio.c:343
+#: ../../core/imgCFWio.c:388
 #, c-format
 msgctxt "cfw"
 msgid "Could not read from CFW on serial port %s, error: %s"
 msgstr "无法通过串口 %s 读取滤镜轮信息，错误：%s"
 
-#: ../imgCFWio.c:350 ../imgCFWio.c:378 ../imgCFWio.c:379 ../imgCFWio.c:448
+#: ../../core/imgCFWio.c:395 ../../core/imgCFWio.c:437
+#: ../../core/imgCFWio.c:438 ../../core/imgCFWio.c:528
 #, c-format
 msgctxt "cfw"
 msgid "Could not write to CFW on serial port %s, error: %s"
 msgstr "无法通过串口 %s 向滤镜轮写数据，错误：%s"
 
-#: ../imgCFWio.c:431 ../imgCFWio.c:463
+#: ../../core/imgCFWio.c:511 ../../core/imgCFWio.c:545
+#: ../../core/imgCFWio.c:559
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel moving to slot: %d"
 msgstr "滤镜轮正移动到槽：%d"
 
-#: ../imgCFWio.c:440
+#: ../../core/imgCFWio.c:520 ../../core/imgCFWio.c:568
 msgctxt "cfw"
 msgid "Could not start notification thread, btw slot selection command was sent ok."
 msgstr "无法启动通知线程，但槽选择命令已成功发送。"
 
-#: ../imgCFWio.c:453
+#: ../../core/imgCFWio.c:533
 #, c-format
 msgctxt "cfw"
 msgid "Requested slot (%d) does not exist. Slots = %d"
 msgstr "请求的槽位（%d）不存在。槽 = %d"
 
 #. / Value "No cam" of the models combo
-#: ../imgCamio.c:155 ../imgCamio.c:287 ../imgWindow.c:1428
+#: ../../core/imgCamio.c:186 ../../core/imgCamio.c:368
+#: ../../gtk/imgWindow.c:1431
 msgctxt "camio"
 msgid "None"
 msgstr "无"
 
-#: ../imgCamio.c:454
+#. / Capture size values list, just translate "Full" (frame)
+#: ../../core/imgCamio.c:496 ../../core/qhy11.c:79 ../../core/qhy7.c:80
+#: ../../core/qhy8l.c:79 ../../core/qhy9.c:79
+msgctxt "camio"
+msgid "Full|512x512|256x256:0"
+msgstr ""
+
+#. / Descriptiopn for "mode" combo box
+#: ../../core/imgCamio.c:500 ../../core/qhy9.c:85
+msgctxt "camio"
+msgid "Light/Dark mode"
+msgstr "亮场/暗场"
+
+#: ../../core/imgCamio.c:633
 msgctxt "camio"
 msgid "Camera reset script complete"
 msgstr "相机重置完成"
 
-#: ../imgCamio.c:464
+#: ../../core/imgCamio.c:643
 msgctxt "camio"
 msgid "Reset for this camera model is unsupported"
 msgstr "此相机不支持重置"
 
-#: ../imgFitsio.c:207
+#: ../../core/imgCamio.c:893 ../../gtk/imgWCallbacks.c:164
+msgctxt "camio"
+msgid "Bad data received, discarded"
+msgstr ""
+
+#: ../../core/imgFitsio.c:207
 msgctxt "fitsio"
 msgid "Fit read only works on 2 axes images"
 msgstr "Fit只能读取2维图片"
 
-#: ../imgFitsio.c:215 ../imgFitsio.c:301
+#: ../../core/imgFitsio.c:215 ../../core/imgFitsio.c:301
 #, c-format
 msgctxt "fitsio"
 msgid "cfitsio error: %d"
 msgstr "cfitsio错误: %d"
 
-#: ../imgFitsio.c:308
+#: ../../core/imgFitsio.c:308
 #, c-format
 msgctxt "fitsio"
 msgid "A component of the file path %s could not be created, check permissions"
 msgstr "无法创建文件路径 %s，请检查权限"
 
-#: ../imgPixbuf.c:242 ../imgPixbuf.c:443
+#: ../../core/libusbio.c:96
+msgctxt "usbio"
+msgid "Error: Camera found, but did not open!"
+msgstr "错误: 检测到相机，但无法启用"
+
+#: ../../core/libusbio.c:105
+msgctxt "usbio"
+msgid "Error: Camera NOT found!"
+msgstr "错误: 无法找到相机"
+
+#. / Capture size values list, just translate "Full" (frame)
+#: ../../core/qhy10.c:79 ../../core/qhy12.c:79
+msgctxt "camio"
+msgid "Full|512x512|256x256|128x128:0"
+msgstr ""
+
+#. / Combo box values list, keep N-<desc> format. Just translate <desc>
+#: ../../core/qhy10.c:81 ../../core/qhy11.c:81 ../../core/qhy12.c:81
+#: ../../core/qhy2old.c:85 ../../core/qhy5ii.c:111 ../../core/qhy6.c:81
+#: ../../core/qhy6old.c:85 ../../core/qhy7.c:82 ../../core/qhy8l.c:81
+#: ../../core/qhy8old.c:85 ../../core/qhy9.c:81 ../../core/sbigcore.c:1491
+msgctxt "camio"
+msgid "0-Slow|1-Fast:0"
+msgstr "0-慢|1-快:0"
+
+#: ../../core/qhy10.c:82 ../../core/qhy11.c:82 ../../core/qhy12.c:82
+#: ../../core/qhy2old.c:86 ../../core/qhy6.c:82 ../../core/qhy6old.c:86
+#: ../../core/qhy7.c:83 ../../core/qhy8l.c:82 ../../core/qhy8old.c:86
+#: ../../core/qhy9.c:82 ../../core/sbigcore.c:1488
+msgctxt "camio"
+msgid "0-AmpOff|1-AmpOn|2-Auto:2"
+msgstr ""
+
+#: ../../core/qhy11.c:89 ../../core/qhy7.c:90 ../../core/qhy9.c:90
+msgctxt "camio"
+msgid "5-Positions|6-Positions|7-Positions|8-Positions:0"
+msgstr ""
+
+#: ../../core/qhy2old.c:87
+msgctxt "camio"
+msgid "1-Single|2-Double:0"
+msgstr ""
+
+#. / Combo box values list, keep N-<desc> format. Just translate <desc>
+#: ../../core/qhy5.c:99
+msgctxt "camio"
+msgid "0-Off|1-0n:0"
+msgstr ""
+
+#. / Descriptiopn for "mode" combo box
+#: ../../core/qhy5ii.c:115
+msgctxt "camio"
+msgid "Usb bus speed"
+msgstr "USB总线速度"
+
+#. / Combo box values list, keep N-<desc> format. Just translate <desc>
+#: ../../core/qhy5ii.c:381
+msgctxt "camio"
+msgid "0-Off|1-On:0"
+msgstr ""
+
+#. / Capture size values list, just translate "Full" (frame)
+#: ../../core/qhy6.c:79
+msgctxt "camio"
+msgid "Full|288x288|144x144:0"
+msgstr ""
+
+#: ../../core/qhy6old.c:87
+msgctxt "camio"
+msgid "1-Single|2-Double|3-Vbe Sampling|4-Vbe Timing:0"
+msgstr ""
+
+#: ../../core/qhy9.c:83 ../../core/sbigcore.c:1478
+msgctxt "camio"
+msgid "0-Light|1-Dark:0"
+msgstr ""
+
+#: ../../core/qhycore.c:179
+#, c-format
+msgctxt "qhycore"
+msgid "cameraIO failed, error %d"
+msgstr "cameraiIO失败，错误 %d"
+
+#: ../../core/qhycore.c:198
+#, c-format
+msgctxt "qhycore"
+msgid "cameraiIO failed, error %d"
+msgstr "cameraiIO失败，错误 %d"
+
+#: ../../core/qhycore.c:279
+#, c-format
+msgctxt "qhycore"
+msgid "Error %d: Could not set device configuration."
+msgstr "错误 %d: 无法配置设备"
+
+#: ../../core/qhycore.c:589
+#, c-format
+msgctxt "qhycore"
+msgid "getImgData failed, error %d"
+msgstr ""
+
+#: ../../core/qhycore.c:600
+#, c-format
+msgctxt "qhycore"
+msgid "EepromRead failed, error %d"
+msgstr "EepromRead失败，错误 %d"
+
+#: ../../core/qhycore.c:615
+#, c-format
+msgctxt "qhycore"
+msgid "I2CTwoWrite failed, error %d"
+msgstr "I2C总线读写失败, 错误 %d"
+
+#: ../../core/sbigcore.c:710 ../../core/sbigcore.c:733
+#: ../../core/sbigcore.c:748
+#, c-format
+msgctxt "sbigcore"
+msgid "CFW error: %d"
+msgstr ""
+
+#: ../../core/sbigcore.c:880
+#, c-format
+msgctxt "sbigcore"
+msgid "No error string found! Error code: %d"
+msgstr ""
+
+#: ../../core/ttycom.c:703
+msgctxt "tty"
+msgid "No Error"
+msgstr ""
+
+#: ../../core/ttycom.c:707
+#, c-format
+msgctxt "tty"
+msgid "Read Error: %s"
+msgstr "读取错误：%s"
+
+#: ../../core/ttycom.c:712
+#, c-format
+msgctxt "tty"
+msgid "Write Error: %s"
+msgstr "写错误：%s"
+
+#: ../../core/ttycom.c:717
+#, c-format
+msgctxt "tty"
+msgid "Select Error: %s"
+msgstr "选择错误：%s"
+
+#: ../../core/ttycom.c:722
+msgctxt "tty"
+msgid "Timeout error"
+msgstr "超时"
+
+#: ../../core/ttycom.c:727
+#, c-format
+msgctxt "tty"
+msgid ""
+"Port failure Error: %s. Try adding your user to the dialout group and "
+"restart (sudo adduser $username dialout)"
+msgstr ""
+"端口错误：%s。请尝试把你的用户名添加到dialout组并"
+"重新启动程序(sudo adduser 用户名 dialout)"
+
+#: ../../core/ttycom.c:729
+#, c-format
+msgctxt "tty"
+msgid "Port failure Error: %s.Check if device is connected to this port."
+msgstr "端口错误：%s。请检查设备是否正确连接到端口"
+
+#: ../../core/ttycom.c:735
+msgctxt "tty"
+msgid "Parameter error"
+msgstr "参数错误"
+
+#: ../../core/ttycom.c:744
+msgctxt "tty"
+msgid "Error: unrecognized error code"
+msgstr "错误：无法识别的错误代码"
+
+#: ../../gtk/imgPixbuf.c:290 ../../gtk/imgPixbuf.c:496
 msgctxt "pixbuf"
 msgid "Only works with 8/16bpp images"
 msgstr "仅工作于8/16bpp图像"
 
 #. / Message on statusbar about last saved frame (%s)
-#: ../imgWCallbacks.c:158 ../imgWCallbacks.c:242
+#: ../../gtk/imgWCallbacks.c:185 ../../gtk/imgWCallbacks.c:275
 #, c-format
 msgctxt "main"
 msgid "Image: %s saved"
 msgstr "图像: %s 已保存"
 
 #. / Message on statusbar about last frame add to avi (%s)
-#: ../imgWCallbacks.c:163 ../imgWCallbacks.c:247
+#: ../../gtk/imgWCallbacks.c:190 ../../gtk/imgWCallbacks.c:280
 #, c-format
 msgctxt "main"
 msgid "Frame: add to %s"
 msgstr "帧：已写入 %s"
 
 #. / Message on statusbar about last saved frame (%s) + last frame add to avi (%s)
-#: ../imgWCallbacks.c:168 ../imgWCallbacks.c:252
+#: ../../gtk/imgWCallbacks.c:195 ../../gtk/imgWCallbacks.c:285
 #, c-format
 msgctxt "main"
 msgid "Image: %s saved, Frame: add to %s"
 msgstr "图像：%s 已保存，帧：已写入到 %s"
 
-#: ../imgWCallbacks.c:220
+#: ../../gtk/imgWCallbacks.c:251
 msgctxt "main"
 msgid "Error starting capture thread"
 msgstr "无法启动拍摄线程"
 
-#: ../imgWCallbacks.c:255
+#: ../../gtk/imgWCallbacks.c:288
 msgctxt "main"
-msgid ", capture end"
+msgid "capture end"
 msgstr "， 拍摄完成"
 
 #. / Message to confirm end of capture thread in focus mode
-#: ../imgWCallbacks.c:264
+#: ../../gtk/imgWCallbacks.c:297
 msgctxt "main"
 msgid "Focus end"
 msgstr "对焦完成"
 
 #. / Statusbar feedback message about tec power
-#: ../imgWCallbacks.c:305
+#: ../../gtk/imgWCallbacks.c:338
 #, c-format
 msgctxt "main"
 msgid "Tec power set to: %d%%"
 msgstr "制冷片功率设置到： %d%%"
 
 #. / Statusbar feedback message about cooling status in automatic mode
-#: ../imgWCallbacks.c:468
+#: ../../gtk/imgWCallbacks.c:507 ../../gtk/imgWCallbacks.c:614
 #, c-format
 msgctxt "main"
 msgid "Tec: %+06.2FC, Target: %+06.2FC, Power: %d%%"
 msgstr "温度: %+06.2FC, 目标温度: %+06.2FC, 功率: %d%%"
 
 #. / Satusbar feedback message about cooling in manual mode
-#: ../imgWCallbacks.c:473
+#: ../../gtk/imgWCallbacks.c:512 ../../gtk/imgWCallbacks.c:619
 #, c-format
 msgctxt "main"
 msgid "Tec: %+06.2fC, Power: %d%%"
 msgstr "温度: %+06.2fC, 功率: %d%%"
 
-#: ../imgWCallbacks.c:489
+#: ../../gtk/imgWCallbacks.c:529
 msgctxt "main"
 msgid "Error communicating with tec"
 msgstr "无法与制冷通信"
 
 #. / Satusbar feedback message about temperature only
-#: ../imgWCallbacks.c:508
+#: ../../gtk/imgWCallbacks.c:554
 #, c-format
 msgctxt "main"
 msgid "Temp: %+06.2fC"
 msgstr "温度：%+06.2fC"
 
 #. / Starusbar feedback message about timelapse mode
-#: ../imgWCallbacks.c:537
+#: ../../gtk/imgWCallbacks.c:670
 #, c-format
 msgctxt "main"
 msgid "TimeLapse mode full, start at: %s, end at: %s, interval: %d seconds"
 msgstr "延时拍摄模式, 开始于: %s, 停止于: %s, 间隔: %d 秒"
 
-#: ../imgWCallbacks.c:541
+#: ../../gtk/imgWCallbacks.c:674
 #, c-format
 msgctxt "main"
 msgid "TimeLapse mode simple, interval: %d seconds"
 msgstr "简单延时拍摄模式, 间隔: %d 秒"
 
-#: ../imgWCallbacks.c:546
+#: ../../gtk/imgWCallbacks.c:679
 msgctxt "main"
 msgid "TimeLapse mode finished"
 msgstr "延时拍摄模式完成"
 
-#: ../imgWCallbacks.c:595
+#: ../../gtk/imgWCallbacks.c:728
 msgctxt "main"
 msgid "Hide settings"
 msgstr "隐藏设置"
 
-#: ../imgWCallbacks.c:599 ../imgWindow.c:52
+#: ../../gtk/imgWCallbacks.c:732 ../../gtk/imgWindow.c:55
 msgctxt "main"
 msgid "Show settings"
 msgstr "显示设置"
 
-#: ../imgWCallbacks.c:612
+#: ../../gtk/imgWCallbacks.c:745
 msgctxt "about"
 msgid "OpenSkyImager is a capture program written for Astronomy camera operation"
 msgstr "OpenSkyImager 是一个用于控制天文相机进行拍摄的软件"
 
-#: ../imgWCallbacks.c:613
+#: ../../gtk/imgWCallbacks.c:746
 msgctxt "about"
 msgid ""
 "Copyright (c) 2013 JP & C AstroSoftware\n"
@@ -281,231 +555,242 @@ msgid ""
 "along with this program.  If not, see <http://www.gnu.org/licenses/>."
 msgstr ""
 
-#: ../imgWCallbacks.c:617
+#: ../../gtk/imgWCallbacks.c:750
 msgctxt "about"
 msgid "OpenSkyImager website"
 msgstr "OpenSkyImager 网站"
 
-#: ../imgWCallbacks.c:722
+#: ../../gtk/imgWCallbacks.c:862
 msgctxt "main"
 msgid "Folder or base name not set!"
 msgstr "请先设置保存目录或者文件前缀"
 
-#: ../imgWCallbacks.c:822
+#: ../../gtk/imgWCallbacks.c:970
 msgctxt "main"
 msgid "Read from camera thread failed to start"
 msgstr "相机读取线程启动失败"
 
-#: ../imgWCallbacks.c:843
+#: ../../gtk/imgWCallbacks.c:991
 msgctxt "main"
 msgid "Capture start"
 msgstr "开始拍摄"
 
-#: ../imgWCallbacks.c:847
+#: ../../gtk/imgWCallbacks.c:995
 msgctxt "main"
 msgid "Focus start"
 msgstr "开始对焦"
 
-#: ../imgWCallbacks.c:867 ../imgWCallbacks.c:918 ../imgWCallbacks.c:928
-#: ../imgWCallbacks.c:940 ../imgWCallbacks.c:960 ../imgWindow.c:188
+#: ../../gtk/imgWCallbacks.c:1015 ../../gtk/imgWCallbacks.c:1066
+#: ../../gtk/imgWCallbacks.c:1076 ../../gtk/imgWCallbacks.c:1088
+#: ../../gtk/imgWCallbacks.c:1108 ../../gtk/imgWindow.c:191
 msgctxt "main"
 msgid "Start"
 msgstr "开始"
 
-#: ../imgWCallbacks.c:873 ../imgWCallbacks.c:920
+#: ../../gtk/imgWCallbacks.c:1021 ../../gtk/imgWCallbacks.c:1068
 msgctxt "main"
 msgid "Running exposure aborted"
 msgstr "曝光终止"
 
-#: ../imgWCallbacks.c:880
+#: ../../gtk/imgWCallbacks.c:1028
 msgctxt "main"
 msgid "Abort capture failed or not supported, please wait end of current exposure"
 msgstr "无法停止拍摄或相机不支持，请等待此次曝光完成"
 
 #. / Start / Stop / Kill button state message
-#: ../imgWCallbacks.c:893 ../imgWCallbacks.c:951
+#: ../../gtk/imgWCallbacks.c:1041 ../../gtk/imgWCallbacks.c:1099
 msgctxt "main"
 msgid "Kill"
 msgstr "终止"
 
-#: ../imgWCallbacks.c:906
+#: ../../gtk/imgWCallbacks.c:1054
 msgctxt "main"
 msgid "Wait last capture end"
 msgstr "等待拍摄完成"
 
-#: ../imgWCallbacks.c:955
+#: ../../gtk/imgWCallbacks.c:1103
 msgctxt "main"
 msgid "Stop"
 msgstr "停止"
 
 #. / Hold / Resume status message
-#: ../imgWCallbacks.c:974
+#: ../../gtk/imgWCallbacks.c:1122
 msgctxt "main"
 msgid "Resume"
 msgstr "恢复"
 
-#: ../imgWCallbacks.c:977
+#: ../../gtk/imgWCallbacks.c:1125
 msgctxt "main"
 msgid "Capture hold"
 msgstr "拍摄暂停"
 
-#: ../imgWCallbacks.c:981
+#: ../../gtk/imgWCallbacks.c:1129
 msgctxt "main"
 msgid "Focus hold"
 msgstr "对焦暂停"
 
 #. / Hold resume status message
-#: ../imgWCallbacks.c:987 ../imgWindow.c:217
+#: ../../gtk/imgWCallbacks.c:1135 ../../gtk/imgWindow.c:220
 msgctxt "main"
 msgid "Hold"
 msgstr "暂停"
 
-#: ../imgWCallbacks.c:990
+#: ../../gtk/imgWCallbacks.c:1138
 msgctxt "main"
 msgid "Capture resume"
 msgstr "恢复拍摄"
 
-#: ../imgWCallbacks.c:994
+#: ../../gtk/imgWCallbacks.c:1142
 msgctxt "main"
 msgid "Focus resume"
 msgstr "恢复对焦"
 
 #. / 1:1 / Fit status message
-#: ../imgWCallbacks.c:1004
+#: ../../gtk/imgWCallbacks.c:1152
 msgctxt "main"
 msgid "Fit"
 msgstr "适合窗口"
 
-#: ../imgWCallbacks.c:1006
+#: ../../gtk/imgWCallbacks.c:1154
 msgctxt "main"
 msgid "Fit to screen"
 msgstr "适合屏幕"
 
-#: ../imgWCallbacks.c:1010 ../imgWindow.c:238
+#: ../../gtk/imgWCallbacks.c:1158 ../../gtk/imgWindow.c:241
 msgctxt "main"
 msgid "1:1"
 msgstr "1:1"
 
-#: ../imgWCallbacks.c:1012
+#: ../../gtk/imgWCallbacks.c:1160
 msgctxt "main"
 msgid "Original size"
 msgstr "原始尺寸"
 
-#: ../imgWCallbacks.c:1022
+#: ../../gtk/imgWCallbacks.c:1170
 msgctxt "main"
 msgid "Hide graph"
 msgstr "隐藏直方图"
 
-#: ../imgWCallbacks.c:1024
+#: ../../gtk/imgWCallbacks.c:1172
 msgctxt "main"
 msgid "Show graph image"
 msgstr "显示直方图"
 
-#: ../imgWCallbacks.c:1029 ../imgWindow.c:313
+#: ../../gtk/imgWCallbacks.c:1177 ../../gtk/imgWindow.c:316
 msgctxt "main"
 msgid "Show graph"
 msgstr "显示直方图"
 
-#: ../imgWCallbacks.c:1031
+#: ../../gtk/imgWCallbacks.c:1179
 msgctxt "main"
 msgid "Show preview thumbnail"
 msgstr "显示上一个缩略图"
 
-#: ../imgWCallbacks.c:1245
+#: ../../gtk/imgWCallbacks.c:1382 ../../gtk/imgWCallbacks.c:1526
+msgctxt "main"
+msgid "Capture thread running!"
+msgstr ""
+
+#: ../../gtk/imgWCallbacks.c:1383 ../../gtk/imgWCallbacks.c:1527
+msgctxt "main"
+msgid "Confirm only if you know exaclty what you're doing"
+msgstr ""
+
+#: ../../gtk/imgWCallbacks.c:1408
 msgctxt "quit-message"
 msgid "Confirm exit"
 msgstr "确认是否要退出"
 
-#: ../imgWCallbacks.c:1246
+#: ../../gtk/imgWCallbacks.c:1409
 msgctxt "quit-message"
 msgid "Do you really want to quit?"
 msgstr "您确定要退出吗？"
 
-#: ../imgWCallbacks.c:1276
+#: ../../gtk/imgWCallbacks.c:1441
 #, c-format
 msgctxt "main"
 msgid "Debayer strategy set to: %s"
 msgstr "图像解码策略设置为: %s"
 
-#: ../imgWCallbacks.c:1299
+#: ../../gtk/imgWCallbacks.c:1466
 #, c-format
 msgctxt "main"
 msgid "Exposure time set to: %s"
 msgstr "曝光时间设置为: %s"
 
-#: ../imgWCallbacks.c:1343
+#: ../../gtk/imgWCallbacks.c:1510
 #, c-format
 msgctxt "main"
 msgid "Camera %s selected"
 msgstr "相机 %s 已选择"
 
-#: ../imgWCallbacks.c:1407 ../imgWindow.c:440
+#: ../../gtk/imgWCallbacks.c:1593 ../../gtk/imgWindow.c:442
 msgctxt "settings"
 msgid "Connect"
 msgstr "连接"
 
-#: ../imgWCallbacks.c:1408
+#: ../../gtk/imgWCallbacks.c:1594
 #, c-format
 msgctxt "main"
 msgid "Camera %s disconnected"
 msgstr "相机 %s 已断开"
 
-#: ../imgWCallbacks.c:1476
+#: ../../gtk/imgWCallbacks.c:1669
 msgctxt "settings"
 msgid "Disconnect"
 msgstr "断开"
 
-#: ../imgWCallbacks.c:1478
+#: ../../gtk/imgWCallbacks.c:1671
 #, c-format
 msgctxt "main"
 msgid "Camera %s connected"
 msgstr "相机 %s 已连接"
 
-#: ../imgWCallbacks.c:1490
+#: ../../gtk/imgWCallbacks.c:1683
 msgctxt "cfw"
 msgid "99-In camera"
 msgstr ""
 
-#: ../imgWCallbacks.c:1516
+#: ../../gtk/imgWCallbacks.c:1709
 msgctxt "main"
 msgid "Full camera list set"
 msgstr "所有支持的相机列表"
 
-#: ../imgWCallbacks.c:1520
+#: ../../gtk/imgWCallbacks.c:1713
 msgctxt "main"
 msgid "Active camera list set"
 msgstr "可用相机列表"
 
-#: ../imgWCallbacks.c:1542
+#: ../../gtk/imgWCallbacks.c:1735
 #, c-format
 msgctxt "main"
 msgid "Gain set to: %d"
 msgstr "增益设置为: %d"
 
-#: ../imgWCallbacks.c:1554
+#: ../../gtk/imgWCallbacks.c:1747
 #, c-format
 msgctxt "main"
 msgid "Offset set to: %d"
 msgstr "偏移设置为: %d"
 
-#: ../imgWCallbacks.c:1574
+#: ../../gtk/imgWCallbacks.c:1769
 #, c-format
 msgctxt "main"
 msgid "Binning mode set to: %dx%d"
 msgstr "BIN模式设置为: %dx%d"
 
-#: ../imgWCallbacks.c:1593
+#: ../../gtk/imgWCallbacks.c:1788
 #, c-format
 msgctxt "main"
 msgid "Capture size set to: %dx%d"
 msgstr "拍摄尺寸设置为: %dx%d"
 
-#: ../imgWCallbacks.c:1599
+#: ../../gtk/imgWCallbacks.c:1794
 msgctxt "main"
 msgid "Capture size set to: Full frame"
 msgstr ""
 
-#: ../imgWCallbacks.c:1637
+#: ../../gtk/imgWCallbacks.c:1834
 #, c-format
 msgctxt "main"
 msgid "Download speed set to: %s"
@@ -513,727 +798,527 @@ msgstr "下载速度设置为: %s"
 
 #. / This can be "Capture mode set to...  or Usb Speed set to...
 #. / Content of the first part is translated separately
-#: ../imgWCallbacks.c:1669
+#: ../../gtk/imgWCallbacks.c:1866
 #, c-format
 msgctxt "main"
 msgid "%s set to: %s"
 msgstr "%s 设置为: %s"
 
-#: ../imgWCallbacks.c:1695
+#: ../../gtk/imgWCallbacks.c:1892
 #, c-format
 msgctxt "main"
 msgid "Amp control set to: %s"
 msgstr "Amp设置为: %s"
 
-#: ../imgWCallbacks.c:1720
+#: ../../gtk/imgWCallbacks.c:1917
 #, c-format
 msgctxt "main"
 msgid "Noise reduction set to: %s"
 msgstr "降噪设置为: %s"
 
-#: ../imgWCallbacks.c:1745
+#: ../../gtk/imgWCallbacks.c:1942
 #, c-format
 msgctxt "main"
 msgid "Image depth set to: %s"
 msgstr "图像深度设置为: %s"
 
-#: ../imgWCallbacks.c:1775 ../imgWCallbacks.c:2070 ../imgWCallbacks.c:2077
+#: ../../gtk/imgWCallbacks.c:1972 ../../gtk/imgWCallbacks.c:2267
+#: ../../gtk/imgWCallbacks.c:2274
 #, c-format
 msgctxt "main"
 msgid "Base folder/file set: %s%s"
 msgstr "基准目录/文件设置为: %s%s"
 
-#: ../imgWCallbacks.c:1811
+#: ../../gtk/imgWCallbacks.c:2008
 msgctxt "main"
 msgid "Audela naming convention selected"
 msgstr "AudeLa命名模式已启用"
 
-#: ../imgWCallbacks.c:1819
+#: ../../gtk/imgWCallbacks.c:2016
 msgctxt "main"
 msgid "Audela naming convention removed"
 msgstr "AudeLa命名模式已停止"
 
-#: ../imgWCallbacks.c:1828
+#: ../../gtk/imgWCallbacks.c:2025
 msgctxt "main"
 msgid "Iris naming convention selected"
 msgstr "Iris命名模式已启用"
 
-#: ../imgWCallbacks.c:1832
+#: ../../gtk/imgWCallbacks.c:2029
 msgctxt "main"
 msgid "Iris naming convention removed"
 msgstr "Iris命名模式已停止"
 
-#: ../imgWCallbacks.c:1841
+#: ../../gtk/imgWCallbacks.c:2038
 msgctxt "main"
 msgid "Frame counter will be reset each new start"
 msgstr "帧计数器会在每次新的开始时被重置"
 
-#: ../imgWCallbacks.c:1845
+#: ../../gtk/imgWCallbacks.c:2042
 msgctxt "main"
 msgid "Frame counter absolute"
 msgstr ""
 
-#: ../imgWCallbacks.c:1862
+#: ../../gtk/imgWCallbacks.c:2059
 msgctxt "main"
 msgid "Time lapse mode enabled"
 msgstr "延时拍摄模式已启动"
 
-#: ../imgWCallbacks.c:1867
+#: ../../gtk/imgWCallbacks.c:2064
 msgctxt "main"
 msgid "Time lapse mode disabled"
 msgstr "延时拍摄模式已停止"
 
-#: ../imgWCallbacks.c:1896 ../imgWCallbacks.c:1910 ../imgWCallbacks.c:1924
-#: ../imgWCallbacks.c:2029
+#: ../../gtk/imgWCallbacks.c:2093 ../../gtk/imgWCallbacks.c:2107
+#: ../../gtk/imgWCallbacks.c:2121 ../../gtk/imgWCallbacks.c:2226
 #, c-format
 msgctxt "main"
 msgid "Time lapse date start set to: %s"
 msgstr "延时拍摄模式开始日期设置为: %s"
 
-#: ../imgWCallbacks.c:1938 ../imgWCallbacks.c:1952 ../imgWCallbacks.c:1966
-#: ../imgWCallbacks.c:2039
+#: ../../gtk/imgWCallbacks.c:2135 ../../gtk/imgWCallbacks.c:2149
+#: ../../gtk/imgWCallbacks.c:2163 ../../gtk/imgWCallbacks.c:2236
 #, c-format
 msgctxt "main"
 msgid "Time lapse date end set to: %s"
 msgstr "延时拍摄模式终止日期设置为: %s"
 
-#: ../imgWCallbacks.c:1991
+#: ../../gtk/imgWCallbacks.c:2188
 msgctxt "main"
 msgid "TimeLapse set to use frame count driven start and stop plus interval"
 msgstr "延时拍摄模式设置为基于帧计数的开始，终止与间隔时间"
 
-#: ../imgWCallbacks.c:2007
+#: ../../gtk/imgWCallbacks.c:2204
 msgctxt "main"
 msgid "TimeLapse set to use calendar driven start and stop plus interval"
 msgstr "延时拍摄模式设置为使用基于日历的开始，终止与间隔时间"
 
-#: ../imgWCallbacks.c:2051
+#: ../../gtk/imgWCallbacks.c:2248
 #, c-format
 msgctxt "main"
 msgid "Time Lapse period set to: %d"
 msgstr "延时拍摄时长设置为: %d"
 
-#: ../imgWCallbacks.c:2086
+#: ../../gtk/imgWCallbacks.c:2283
 msgctxt "main"
 msgid "Add date to naming convention selected"
 msgstr "向命名规则增加日期项"
 
-#: ../imgWCallbacks.c:2090
+#: ../../gtk/imgWCallbacks.c:2287
 msgctxt "main"
 msgid "Add date to naming convention removed"
 msgstr "移除命名规则里的日期项"
 
-#: ../imgWCallbacks.c:2099
+#: ../../gtk/imgWCallbacks.c:2296
 msgctxt "main"
 msgid "Add time to naming convention selected"
 msgstr "向命名规则增加时间项"
 
-#: ../imgWCallbacks.c:2103
+#: ../../gtk/imgWCallbacks.c:2300
 msgctxt "main"
 msgid "Add time to naming convention removed"
 msgstr "移除命名规则里的时间项"
 
-#: ../imgWCallbacks.c:2120
+#: ../../gtk/imgWCallbacks.c:2317
 msgctxt "main"
 msgid "Add filter to naming convention selected"
 msgstr "把滤镜加入到命名规则"
 
-#: ../imgWCallbacks.c:1633
+#: ../../gtk/imgWCallbacks.c:2323
 msgctxt "main"
 msgid "Add filter to naming convention removed"
 msgstr "移除命名规则里的滤镜选项"
 
-#: ../imgWCallbacks.c:2138
+#: ../../gtk/imgWCallbacks.c:2337
 #, c-format
 msgctxt "main"
 msgid "Filter name: %s add to naming convention"
 msgstr "增加滤镜: %s 到命名规则"
 
-#: ../imgWCallbacks.c:2143
+#: ../../gtk/imgWCallbacks.c:2342
 msgctxt "main"
 msgid "Filter name removed from naming convention"
 msgstr "移除命名规则里的滤镜项"
 
-#: ../imgWCallbacks.c:2167
+#: ../../gtk/imgWCallbacks.c:2367
 #, c-format
 msgctxt "main"
 msgid "Save format set to: %s"
 msgstr "保存格式设置为：%s"
 
-#: ../imgWCallbacks.c:2199 ../imgWCallbacks.c:2244
+#: ../../gtk/imgWCallbacks.c:2404 ../../gtk/imgWCallbacks.c:2450
 msgctxt "cooling"
 msgid "Reading tec"
 msgstr "正在读取制冷片温度"
 
-#: ../imgWCallbacks.c:2204
+#: ../../gtk/imgWCallbacks.c:2409
 #, c-format
 msgctxt "main"
 msgid "Tec controlling thread failed to start (%s)"
 msgstr "制冷片控制线程启动失败(%s)"
 
-#: ../imgWCallbacks.c:2227 ../imgWCallbacks.c:2255 ../imgWCallbacks.c:2269
-#: ../imgWindow.c:691
+#: ../../gtk/imgWCallbacks.c:2433 ../../gtk/imgWCallbacks.c:2462
+#: ../../gtk/imgWCallbacks.c:2477 ../../gtk/imgWindow.c:693
 msgctxt "cooling"
 msgid "Enable tec read"
 msgstr "启用制冷片温度读取"
 
-#: ../imgWCallbacks.c:2265
+#: ../../gtk/imgWCallbacks.c:2473
 #, c-format
 msgctxt "main"
 msgid "Camera %s does not have a controllable tec"
 msgstr "相机 %s 没有可以控制的制冷片"
 
-#: ../imgWCallbacks.c:2287
+#: ../../gtk/imgWCallbacks.c:2495
 msgctxt "cooling"
 msgid "Auto mode"
 msgstr "自动模式"
 
-#: ../imgWCallbacks.c:2292 ../imgWCallbacks.c:2313
+#: ../../gtk/imgWCallbacks.c:2509 ../../gtk/imgWCallbacks.c:2532
 #, c-format
 msgctxt "main"
 msgid "Tec set auto to: %+06.2FC"
 msgstr "制冷温度设置为自动到:%+06.2FC"
 
-#: ../imgWCallbacks.c:2298 ../imgWindow.c:700
+#: ../../gtk/imgWCallbacks.c:2515 ../../gtk/imgWindow.c:702
 msgctxt "cooling"
 msgid "Manual mode"
 msgstr "手动模式"
 
-#: ../imgWCallbacks.c:2303
+#: ../../gtk/imgWCallbacks.c:2522
 msgctxt "main"
 msgid "Tec set manual"
 msgstr "制冷温度设置为手动"
 
-#: ../imgWCallbacks.c:2376
+#: ../../gtk/imgWCallbacks.c:2598
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel mode set: %s"
 msgstr "滤镜轮模式设置为："
 
-#: ../imgWCallbacks.c:2381
+#: ../../gtk/imgWCallbacks.c:2603
 msgctxt "cfw"
 msgid "Could not set cfw mode"
 msgstr "无法设置滤镜轮模式"
 
-#: ../imgWCallbacks.c:2399
+#: ../../gtk/imgWCallbacks.c:2621
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel serial port: %s"
 msgstr "滤镜轮使用串口:"
 
-#: ../imgWCallbacks.c:2407
+#: ../../gtk/imgWCallbacks.c:2629
 msgctxt "cfw"
 msgid "Serial port list reloaded"
 msgstr "重载串口列表"
 
-#: ../imgWCallbacks.c:2425
+#: ../../gtk/imgWCallbacks.c:2651
 msgctxt "cfw"
 msgid "Disconnect"
 msgstr "断开"
 
-#: ../imgWCallbacks.c:2426
+#: ../../gtk/imgWCallbacks.c:2662
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel connected to %s"
 msgstr "滤镜轮连接到：%s"
 
-#: ../imgWCallbacks.c:2442 ../imgWindow.c:854
+#: ../../gtk/imgWCallbacks.c:2682 ../../gtk/imgWindow.c:856
 msgctxt "cfw"
 msgid "Connect"
 msgstr "连接"
 
-#: ../imgWCallbacks.c:2443
+#: ../../gtk/imgWCallbacks.c:2691
 msgctxt "cfw"
 msgid "Filter wheel disconnected"
 msgstr "滤镜轮已断开"
 
-#: ../imgWCallbacks.c:2472
+#: ../../gtk/imgWCallbacks.c:2713
 #, c-format
 msgctxt "cfw"
 msgid "Filter wheel configuration: %d slots, %s model"
 msgstr "滤镜轮设置：%d槽，型号%s"
 
-#: ../imgWCallbacks.c:2481
+#: ../../gtk/imgWCallbacks.c:2722
 msgctxt "cfw"
 msgid "Filter wheel controller factory reset done"
 msgstr "滤镜轮控制器复位完成"
 
-#: ../imgWCallbacks.c:2519
+#: ../../gtk/imgWCallbacks.c:2778
 msgctxt "cfw"
 msgid "Please wait for the filter to reach position..."
 msgstr "请等待滤镜轮移动到指定位置..."
 
-#: ../imgWCallbacks.c:2520
+#: ../../gtk/imgWCallbacks.c:2779
 msgctxt "cfw"
 msgid "Dialog will disappear when done"
 msgstr "当完成时对话框会自动隐藏"
 
-#: ../imgWFuncs.c:159
+#: ../../gtk/imgWFuncs.c:169
 msgctxt "dialog-open"
 msgid "Open File"
 msgstr "打开文件"
 
-#: ../imgWFuncs.c:800
+#: ../../gtk/imgWFuncs.c:947
 msgctxt "cfw"
 msgid "Filter wheel reported error"
 msgstr "滤镜轮报错"
 
-#: ../imgWindow.c:76
+#: ../../gtk/imgWindow.c:79
 msgctxt "main"
 msgid "Focus"
 msgstr "对焦模式"
 
-#: ../imgWindow.c:77
+#: ../../gtk/imgWindow.c:80
 msgctxt "main"
 msgid "Capture"
 msgstr "拍摄模式"
 
-#: ../imgWindow.c:229
+#: ../../gtk/imgWindow.c:232
 msgctxt "main"
 msgid "Load"
 msgstr "载入"
 
-#: ../imgWindow.c:449
+#: ../../gtk/imgWindow.c:451
 msgctxt "settings"
 msgid "Full list"
 msgstr "完整列表"
 
-#: ../imgWindow.c:456
+#: ../../gtk/imgWindow.c:458
 msgctxt "main"
 msgid "Refresh"
 msgstr "刷新"
 
-#: ../imgWindow.c:465
+#: ../../gtk/imgWindow.c:467
 msgctxt "main"
 msgid "Reset"
 msgstr "重置"
 
 #. / This is the "no bayer mask" value in the debayer combo box, other values are just intl as they are
-#: ../imgWindow.c:582
+#: ../../gtk/imgWindow.c:584
 msgctxt "settings"
 msgid "None"
 msgstr "无"
 
-#: ../imgWindow.c:594
+#: ../../gtk/imgWindow.c:596
 msgctxt "filename"
 msgid "Save As"
 msgstr "另存为"
 
-#: ../imgWindow.c:603
+#: ../../gtk/imgWindow.c:605
 msgctxt "filename"
 msgid "Audela naming"
 msgstr "AudeLa命名模式"
 
-#: ../imgWindow.c:610
+#: ../../gtk/imgWindow.c:612
 msgctxt "filename"
 msgid "Iris naming"
 msgstr "Iris命名模式"
 
-#: ../imgWindow.c:617
+#: ../../gtk/imgWindow.c:619
 msgctxt "filename"
 msgid "Zero counter"
 msgstr "帧计数器清零"
 
-#: ../imgWindow.c:624
+#: ../../gtk/imgWindow.c:626
 msgctxt "filename"
 msgid "Time Lapse"
 msgstr "延时拍摄"
 
-#: ../imgWindow.c:648
+#: ../../gtk/imgWindow.c:650
 msgctxt "filename"
 msgid "Add date"
 msgstr "增加日期"
 
-#: ../imgWindow.c:655
+#: ../../gtk/imgWindow.c:657
 msgctxt "filename"
 msgid "Add time"
 msgstr "增加时间"
 
-#: ../imgWindow.c:662
+#: ../../gtk/imgWindow.c:664
 msgctxt "filename"
 msgid "Add filter"
 msgstr "增加滤镜"
 
-#: ../imgWindow.c:791
+#: ../../gtk/imgWindow.c:793
 msgctxt "timelapse"
-msgid "Simple mode"
-msgstr "简单模式"
+msgid "Full mode"
+msgstr ""
 
 #. / Value "No CFW" of the cfw combo, please preserve the n-xxxxx format
-#: ../imgWindow.c:823
+#: ../../gtk/imgWindow.c:825
 msgctxt "cfw"
 msgid "0-None"
 msgstr "0-无"
 
-#: ../imgWindow.c:824
+#: ../../gtk/imgWindow.c:826
 msgctxt "cfw"
 msgid "1-QHY Serial"
 msgstr "1-QHY串口"
 
-#: ../imgWindow.c:844
+#: ../../gtk/imgWindow.c:846
 msgctxt "cfw"
 msgid "Refresh"
 msgstr "刷新"
 
-#: ../imgWindow.c:875
+#: ../../gtk/imgWindow.c:877
 msgctxt "cfw"
 msgid "Factory Reset"
 msgstr "重置"
 
 #. / Label for button to change wheel slot to %d
-#: ../imgWindow.c:911
+#: ../../gtk/imgWindow.c:913
 #, c-format
 msgctxt "cfw"
 msgid "Slot %d"
 msgstr "槽 %d"
 
-#: ../imgWindow.c:948
+#: ../../gtk/imgWindow.c:950
 msgctxt "settings"
 msgid "Camera Controls"
 msgstr "相机参数"
 
-#: ../imgWindow.c:950
+#: ../../gtk/imgWindow.c:952
 msgctxt "settings"
 msgid "User Profiles Settings"
 msgstr "用户配置文件设置"
 
-#: ../imgWindow.c:953
+#: ../../gtk/imgWindow.c:955
 msgctxt "settings"
 msgid "Model"
 msgstr "型号"
 
-#: ../imgWindow.c:961
+#: ../../gtk/imgWindow.c:963
 msgctxt "settings"
 msgid "Offset"
 msgstr "偏移"
 
-#: ../imgWindow.c:964
+#: ../../gtk/imgWindow.c:966
 msgctxt "settings"
 msgid "Gain"
 msgstr "增益"
 
-#: ../imgWindow.c:967
+#: ../../gtk/imgWindow.c:969
 msgctxt "settings"
 msgid "Binning Mode"
 msgstr "BIN模式"
 
-#: ../imgWindow.c:970
+#: ../../gtk/imgWindow.c:972
 msgctxt "settings"
 msgid "Capture Size"
 msgstr "拍摄尺寸"
 
-#: ../imgWindow.c:973
+#: ../../gtk/imgWindow.c:975
 msgctxt "settings"
 msgid "Download Speed"
 msgstr "下载速度"
 
-#: ../imgWindow.c:979
+#: ../../gtk/imgWindow.c:981
 msgctxt "settings"
 msgid "Amp Control"
 msgstr "Amp控制"
 
-#: ../imgWindow.c:982
+#: ../../gtk/imgWindow.c:984
 msgctxt "settings"
 msgid "Noise reduction"
 msgstr "降噪"
 
-#: ../imgWindow.c:985
+#: ../../gtk/imgWindow.c:987
 msgctxt "settings"
 msgid "Image depth"
 msgstr "图像深度"
 
-#: ../imgWindow.c:990
+#: ../../gtk/imgWindow.c:992
 msgctxt "settings"
 msgid "Color mode"
 msgstr "颜色模式"
 
-#: ../imgWindow.c:1012
+#: ../../gtk/imgWindow.c:1014
 msgctxt "cooling"
 msgid "Current °C"
 msgstr "现在温度"
 
-#: ../imgWindow.c:1013
+#: ../../gtk/imgWindow.c:1015
 msgctxt "cooling"
 msgid "Temperature / Time"
 msgstr "温度/时间"
 
-#: ../imgWindow.c:1014
+#: ../../gtk/imgWindow.c:1016
 msgctxt "cooling"
 msgid "Power %"
 msgstr "功率 %"
 
-
-#: ../imgWindow.c:1073
+#: ../../gtk/imgWindow.c:1075
 msgctxt "timelapse"
 msgid "Start"
 msgstr "开始"
 
-#: ../imgWindow.c:1094
+#: ../../gtk/imgWindow.c:1096
 msgctxt "timelapse"
 msgid "End "
 msgstr "终止"
 
-#: ../imgWindow.c:1189
+#: ../../gtk/imgWindow.c:1191
 msgctxt "cfw"
 msgid "Connection"
 msgstr "链接"
 
-#: ../imgWindow.c:1195
+#: ../../gtk/imgWindow.c:1197
 msgctxt "cfw"
 msgid "Configuration"
 msgstr "配置"
 
-#: ../imgWindow.c:1226
+#: ../../gtk/imgWindow.c:1228
 msgctxt "main"
 msgid "Camera"
 msgstr "相机"
 
-#: ../imgWindow.c:1227
+#: ../../gtk/imgWindow.c:1229
 msgctxt "main"
 msgid "Cooling"
 msgstr "制冷"
 
-#: ../imgWindow.c:1228
+#: ../../gtk/imgWindow.c:1230
 msgctxt "main"
 msgid "Filename"
 msgstr "文件名"
 
-#: ../imgWindow.c:1229
+#: ../../gtk/imgWindow.c:1231
 msgctxt "main"
 msgid "Scripting"
 msgstr "脚本"
 
-#: ../imgWindow.c:1230
+#: ../../gtk/imgWindow.c:1232
 msgctxt "main"
 msgid "Timelapse"
 msgstr "延时拍摄"
 
-#: ../imgWindow.c:1231
+#: ../../gtk/imgWindow.c:1233
 msgctxt "main"
 msgid "Fits"
 msgstr "Fits"
 
-#: ../imgWindow.c:1232
+#: ../../gtk/imgWindow.c:1234
 msgctxt "main"
 msgid "CFW"
 msgstr "滤镜轮"
 
-#: ../imgWindow.c:1233
+#: ../../gtk/imgWindow.c:1235
 msgctxt "main"
 msgid "FOV Calc"
 msgstr "视场计算"
 
-#: ../imgWindow.c:1268
+#: ../../gtk/imgWindow.c:1270
 msgctxt "main"
 msgid "Exp. time (s)"
 msgstr "曝光时间(s)"
 
-#: ../imgWindow.c:1270
+#: ../../gtk/imgWindow.c:1272
 msgctxt "main"
 msgid "Total shots"
 msgstr "拍摄张数"
 
-#: ../imgWindow.c:1272
+#: ../../gtk/imgWindow.c:1274
 msgctxt "main"
 msgid "Saved shots"
 msgstr "保存张数"
-
-
-#: ../libusbio.c:96
-msgctxt "usbio"
-msgid "Error: Camera found, but did not open!"
-msgstr "错误: 检测到相机，但无法启用"
-
-#: ../libusbio.c:105
-msgctxt "usbio"
-msgid "Error: Camera NOT found!"
-msgstr "错误: 无法找到相机"
-
-#. / Capture size values list, just translate "Full" (frame)
-#: ../qhy11.c:79 ../qhy7.c:80 ../qhy8l.c:79 ../qhy9.c:79
-msgctxt "camio"
-msgid "Full|512x512|256x256:0"
-msgstr ""
-
-#. / Combo box values list, keep N-<desc> format. Just translate <desc>
-#: ../qhy11.c:81 ../qhy2old.c:85 ../qhy5ii.c:93 ../qhy6.c:81 ../qhy6old.c:85
-#: ../qhy7.c:82 ../qhy8l.c:81 ../qhy8old.c:85 ../qhy9.c:81
-msgctxt "camio"
-msgid "0-Slow|1-Fast:0"
-msgstr "0-慢|1-快:0"
-
-#: ../qhy11.c:82 ../qhy2old.c:86 ../qhy6.c:82 ../qhy6old.c:86 ../qhy7.c:83
-#: ../qhy8l.c:82 ../qhy8old.c:86 ../qhy9.c:82
-msgctxt "camio"
-msgid "0-AmpOff|1-AmpOn|2-Auto:2"
-msgstr "0-AmpOff|1-AmpOn|2-Auto:2"
-
-#: ../qhy11.c:89 ../qhy7.c:90 ../qhy9.c:90
-msgctxt "camio"
-msgid "5-Positions|6-Positions|7-Positions|8-Positions:0"
-msgstr ""
-
-#: ../qhy11.c:118 ../qhy2old.c:123 ../qhy5.c:132 ../qhy5ii.c:131 ../qhy6.c:118
-#: ../qhy6old.c:123 ../qhy7.c:119 ../qhy8l.c:118 ../qhy8old.c:122
-#: ../qhy9.c:119
-msgctxt "camio"
-msgid "Camera still not found after reset"
-msgstr "重置后还是没有找到相机"
-
-#: ../qhy11.c:121 ../qhy2old.c:126 ../qhy5.c:135 ../qhy5ii.c:134 ../qhy6.c:121
-#: ../qhy6old.c:126 ../qhy7.c:122 ../qhy8l.c:121 ../qhy8old.c:125
-#: ../qhy9.c:122
-msgctxt "camio"
-msgid "Neither raw device nor programmed camera found."
-msgstr "原始设备或者相机都无法找到"
-
-#: ../qhy11.c:124 ../qhy2old.c:129 ../qhy5.c:138 ../qhy5ii.c:137 ../qhy6.c:124
-#: ../qhy6old.c:129 ../qhy7.c:125 ../qhy8l.c:124 ../qhy8old.c:128
-#: ../qhy9.c:125
-msgctxt "camio"
-msgid "This camera also needs a loader that was not found"
-msgstr "无法找到此相机的固件载入程序"
-
-#: ../qhy2old.c:87
-msgctxt "camio"
-msgid "1-Single|2-Double:0"
-msgstr "1-Single|2-Double:0"
-
-#. / Descriptiopn for "mode" combo box
-#: ../qhy2old.c:89 ../qhy6old.c:89
-msgctxt "camio"
-msgid "Mode S/D Image"
-msgstr "Mode S/D Image"
-
-#. / Combo box values list, keep N-<desc> format. Just translate <desc>
-#: ../qhy5.c:99
-msgctxt "camio"
-msgid "0-Off|1-0n:0"
-msgstr "0-Off|1-0n:0"
-
-#. / Descriptiopn for "mode" combo box
-#: ../qhy5ii.c:97
-msgctxt "camio"
-msgid "Usb bus speed"
-msgstr "USB总线速度"
-
-#. / Combo box values list, keep N-<desc> format. Just translate <desc>
-#: ../qhy5ii.c:341
-msgctxt "camio"
-msgid "0-Off|1-On:0"
-msgstr "0-Off|1-On:0"
-
-#. / Capture size values list, just translate "Full" (frame)
-#: ../qhy6.c:79
-msgctxt "camio"
-msgid "Full|288x288|144x144:0"
-msgstr ""
-
-#: ../qhy6old.c:87
-msgctxt "camio"
-msgid "1-Single|2-Double|3-Vbe Sampling|4-Vbe Timing:0"
-msgstr ""
-
-#: ../qhy9.c:83
-msgctxt "camio"
-msgid "0-Light|1-Dark:0"
-msgstr ""
-
-#. / Descriptiopn for "mode" combo box
-#: ../qhy9.c:85
-msgctxt "camio"
-msgid "Light/Dark mode"
-msgstr "亮场/暗场"
-
-#: ../qhycore.c:179
-#, c-format
-msgctxt "qhycore"
-msgid "cameraIO failed, error %d"
-msgstr "cameraiIO失败，错误 %d"
-
-#: ../qhycore.c:198
-#, c-format
-msgctxt "qhycore"
-msgid "cameraiIO failed, error %d"
-msgstr "cameraiIO失败，错误 %d"
-
-#: ../qhycore.c:227
-msgctxt "qhycore"
-msgid "Error: Could not claim interface."
-msgstr "错误: 无法认领接口"
-
-#: ../qhycore.c:233
-msgctxt "qhycore"
-msgid "Error: Could not set device configuration."
-msgstr "错误: 无法配置设备"
-
-#: ../qhycore.c:244
-msgctxt "qhycore"
-msgid "Error: Could not initialise libusb."
-msgstr "错误: 无法初始化libusb"
-
-#: ../qhycore.c:553
-#, c-format
-msgctxt "qhycore"
-msgid "EepromRead failed, error %d"
-msgstr "EepromRead失败，错误 %d"
-
-#: ../qhycore.c:568
-#, c-format
-msgctxt "qhycore"
-msgid "I2CTwoWrite failed, error %d"
-msgstr "I2C总线读写失败, 错误 %d"
-
-#: ../ttycom.c:703
-msgctxt "tty"
-msgid "No Error"
-msgstr "正常"
-
-#: ../ttycom.c:707
-#, c-format
-msgctxt "tty"
-msgid "Read Error: %s"
-msgstr "读取错误：%s"
-
-#: ../ttycom.c:712
-#, c-format
-msgctxt "tty"
-msgid "Write Error: %s"
-msgstr "写错误：%s"
-
-#: ../ttycom.c:717
-#, c-format
-msgctxt "tty"
-msgid "Select Error: %s"
-msgstr "选择错误：%s"
-
-#: ../ttycom.c:722
-msgctxt "tty"
-msgid "Timeout error"
-msgstr "超时"
-
-#: ../ttycom.c:727
-#, c-format
-msgctxt "tty"
-msgid ""
-"Port failure Error: %s. Try adding your user to the dialout group and "
-"restart (sudo adduser $username dialout)"
-msgstr ""
-"端口错误：%s。请尝试把你的用户名添加到dialout组并"
-"重新启动程序(sudo adduser 用户名 dialout)"
-
-#: ../ttycom.c:729
-#, c-format
-msgctxt "tty"
-msgid "Port failure Error: %s.Check if device is connected to this port."
-msgstr "端口错误：%s。请检查设备是否正确连接到端口"
-
-#: ../ttycom.c:735
-msgctxt "tty"
-msgid "Parameter error"
-msgstr "参数错误"
-
-#: ../ttycom.c:744
-msgctxt "tty"
-msgid "Error: unrecognized error code"
-msgstr "错误：无法识别的错误代码"

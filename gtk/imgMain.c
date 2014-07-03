@@ -40,16 +40,16 @@ int main(int argc, char* argv[])
 	cpucores = get_cpu_cores();
 	printf("Detected %d cpu cores\n", cpucores);
 
-	// Set Locale
-	setlocale(LC_ALL,"en_US");
-	bindtextdomain(APPNAM,".");
-	textdomain(APPNAM);
-	
 	// Set app path
 	readlink("/proc/self/exe", imgBasePath, PATH_MAX);
 	strcpy(imgBasePath, g_path_get_dirname(imgBasePath));
 	strcat(imgBasePath, "/");
 	//printf("%s\n", imgBasePath);
+	
+	// Set Locale
+	setlocale(LC_ALL,"en_US");
+	bindtextdomain(APPNAM, imgBasePath);
+	textdomain(APPNAM);
 	
 	// Set ico and handles
 	strcpy(imgAppIco, imgBasePath);
