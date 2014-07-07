@@ -21,7 +21,7 @@ ATTRS{idVendor}=="0547", ATTRS{idProduct}=="1002", RUN+="/sbin/fxload -t fx2 -I 
 ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="8613", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
 ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="081a", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
 ATTRS{idVendor}=="1856", ATTRS{idProduct}=="0011", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
-ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0920", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5ii.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0920", RUN+="/sbin/fxload -t fx2 -I @QHY5II_FW@ -D $env{DEVNAME}"
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0259", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy6.hex -D $env{DEVNAME}"
 ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="2980", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy6pro.hex -D $env{DEVNAME}"
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="4022", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy7.hex -D $env{DEVNAME}"

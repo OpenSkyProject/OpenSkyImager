@@ -23,8 +23,9 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-
+#define DECLARE_MAIN
 extern "C" {
+#include "imgBase.h"
 #include "imgCamio.h"
 }
 #include <fstream>
