@@ -447,7 +447,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 							else if (imgcam_get_tecp()->settemp < imgcam_get_tecp()->tectemp) 
 							{
 								suspect = 0;
-								if ((oldT - imgcam_get_tecp()->tectemp) < 0.06)
+								if ((oldT - imgcam_get_tecp()->tectemp) < (0.05 * tecspeed))
 								{
 									//setTemp is still far. We gently pull tec up or down
 									imgcam_get_tecp()->tecpwr += 6;
@@ -466,7 +466,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 							else if (imgcam_get_tecp()->settemp > imgcam_get_tecp()->tectemp) 
 							{
 								suspect = 0;
-								if ((imgcam_get_tecp()->tectemp - oldT) < 0.06)
+								if ((imgcam_get_tecp()->tectemp - oldT) < (0.05 * tecspeed))
 								{
 									imgcam_get_tecp()->tecpwr -= 6;
 									imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
@@ -541,10 +541,6 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 				return FALSE;
 			}
 			// Virtual recurring
-			if (tmrtecrefresh != -1)
-			{
-				g_source_remove(tmrtecrefresh);
-			}
 			tmrtecrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tecstatus_write, NULL);
 			return FALSE;
 		}
@@ -642,6 +638,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 				tmrtecrefresh = g_timeout_add(50, (GSourceFunc) tmr_tecstatus_write, NULL);	
 				return FALSE;
 			}
+			// Virtual recurring
 			tmrtecrefresh = g_timeout_add_seconds(5, (GSourceFunc) tmr_tecstatus_write, NULL);
 			return FALSE;
 		}
@@ -843,8 +840,9 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 				if ((imgcam_get_expar()->speed > 0) && (imgcam_get_tecp()->istec == 1) && (tecrun == 1))
 				{
 					tecprerun = 1;
-					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecdisable), TRUE);
 					gtk_widget_set_sensitive(cmd_tecenable, 0);
+					gtk_widget_set_sensitive(cmd_tecdisable, 0);
 				}
 				gtk_widget_set_sensitive(box_filename, 1);
 				gtk_widget_set_sensitive(box_cfw, 1);
@@ -1548,11 +1546,16 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 			}
 			if (run == 0)
 			{
-				if ((imgcam_get_tecp()->istec != 0))
+				if (imgcam_get_tecp()->istec != 0)
 				{
-					// Terminates the tec thread and disable choice
-					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
+					// Signal term to tec timer and disable choice
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecauto)))
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecmanual), TRUE);
+					}
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecdisable), TRUE);
 					gtk_widget_set_sensitive(cmd_tecenable, 0);
+					gtk_widget_set_sensitive(cmd_tecdisable, 0);
 				}
 				if (strlen(imgcam_get_camui()->whlstr) > 0)
 				{
@@ -1671,7 +1674,7 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 				sprintf(imgmsg, C_("main","Camera %s connected"), gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cmb_camera)));
 				gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 				// Tec?
-				if ((imgcam_get_tecp()->istec != 0))
+				if (imgcam_get_tecp()->istec != 0)
 				{
 					gtk_widget_set_sensitive(cmd_tecenable, 1);
 					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
@@ -1821,7 +1824,7 @@ void cmb_dspeed_changed (GtkComboBox *widget, gpointer user_data)
 		{
 			// when in focus mode and fast speed we need to stop temp read (for ccd only)
 			tecprerun = 1;
-			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecdisable), TRUE);
 			gtk_widget_set_sensitive(cmd_tecenable, 0);
 		}
 		else if ((imgcam_get_tecp()->istec == 1) && (tecprerun == 1))
@@ -2373,13 +2376,13 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 {	
 	static int error = 0, status = 0;
 	
-	status = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE);
 	if (error == 0)
 	{
 		if (imgcam_connected())
 		{
 			if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3))
 			{
+				status = (status == 0) ? 1 : 0;
 				if (status == 1)
 				{
 					// Activate ccdtemp header entry
@@ -2395,13 +2398,31 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 						// If it's running
 						tecrun = 1;	
 						tec_init_graph();
-						gtk_widget_set_sensitive(vsc_tecpwr, 1);
-						gtk_widget_set_sensitive(cmd_tecauto, 1);
 						if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_tecauto)))
 						{
+							gtk_widget_set_sensitive(cmd_tecmanual, 1);
 							gtk_widget_set_sensitive(spn_tectgt, 1);
+							if (imgcam_get_tecp()->istec == 1)
+							{
+								gtk_widget_set_sensitive(spn_tecspd, 1);
+								gtk_widget_set_sensitive(vsc_tecpwr, 1);
+							}
+							else
+							{
+								gtk_widget_set_sensitive(spn_tecspd, 0);
+								gtk_widget_set_sensitive(vsc_tecpwr, 0);		
+							}
 						}
-						gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
+						else
+						{
+							gtk_widget_set_sensitive(vsc_tecpwr, 1);
+							gtk_widget_set_sensitive(cmd_tecauto, 1);
+						}
+						// Toggle
+						gtk_widget_set_sensitive(cmd_tecenable, 0);						
+						gtk_widget_set_sensitive(cmd_tecdisable, 1);						
+						error = 1;
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecdisable), FALSE);
 					}
 					else
 					{
@@ -2429,16 +2450,23 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 						tec_init_graph();
 						gtk_widget_set_sensitive(vsc_tecpwr, 0);
 						gtk_widget_set_sensitive(cmd_tecauto, 0);
+						gtk_widget_set_sensitive(cmd_tecmanual, 0);
 						gtk_widget_set_sensitive(spn_tectgt, 0);
-						gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Enable tec read"));
+						gtk_widget_set_sensitive(spn_tecspd, 0);
 						// Main image update
 						tecfbk[0] = '\0';
 						gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
+						// Toggle
+						gtk_widget_set_sensitive(cmd_tecenable, 1);						
+						gtk_widget_set_sensitive(cmd_tecdisable, 0);						
+						error = 1;
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
 					}
 				}
 			}
 			else if (imgcam_get_tecp()->istec == 2)
 			{
+				status = (status == 0) ? 1 : 0;
 				// Temp read only, no thread read allowed, in between frame capture
 				tec_init_graph();
 				gtk_widget_set_sensitive(vsc_tecpwr, 0);
@@ -2447,10 +2475,14 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 				{
 					tecrun = 1;
 					imgcam_get_tecp()->tecerr = 0;
-					gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Reading tec"));
 					// Activate ccdtemp header entry
 					fithdr[HDR_CCDTEMP].dtype = 'F';
 					fithdr[HDR_SETTEMP].dtype = '\0';
+					// Toggle
+					gtk_widget_set_sensitive(cmd_tecenable, 0);						
+					gtk_widget_set_sensitive(cmd_tecdisable, 1);						
+					error = 1;
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecdisable), FALSE);
 				}
 				else
 				{
@@ -2459,10 +2491,14 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 					// Main image update
 					tecfbk[0] = '\0';
 					gtk_label_set_text(GTK_LABEL(lbl_fbktec), (gchar *) tecfbk);	
-					gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Enable tec read"));
 					// De-activate ccdtemp header entry
 					fithdr[HDR_CCDTEMP].dtype = '\0';
 					fithdr[HDR_SETTEMP].dtype = '\0';
+					// Toggle
+					gtk_widget_set_sensitive(cmd_tecenable, 1);						
+					gtk_widget_set_sensitive(cmd_tecdisable, 0);						
+					error = 1;
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), FALSE);
 				}
 			}
 			else
@@ -2487,42 +2523,60 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 
 void cmd_tecauto_click(GtkWidget *widget, gpointer data)
 {
-	static int status = 0;
+	static int error = 0, status = 0;
 	
-	status = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE);
-	if (status)
+	//status = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE);
+	if (error == 0)
 	{
-		gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Auto mode"));
-		gtk_widget_set_sensitive(spn_tectgt, 1);
-		if (imgcam_get_tecp()->istec == 1)
+		status = (status == 0) ? 1 : 0;
+		if (status)
 		{
-			gtk_widget_set_sensitive(vsc_tecpwr, 1);
+			gtk_widget_set_sensitive(spn_tectgt, 1);
+			if (imgcam_get_tecp()->istec == 1)
+			{
+				gtk_widget_set_sensitive(spn_tecspd, 1);
+				gtk_widget_set_sensitive(vsc_tecpwr, 1);
+			}
+			else
+			{
+				gtk_widget_set_sensitive(spn_tecspd, 0);
+				gtk_widget_set_sensitive(vsc_tecpwr, 0);		
+			}
+			g_rw_lock_reader_lock(&thd_teclock);
+			imgcam_get_tecp()->tecauto = status;
+			imgcam_get_tecp()->settemp = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_tectgt));
+			imgcam_get_tecp()->tecedit = 1;
+			sprintf(imgmsg, C_("main","Tec set auto to: %+06.2FC"), imgcam_get_tecp()->settemp);
+			g_rw_lock_reader_unlock(&thd_teclock);		
+			gtk_widget_set_sensitive(spn_tectgt, 1);
+			// Toggle
+			gtk_widget_set_sensitive(cmd_tecauto, 0);						
+			gtk_widget_set_sensitive(cmd_tecmanual, 1);						
+			error = 1;
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecmanual), FALSE);
 		}
 		else
 		{
-			gtk_widget_set_sensitive(vsc_tecpwr, 0);		
+			gtk_widget_set_sensitive(spn_tectgt, 0);
+			gtk_widget_set_sensitive(vsc_tecpwr, 1);
+			g_rw_lock_reader_lock(&thd_teclock);
+			imgcam_get_tecp()->tecauto = status;
+			imgcam_get_tecp()->tecedit = 1;
+			g_rw_lock_reader_unlock(&thd_teclock);
+			sprintf(imgmsg, C_("main","Tec set manual"));
+			gtk_widget_set_sensitive(spn_tectgt, 0);
+			// Toggle
+			gtk_widget_set_sensitive(cmd_tecauto, 1);						
+			gtk_widget_set_sensitive(cmd_tecmanual, 0);						
+			error = 1;
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), FALSE);
 		}
-		g_rw_lock_reader_lock(&thd_teclock);
-		imgcam_get_tecp()->tecauto = status;
-		imgcam_get_tecp()->settemp = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_tectgt));
-		imgcam_get_tecp()->tecedit = 1;
-		sprintf(imgmsg, C_("main","Tec set auto to: %+06.2FC"), imgcam_get_tecp()->settemp);
-		g_rw_lock_reader_unlock(&thd_teclock);		
-		gtk_widget_set_sensitive(spn_tectgt, 1);
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 	else
 	{
-		gtk_button_set_label(GTK_BUTTON(widget), C_("cooling","Manual mode"));
-		gtk_widget_set_sensitive(spn_tectgt, 0);
-		gtk_widget_set_sensitive(vsc_tecpwr, 1);
-		g_rw_lock_reader_lock(&thd_teclock);
-		imgcam_get_tecp()->tecauto = status;
-		imgcam_get_tecp()->tecedit = 1;
-		g_rw_lock_reader_unlock(&thd_teclock);
-		sprintf(imgmsg, C_("main","Tec set manual"));
-		gtk_widget_set_sensitive(spn_tectgt, 0);
+		error = 0;
 	}
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
 gboolean spn_tectgt_changed(GtkSpinButton *spinbutton, gpointer user_data)
@@ -2531,6 +2585,16 @@ gboolean spn_tectgt_changed(GtkSpinButton *spinbutton, gpointer user_data)
 	imgcam_get_tecp()->settemp = gtk_spin_button_get_value(spinbutton);
 	sprintf(imgmsg, C_("main","Tec set auto to: %+06.2FC"), imgcam_get_tecp()->settemp);
 	imgcam_get_tecp()->tecedit = 1;
+	g_rw_lock_reader_unlock(&thd_teclock);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	return FALSE;
+}
+
+gboolean spn_tecspd_changed(GtkSpinButton *spinbutton, gpointer user_data)
+{
+	g_rw_lock_reader_lock(&thd_teclock);
+	tecspeed = gtk_spin_button_get_value(spinbutton);
+	sprintf(imgmsg, C_("main","Tec speed set to: %d"), tecspeed);
 	g_rw_lock_reader_unlock(&thd_teclock);
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	return FALSE;
@@ -2905,9 +2969,17 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					sscanf(arg, "%d", &ival);
 					sprintf(arg, "%d", ival);
-					if (gtk_widget_get_sensitive(cmd_tecenable))
+					if (gtk_widget_get_sensitive(cmd_tecenable) || gtk_widget_get_sensitive(cmd_tecdisable))
 					{
-						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), (ival > 0));
+						if (ival > 0)
+						{
+							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
+						}
+						else
+						{
+							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecdisable), TRUE);
+						}
+						
 						printf("Fifo: %s=%s\n", cmd, arg);
 					}
 					else
@@ -2925,7 +2997,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				// Enable disable tec feedback mode (using current target temp)
 				if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3))
 				{
-					if (gtk_widget_get_sensitive(cmd_tecenable))
+					if (gtk_widget_get_sensitive(cmd_tecenable) || gtk_widget_get_sensitive(cmd_tecdisable))
 					{
 						sscanf(arg, "%d", &ival);
 						sprintf(arg, "%d", ival);
@@ -2934,7 +3006,14 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 							// Activate tec read mode too if it is not already
 							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
 						}
-						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), (ival > 0));
+						if (ival)
+						{
+							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), TRUE);
+						}
+						else
+						{
+							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecmanual), TRUE);
+						}
 						printf("Fifo: %s=%s\n", cmd, arg);
 					}
 					else
@@ -2947,12 +3026,34 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					printf("Fifo: ERROR=No TEC to set\n");
 				}
 			}
+			else if (strcmp(cmd, "TECSPEED") == 0)
+			{
+				// Enable disable tec feedback mode (using current target temp)
+				if ((imgcam_get_tecp()->istec == 1))
+				{
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if ((ival > 0) && (ival < 11))
+					{
+						gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tecspd), (gdouble)ival);
+						printf("Fifo: %s=%s\n", cmd, arg);					
+					}
+					else
+					{
+						printf("Fifo: ERROR=TecSpeed %d out of range\n", ival);
+					}
+				}
+				else
+				{
+					printf("Fifo: ERROR=No TEC to set or tec does not support speed setting\n");
+				}
+			}
 			else if (strcmp(cmd, "SETTEMP") == 0)
 			{
 				// Set target temperature (if tecread & tecauto are not set already, it will do)
 				if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3))
 				{
-					if (gtk_widget_get_sensitive(cmd_tecenable))
+					if (gtk_widget_get_sensitive(cmd_tecenable) || gtk_widget_get_sensitive(cmd_tecdisable))
 					{
 						sscanf(arg, "%f", &fval);
 						sprintf(arg, "%06.2f", fval);

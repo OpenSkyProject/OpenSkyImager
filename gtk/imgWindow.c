@@ -690,20 +690,30 @@ void cmb_fmt_build()
 
 void cmd_tecenable_build()
 {
-	cmd_tecenable = gtk_toggle_button_new_with_label_color(C_("cooling","Enable tec read"), 140, 30, &clrSelected);
+	cmd_tecenable  = gtk_toggle_button_new_with_label_color(C_("cooling","Enable"), 70, 30, &clrSelected);
+	cmd_tecdisable = gtk_toggle_button_new_with_label_color(C_("cooling","Disable"), 70, 30, &clrSelected);
 	gtk_widget_set_sensitive(cmd_tecenable, 0);
+	gtk_widget_set_sensitive(cmd_tecdisable, 0);
 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecdisable), TRUE);
+	
 	// Callbacks
 	g_signal_connect(G_OBJECT(cmd_tecenable), "clicked", G_CALLBACK(cmd_tecenable_click), NULL);
+	g_signal_connect(G_OBJECT(cmd_tecdisable), "clicked", G_CALLBACK(cmd_tecenable_click), NULL);
 }
 
 void cmd_tecauto_build()
 {
-	cmd_tecauto = gtk_toggle_button_new_with_label_color(C_("cooling","Manual mode"), 140, 30, &clrSelected);
+	cmd_tecauto   = gtk_toggle_button_new_with_label_color(C_("cooling","Auto"), 70, 30, &clrSelected);
+	cmd_tecmanual = gtk_toggle_button_new_with_label_color(C_("cooling","Manual"), 70, 30, &clrSelected);
 	gtk_widget_set_sensitive(cmd_tecauto, 0);
+	gtk_widget_set_sensitive(cmd_tecmanual, 0);
+
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecmanual), TRUE);
 
 	// Callbacks
 	g_signal_connect(G_OBJECT(cmd_tecauto), "clicked", G_CALLBACK(cmd_tecauto_click), NULL);
+	g_signal_connect(G_OBJECT(cmd_tecmanual), "clicked", G_CALLBACK(cmd_tecauto_click), NULL);
 }
 
 void spn_tectgt_build()
@@ -717,6 +727,19 @@ void spn_tectgt_build()
 	//Callbacks
 	g_signal_connect(G_OBJECT(spn_tectgt), "value-changed", G_CALLBACK(spn_tectgt_changed),  NULL);
 	g_signal_connect(G_OBJECT(spn_tectgt), "key-press-event", G_CALLBACK(numbers_input_keypress), (gpointer)5);	
+}
+
+void spn_tecspd_build()
+{
+	spn_tecspd = gtk_spin_button_new_with_range(1.0, 10.0, 1.0);
+	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(spn_tecspd), 0);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_tecspd), 5.0);
+	gtk_widget_set_size_request(spn_tecspd, 60, 25);	
+	gtk_widget_set_sensitive(spn_tecspd, 0);
+	
+	//Callbacks
+	g_signal_connect(G_OBJECT(spn_tecspd), "value-changed", G_CALLBACK(spn_tecspd_changed),  NULL);
+	g_signal_connect(G_OBJECT(spn_tecspd), "key-press-event", G_CALLBACK(numbers_input_keypress), (gpointer)2);	
 }
 
 void vsc_tectemp_build()
@@ -1003,22 +1026,29 @@ void box_cooling_build()
 	cmd_tecenable_build();
 	cmd_tecauto_build();
 	spn_tectgt_build();
+	spn_tecspd_build();
 	vsc_tectemp_build();
 	frm_tecgraph_build();
 	vsc_tecpwr_build();
 
-	gtk_table_attach(GTK_TABLE(box_cooling),       cmd_tecenable,  0,  6,  0,  1, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_cooling),         cmd_tecauto,  6, 12,  0,  1, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_cooling),          spn_tectgt, 12, 14,  0,  1, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),      cmd_tecdisable,  0,  5,  0,  1, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),       cmd_tecenable,  5, 10,  0,  1, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),gtk_label_new_with_align(C_("cooling","Target °C"), 1, 0.5, 50, 30), 10, 12,  0,  1, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),gtk_label_new_with_align(C_("cooling","Speed"), 1, 0.5, 50, 30), 12, 14,  0,  1, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_cooling),gtk_hseparator_new(),  0, 14,  1,  2, GTK_FILL, GTK_FILL, 0, 0);	
-	gtk_table_attach(GTK_TABLE(box_cooling),gtk_label_new_with_align(C_("cooling","Current °C"), 1, 0.5, 70, 30),  0,  2,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_cooling),gtk_label_new_with_align(C_("cooling","Temperature / Time"), 0.5, 0.5, 140, 30),  2, 12,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_cooling),gtk_label_new_with_align(C_("cooling","Power %"), 0.0, 0.5, 70, 30), 12, 14,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),       cmd_tecmanual,  0,  5,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),         cmd_tecauto,  5, 10,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),          spn_tectgt, 10, 12,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),          spn_tecspd, 12, 14,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_cooling),gtk_hseparator_new(),  0, 14,  3,  4, GTK_FILL, GTK_FILL, 0, 0);	
-	gtk_table_attach(GTK_TABLE(box_cooling),         vsc_tectemp,  0,  2,  4,  7, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_cooling),        frm_tecgraph,  2, 12,  4,  7, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_cooling),          vsc_tecpwr, 12, 14,  4,  7, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_cooling),gtk_hseparator_new(),  0, 14,  7,  8, GTK_FILL, GTK_FILL, 0, 0);	
+	gtk_table_attach(GTK_TABLE(box_cooling),gtk_label_new_with_align(C_("cooling","Current °C"), 1, 0.5, 70, 30),  0,  2,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),gtk_label_new_with_align(C_("cooling","Temperature / Time"), 0.5, 0.5, 140, 30),  2, 12,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),gtk_label_new_with_align(C_("cooling","Power %"), 0.0, 0.5, 70, 30), 12, 14,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),gtk_hseparator_new(),  0, 14,  5,  6, GTK_FILL, GTK_FILL, 0, 0);	
+	gtk_table_attach(GTK_TABLE(box_cooling),         vsc_tectemp,  0,  2,  6,  9, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),        frm_tecgraph,  2, 12,  6,  9, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),          vsc_tecpwr, 12, 14,  6,  9, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_cooling),gtk_hseparator_new(),  0, 14,  9, 10, GTK_FILL, GTK_FILL, 0, 0);	
 }
 
 void box_filename_build()

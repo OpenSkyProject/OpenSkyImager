@@ -106,7 +106,7 @@ int 				GetCameraDetails();
 int 				GetNumOfCcdChips();
 int 				QueryCommandStatus(PAR_COMMAND cmd, unsigned short *status);
 int 				EndExposure();
-int 				IsExposureComplete();
+int 				IsExposureComplete(int *complete);
 unsigned short 	CalcSetpoint(double temperature);
 double			CalcTemperature(short thermistorType, short ccdSetpoint);
 double  			BcdPixel2double(ulong bcd);
@@ -126,7 +126,7 @@ int sbig_core_init(char *path)
 		{
  			printf ("SBIG driver Version %1.2lf\n", m_drv_version);
 			// Load complete list of available camera
-			res = GetCameraList();
+			//res = GetCameraList();
 		}
 	}
 	else
@@ -1039,11 +1039,11 @@ void _GetCameraName(GetCCDInfoResults0	*gcr, char *camname)
  		case	ST237_CAMERA:
 	  	 	if(gcr->readoutInfo[0].gain >= 0x100)
 	  	 	{
-		  	 	sprintf(camname,"%sA", tmpname);
+		  	 	sprintf(camname,"ST-237A");
 	  	 	} 
 	  	 	else
 	  	 	{
-		  	 	sprintf(camname,"%s", tmpname);
+		  	 	sprintf(camname,"ST237");
 	  	 	}
     		 	break;
     		 	

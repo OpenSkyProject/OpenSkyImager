@@ -85,10 +85,10 @@ else(HAVE_QHY_HEX)
 	message("Please install fxload in order to load QHY firmwares into camera")
 endif(HAVE_QHY_HEX)
 
-if(NOT EXISTS /etc/qhyccd OR FORCE_QHY_HEX)
+if(FORCE_QHY_HEX OR NOT EXISTS /etc/qhyccd)
 	message("Will add QHY firmwares, please restart udev after program is installed")
 	add_subdirectory(qhy)
-endif(NOT EXISTS /etc/qhyccd OR FORCE_QHY_HEX)
+endif(FORCE_QHY_HEX OR NOT EXISTS /etc/qhyccd)
 
 add_subdirectory(files)
 add_subdirectory(core)

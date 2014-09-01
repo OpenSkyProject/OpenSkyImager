@@ -875,14 +875,16 @@ void qhy5lii_SetGainColor(double gain, double RG, double BG)
 	double Gain_Min, Gain_Max;
 
 	Gain_Min = 0.;
-	Gain_Max = 39.8;
+	//Gain_Max = 39.8;
+	Gain_Max = 79.6;
 
-	if (gain < 26.)
+	if (gain < 2.6)
 	{
-		gain = 26.;
+		gain = 2.6;
 	}
 	gain = (Gain_Max - Gain_Min) * gain / 100;
-
+	gain = MAX(1, gain);
+	
 	unsigned short REG30B0;
 
 	if (longExpMode == 1)

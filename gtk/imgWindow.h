@@ -100,7 +100,7 @@
 	GtkWidget *cmb_exptime, *spn_expnum, *spn_shots, *pbr_expnum, *pbr_exptime;
 	GtkWidget *cmb_camera, *cmb_bin, *cmb_csize, *cmb_dspeed, *cmb_mode, *lbl_mode, *cmb_amp, *cmb_denoise, *cmb_depth, *cmb_debayer;
 	GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
-	GtkWidget *cmd_tecenable, *cmd_tecauto, *spn_tectgt, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
+	GtkWidget *cmd_tecenable, *cmd_tecdisable, *cmd_tecauto, *cmd_tecmanual, *spn_tectgt, *spn_tecspd, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
 	GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd, *cmb_fmt;
 	GtkWidget *txt_fitfolder, *txt_fitbase;
 	GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
@@ -171,7 +171,7 @@
 	char fwhmfbk[64];
 	int fwhmx = 0, fwhmy = 0, fwhmv = 0, fwhms = 64, fwhmp = 4096, pfwhm = 1, fwhmlblh = 0, fwhmlblw = 0;
 	double afwhm = 0.;
-	int tecrun = 0, tecprerun = 0;
+	int tecrun = 0, tecprerun = 0, tecspeed = 0;
 	struct tm tlstart, tlend;
 	
 	// Locale definitions
@@ -207,7 +207,7 @@
 	extern GtkWidget *cmb_exptime, *spn_expnum, *spn_shots, *pbr_expnum, *pbr_exptime;
 	extern GtkWidget *cmb_camera, *cmb_bin, *cmb_csize, *cmb_dspeed, *cmb_mode, *lbl_mode, *cmb_amp, *cmb_denoise, *cmb_depth, *cmb_debayer;
 	extern GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
-	extern GtkWidget *cmd_tecenable, *cmd_tecauto, *spn_tectgt, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
+	extern GtkWidget *cmd_tecenable, *cmd_tecdisable, *cmd_tecauto, *cmd_tecmanual, *spn_tectgt, *spn_tecspd, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
 	extern GtkWidget *hsc_offset, *hsc_gain;
 	extern GtkWidget *cmd_saveas, *cmd_dateadd, *cmd_timeadd, *cmb_flt, *cmd_fltadd, *cmb_fmt;
 	extern GtkWidget *txt_fitfolder, *txt_fitbase;
@@ -278,7 +278,7 @@
 	extern char fwhmfbk[64];
 	extern int fwhmx, fwhmy, fwhmv, fwhms, fwhmp, pfwhm, fwhmlblh, fwhmlblw;
 	extern double afwhm;
-	extern int tecrun, tecprerun;
+	extern int tecrun, tecprerun, tecspeed;
 	extern struct tm tlstart, tlend;
 	
 	// Locale definitions

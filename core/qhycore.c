@@ -215,10 +215,7 @@ int qhy_opencamera()
 		libusb_set_debug(NULL,0);
 		if (open_camera(camp.vid, camp.pid, &hDevice, coremsg))
 		{
-			if (libusb_kernel_driver_active(hDevice, 0) == 1)
-			{
-				libusb_detach_kernel_driver(hDevice, 0);
-			}
+			libusb_set_auto_detach_kernel_driver(hDevice, 1);
 			if ((retcode = libusb_claim_interface(hDevice, 0)) == 0) 
 			{
 				retcode = 1;
@@ -248,6 +245,7 @@ int qhy_opencamera()
 int qhy_OpenCamera() 
 {
 	int retcode = 1;
+	int config = 0;
 
 	retcode = (libusb_init(NULL) == 0);
 	coremsg[0] = '\0';
@@ -260,29 +258,36 @@ int qhy_OpenCamera()
 		libusb_set_debug(NULL,0);
 		if (open_camera(camp.vid, camp.pid, &hDevice, coremsg))
 		{
-			if (libusb_kernel_driver_active(hDevice, 0) == 1)
+			libusb_set_auto_detach_kernel_driver(hDevice, 1);
+			if ((retcode = libusb_get_configuration(hDevice, &config)) == 0)
 			{
-				libusb_detach_kernel_driver(hDevice, 0);
-			}
-			if ((retcode = libusb_set_configuration(hDevice, 1)) == 0) 
-			{
-				if ((retcode = libusb_claim_interface(hDevice, 0)) == 0) 
+				if ((retcode = ((config != 1) ? libusb_set_configuration(hDevice, 1) : 0)) == 0) 
 				{
-					retcode = 1;
+					if ((retcode = libusb_claim_interface(hDevice, 0)) == 0) 
+					{
+						retcode = 1;
+					}
+					else
+					{
+						libusb_close(hDevice);
+						sprintf(coremsg, C_("qhycore","Error %d: Could not claim interface."), retcode);
+						retcode = 0;
+					}
 				}
 				else
 				{
 					libusb_close(hDevice);
-					sprintf(coremsg, C_("qhycore","Error %d: Could not claim interface."), retcode);
+					sprintf(coremsg, C_("qhycore","Error %d: Could not set device configuration."), retcode);
 					retcode = 0;
+				
 				}
 			}
 			else
 			{
 				libusb_close(hDevice);
-				sprintf(coremsg, C_("qhycore","Error %d: Could not set device configuration."), retcode);
+				sprintf(coremsg, C_("qhycore","Error %d: Could not get device configuration."), retcode);
 				retcode = 0;
-				
+			
 			}
 		}
 		else
@@ -538,6 +543,7 @@ int qhy_getDC201_i(double *tC, double *mV)
 int qhy_setDC201_i(int pwm, int fan) 
 {
 	unsigned char REG[3];
+	REG[0] = 0x01;
 
 	if (fan==0)
 	{
@@ -545,15 +551,21 @@ int qhy_setDC201_i(int pwm, int fan)
 	}
 	if( pwm == 0 )	// TEC off
 	{
-		REG[0] = 0x01;
-		REG[1] = 0x00;
-		REG[2] = 0x01;
+		REG[1]=0;
+		REG[2]=REG[2] &~ 0x80;
 	}
 	else			// TEC manual
 	{
-		REG[0] = 0x01;
-		REG[1] = (unsigned char)pwm;
-		REG[2] = 0x85;
+		REG[1]=(unsigned char)pwm;
+		REG[2]=REG[2] | 0x80;
+	}
+	if (fan == 0)
+	{
+		REG[2]=REG[2] &~ 0x01;
+	}
+	else
+	{
+		REG[2]=REG[2] | 0x01;
 	}
 
    	return (qhy_cameraiIO(endp.iwrite, REG, sizeof(REG)));

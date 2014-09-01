@@ -34,6 +34,7 @@
 #include "qhy8old.h"
 #include "qhy8l.h"
 #include "qhy9.h"
+#include "qhy9l.h"
 #include "qhy10.h"
 #include "qhy11.h"
 #include "qhy12.h"
@@ -129,6 +130,10 @@ int imgcam_iscamera(const char *model)
 	else if (strcmp(model, "QHY9") == 0)
 	{
 		retcode = qhy9_iscamera();
+	}
+	else if (strcmp(model, "IC8300") == 0)
+	{
+		retcode = qhy9l_iscamera();
 	}
 	else if (strcmp(model, "QHY10") == 0)
 	{
@@ -231,6 +236,11 @@ void imgcam_set_model(const char *val)
 	{
 		qhy9_init();
 		camid = 9;
+	}
+	else if (strcmp(val, "IC8300") == 0)
+	{
+		qhy9l_init();
+		camid = 91;
 	}
 	else if (strcmp(val, "QHY10") == 0)
 	{
@@ -410,6 +420,11 @@ char *imgcam_init_list(int all)
 	{
 		strcat(imgcam_get_camui()->camstr, "|QHY9");
 	}
+
+	if ((imgcam_iscamera("IC8300")) || (all))
+	{
+		strcat(imgcam_get_camui()->camstr, "|IC8300");
+	}
 	
 	if ((imgcam_iscamera("QHY10")) || (all))
 	{
@@ -476,6 +491,13 @@ int imgcam_connect()
 				if ((retval = qhy_OpenCamera()) == 1)
 				{
 					retval = imgcam_settec(tecp.tecpwr, -1);
+				}
+				break;
+			case 91:
+				if ((retval = qhy_OpenCamera()) == 1)
+				{
+					// TODO send oled
+					//retval = imgcam_settec(tecp.tecpwr, -1);
 				}
 				break;
 			case 1000:
@@ -564,6 +586,10 @@ int imgcam_disconnect()
 		case 12:
 			retval = qhy_CloseCamera();
 			break;
+		case 91:
+			// TODO send oled
+			retval = qhy_CloseCamera();
+			break;
 		case 1000:
 			retval = dsi2pro_CloseCamera();
 			break;
@@ -614,6 +640,9 @@ int imgcam_reset()
 			break;
 		case 9:
 			retval = qhy9_reset();
+			break;
+		case 91:
+			retval = qhy9l_reset();
 			break;
 		case 10:
 			retval = qhy10_reset();
@@ -699,7 +728,7 @@ int imgcam_shoot()
 					if ((retval = qhy_ccdAbortCapture() == 1))
 					{
 						retval = qhy_ccdStartExposure(shpar.time);
-					}	
+					}
 				}	
 			}
 			break;
@@ -724,6 +753,19 @@ int imgcam_shoot()
 				if ((retval = ((shpar.mode > 0) ? imgcam_shutter(1) : 1)) == 1)
 				{
 					retval = qhy_ccdStartExposure(shpar.time);
+				}
+			}
+			break;
+		case 91:
+			if ((retval = ((shpar.edit) ? qhy9l_setregisters(&shpar) : 1)) == 1)
+			{
+				// printf("setRegisters ok\n");
+				// In dark mode
+				// Close the shutter, otherwise noop
+				if ((retval = ((shpar.mode > 0) ? imgcam_shutter(1) : 1)) == 1)
+				{
+					retval = qhy_ccdStartExposure(shpar.time);
+					// printf("startExposure returned %d\n", retval);
 				}
 			}
 			break;
@@ -771,14 +813,14 @@ int imgcam_readout()
 	if ((allocsize != presize[curdataptr]) || (databuffer[curdataptr] == NULL))
 	{
 		presize[curdataptr] = allocsize;
-		//printf("Realloc camio %d, %d\n", allocsize, presize[curdataptr]);
+		// printf("Realloc camio %d, %d\n", allocsize, presize[curdataptr]);
 		//databuffer[curdataptr] = (unsigned char*)realloc(databuffer[curdataptr], allocsize);
 		if (databuffer[curdataptr] == NULL)
 		{
 			free(databuffer[curdataptr]);
 		}
 		databuffer[curdataptr] = (unsigned char*)malloc(allocsize);
-		//printf("Get Data\n");
+		// printf("Get Data\n");
 	}
 	return imgcam_readout_ext(databuffer[curdataptr]);
 }
@@ -872,6 +914,15 @@ int imgcam_readout_ext(unsigned char *p)
 					}
 					qhy9_decode(p);	
 					break;
+				case 91:
+					if (shpar.mode > 0)
+					{
+						// In dark mode
+						// Release shutter to avoid excess strain
+						imgcam_shutter(2);
+					}
+					qhy9l_decode(p);	
+					break;
 				case 10:
 					qhy10_decode(p);	
 					break;
@@ -889,7 +940,7 @@ int imgcam_readout_ext(unsigned char *p)
 		}
 		else
 		{
-			//printf("Data: %d, %d\n", shpar.tsize, length_transferred);
+			// printf("Data: %d, %d\n", shpar.tsize, length_transferred);
 			sprintf(cammsg, C_("camio","Bad data received, discarded"));
 			retval = 0;
 		}
@@ -897,8 +948,8 @@ int imgcam_readout_ext(unsigned char *p)
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
 		strcpy(cammsg, qhy_core_msg());
-		//printf("%s\n", cammsg);
-		//printf("TotalSize: %d, TSize: %d, Transferred: %d\n", shpar.totsize, shpar.tsize, length_transferred);
+		// printf("%s\n", cammsg);
+		// printf("TotalSize: %d, TSize: %d, Transferred: %d\n", shpar.totsize, shpar.tsize, length_transferred);
 	}
 	return (retval);
 }
@@ -933,6 +984,7 @@ int imgcam_abort()
 		case 7:
 		case 81:
 		case 9:
+		case 91:
 		case 10:
 			retval = qhy_ccdAbortCapture();
 			usleep(100000);
@@ -979,6 +1031,7 @@ int imgcam_settec(double setValue, int setMode)
 		case 7:
 		case 81:
 		case 9:
+		case 91:
 		case 10:
 			retval = qhy_setDC201_i((int)setValue, 1);
 			break;
@@ -1001,6 +1054,7 @@ int imgcam_settec(double setValue, int setMode)
 	imgcam_get_tecp()->tecerr = (retval == 0) ? 1 : 0;
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
+		printf("%s\n", get_core_msg());
 		strcpy(cammsg, qhy_core_msg());
 	}
 	return (retval);
@@ -1027,6 +1081,7 @@ int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 		case 7:
 		case 81:
 		case 9:
+		case 91:
 		case 10:
 			retval = qhy_getDC201_i(tC, &mV);
 			break;
@@ -1047,6 +1102,7 @@ int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 	imgcam_get_tecp()->tecerr = ((retval == 1) ? 0 : 1);
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
+		printf("%s\n", get_core_msg());
 		strcpy(cammsg, get_core_msg());
 	}
 	return (retval);
@@ -1072,6 +1128,7 @@ int imgcam_shutter(int cmd)
 		case 12:
 			break;
 		case 9:
+		//case 91: We need to understand why is shutter command not working.
 			cammsg[0] = '\0';
 			retval = qhy_Shutter(cmd);
 			break;
@@ -1112,9 +1169,10 @@ int imgcam_wheel(int pos)
 			retval = qhy9_setColorWheel(pos);
 			break;
 		case 7:
+		case 91:
 		case 11:
 			cammsg[0] = '\0';
-			retval = qhy_setColorWheel(pos+1);
+			retval = qhy_setColorWheel(pos);
 			break;
 		case 1000:
 			break;

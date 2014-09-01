@@ -80,7 +80,10 @@ gpointer thd_qhy_tty_idle_run(gpointer thd_data)
 	char buf[1];
 	int nbrw = 0;
 	int i = 0;
+	char resp = GPOINTER_TO_INT(thd_data);
 	
+	resp = (resp < 10) ? (resp + 49) : (resp - 10 + 97);
+	buf[0] = '\0';
 	cfwIdle = 0;
 	// Attempts 3 reads of 5 seconds each, to allow enough time for to the CFW
 	// to settle.
@@ -90,14 +93,18 @@ gpointer thd_qhy_tty_idle_run(gpointer thd_data)
 		{
 			break;
 		}
+		//printf("Attempt read %d\n", i);
 	}
-	// Executes the post process to inform the user (and rest of application)
+	//printf("CFW returned '%c' waiting for '%c'\n", buf[0], resp);
+	// Runs the post process to inform the user (and rest of application)
 	// About the result got
 	// The post process will work on the GUI, hence to be thread safe must be 
-	// Executed from the main loop -> timer.
+	// run from the main loop -> timer.
 	cfwIdle = 1;
-	cfwpos = ((ttyret == TTY_OK) && (buf[0] == 0x2D))? cfwpos : -1;
-	g_timeout_add(1, tmr_run, GINT_TO_POINTER(((ttyret == TTY_OK) && (buf[0] == 0x2D))));
+	ttyret = ((ttyret == TTY_OK) && ((buf[0] == 0x2D) || (buf[0] == resp)));
+	//printf("ttyret = %d\n", ttyret);
+	cfwpos = (ttyret == 1)? cfwpos : -1;
+	g_timeout_add(1, tmr_run, GINT_TO_POINTER(ttyret));
 	return 0;
 }
 
@@ -498,39 +505,46 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 	switch (cfwmode)
 	{
 		case 1:
-			// Qhy Serial, chars "0", "1"... thus 0x30 (decimal 48) onward
-			wbuf[0] = slot + 48;
+			// Qhy Serial, chars "0", "1"..., "9" thus 0x30 (decimal 48) onward, then "a", "b", ..., "f"
+			wbuf[0] = (slot < 11) ? (slot + 48) : (slot - 11 + 97);
 			cfwmsg[0] = '\0';
 			if (slot < cfwslotc)
 			{
-				/* Flush the input buffer */
-				tcflush(cfwttyfd, TCIOFLUSH);
-				if ((ttyresult = tty_write(cfwttyfd, wbuf, sizeof(wbuf), &nbrw)) == TTY_OK)
+				if (slot != cfwpos)
 				{
-					retval = 1;
-					sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
-					cfwpos = slot;
-
-					// Starting tty-read thread
-					GError* thd_err = NULL;
-					postReadProcess = postProcess;
-					thd_read = g_thread_try_new("CFW-Change-Slot", thd_qhy_tty_idle_run, NULL, &thd_err);
-					if (thd_read == NULL)
+					/* Flush the input buffer */
+					tcflush(cfwttyfd, TCIOFLUSH);
+					if ((ttyresult = tty_write(cfwttyfd, wbuf, sizeof(wbuf), &nbrw)) == TTY_OK)
 					{
-						strcat(cfwmsg, C_("cfw","Could not start notification thread, btw slot selection command was sent ok."));
-						postReadProcess = NULL;
+						retval = 1;
+						sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
+						//printf("%s\n", cfwmsg);
+						cfwpos = slot;
+
+						// Starting tty-read thread
+						GError* thd_err = NULL;
+						postReadProcess = postProcess;
+						thd_read = g_thread_try_new("CFW-Change-Slot", thd_qhy_tty_idle_run, GINT_TO_POINTER(cfwpos), &thd_err);
+						if (thd_read == NULL)
+						{
+							strcat(cfwmsg, C_("cfw","Could not start notification thread, btw slot selection command was sent ok."));
+							//printf("%s\n", cfwmsg);
+							postReadProcess = NULL;
+						}
+					}		
+					else
+					{
+						char ttyerr[512];
+						tty_error_msg(ttyresult, ttyerr, 512);
+						sprintf(cfwmsg, C_("cfw","Could not write to CFW on serial port %s, error: %s"), cfwtty, ttyerr);
+						//printf("%s\n", cfwmsg);
 					}
-				}		
-				else
-				{
-					char ttyerr[512];
-					tty_error_msg(ttyresult, ttyerr, 512);
-					sprintf(cfwmsg, C_("cfw","Could not write to CFW on serial port %s, error: %s"), cfwtty, ttyerr);
 				}
 			}
 			else
 			{
 				sprintf(cfwmsg, C_("cfw","Requested slot (%d) does not exist. Slots = %d"), slot, cfwslotc);
+				//printf("%s\n", cfwmsg);
 			}
 			break;
 		
@@ -552,7 +566,7 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 			}
 			else //if (imgcam_get_camid() == 2000)
 			{
-				// SBIG-Through-camera
+				// SBIG-Through-camera (and others?)
 				postReadProcess = postProcess;
 				if ((retval = imgcam_wheel(slot)) == 1)
 				{
