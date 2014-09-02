@@ -42,6 +42,9 @@
 #ifdef HAVE_SBIG
 #include "sbigcore.h"
 #endif
+#ifdef HAVE_URVC
+#include "urvccore.h"
+#endif
 
 static char *cammsg;
 static unsigned char* databuffer[2] = {NULL, NULL};
@@ -65,6 +68,10 @@ char *get_core_msg()
 #ifdef HAVE_SBIG
 	if (camid == 2000)
 		return sbig_GetErrorString();
+#endif
+#ifdef HAVE_URVC
+	if (camid == 2100)
+		return urvc_GetErrorString();
 #endif
 	return NULL;
 }
@@ -279,6 +286,23 @@ void imgcam_set_model(const char *val)
 		}
 	}
 #endif
+#ifdef HAVE_URVC
+	else if (strncmp(val, "PSBIG", 5) == 0)
+	{
+		char *devName = strrchr(val,' ');		
+		int i;
+		
+		devName++;
+		for (i = 0; i < urvc_GetCameraList()->camnum; i++)
+		{
+			if (strcmp(urvc_GetCameraList()->listinfo[i].camport, devName) == 0)
+			{
+				camid = 2100; 
+				break;
+			}
+		}
+	}
+#endif
 	strcpy(cammodel, val);
 }
 
@@ -314,6 +338,9 @@ void imgcam_init()
 	}
 #ifdef HAVE_SBIG
 	sbig_core_init(imgBasePath);
+#endif
+#ifdef HAVE_URVC
+	urvc_core_init();
 #endif
 
 	if (databuffer[0] != NULL)
@@ -369,6 +396,9 @@ void imgcam_end()
 {
 #ifdef HAVE_SBIG
 	sbig_core_close();
+#endif
+#ifdef HAVE_URVC
+	urvc_core_init();
 #endif
 }
 
@@ -447,6 +477,10 @@ char *imgcam_init_list(int all)
 	sbig_core_reload_list();
 	strcat(imgcam_get_camui()->camstr, sbig_GetCameraList()->camlist);
 #endif
+#ifdef HAVE_URVC
+	urvc_core_reload_list();
+	strcat(imgcam_get_camui()->camstr, urvc_GetCameraList()->camlist);
+#endif
 	strcat(imgcam_get_camui()->camstr, "|:0");
 	return imgcam_get_camui()->camstr;
 }
@@ -454,7 +488,7 @@ char *imgcam_init_list(int all)
 int imgcam_connect()
 {
 	int retval = 1;
-#ifdef HAVE_SBIG
+#if defined(HAVE_SBIG) || defined(HAVE_URVC)
 	char *devName;
 #endif
 	
@@ -524,7 +558,7 @@ int imgcam_connect()
 						sprintf(imgcam_get_camui()->byrstr, "%d", sbig_GetCameraDetails()->colorId);
 						// Cfw
 						strcpy(imgcam_get_camui()->whlstr, sbig_GetCameraDetails()->cfwList);
-						// Tec (none for now)
+						// Tec
 						imgcam_get_tecp()->istec      = sbig_GetCameraDetails()->camTec * 3;      // Mode see imgCamio.h
 						imgcam_get_tecp()->tecerr     = 0;      // Error reading / setting tec; 
 						imgcam_get_tecp()->tecpwr     = 5;      // Basically 0 - tecmax
@@ -553,8 +587,53 @@ int imgcam_connect()
 						sbig_CloseDevice();
 					}
 				}
-#endif
 				break;
+#endif
+#ifdef HAVE_URVC
+			case 2100:
+				//Sbig parallel camera through urvc driver
+				devName = strrchr(cammodel,' ');		
+				
+				devName++;
+				if ((retval = urvc_OpenCamera(devName)) == 1)
+				{
+					//Set all UI related
+					strcpy(imgcam_get_camui()->binstr, urvc_GetCameraDetails()->binList);
+					strcpy(imgcam_get_camui()->roistr, "");
+					strcpy(imgcam_get_camui()->spdstr, urvc_GetCameraDetails()->spdList);
+					strcpy(imgcam_get_camui()->ampstr, urvc_GetCameraDetails()->ampList);
+					strcpy(imgcam_get_camui()->modstr, urvc_GetCameraDetails()->modList);
+					strcpy(imgcam_get_camui()->moddsc, urvc_GetCameraDetails()->modList[0] != '\0' ? C_("camio","Light/Dark mode") : "");
+					strcpy(imgcam_get_camui()->bppstr, "2-16Bit|:0");
+					sprintf(imgcam_get_camui()->byrstr, "-1");
+					// Cfw
+					strcpy(imgcam_get_camui()->whlstr, urvc_GetCameraDetails()->cfwList);
+					// Tec
+					imgcam_get_tecp()->istec      = urvc_GetCameraDetails()->camTec * 3;      // Mode see imgCamio.h
+					imgcam_get_tecp()->tecerr     = 0;      // Error reading / setting tec; 
+					imgcam_get_tecp()->tecpwr     = 5;      // Basically 0 - tecmax
+					imgcam_get_tecp()->tecmax     = 255;      // 0-255
+					imgcam_get_tecp()->tecauto    = 0;      // 0 = Manual, 1 = Seek target temp
+					imgcam_get_tecp()->tectemp    = 0.;     // Only meaningful when tecauto = 1; 
+					imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
+					// Shutter
+					imgcam_get_camui()->shutterMode = urvc_GetCameraDetails()->camShutter;
+					// Header values
+					imgcam_get_camui()->pszx = urvc_GetCameraDetails()->ccdpixW;
+					imgcam_get_camui()->pszy = urvc_GetCameraDetails()->ccdpixH;
+					// Basic expar
+					imgcam_get_expar()->bitpix  = 16;	
+					imgcam_get_expar()->bytepix = 2;	
+					imgcam_get_expar()->tsize   = 0;
+					imgcam_get_expar()->edit    = 0;
+					// Tec initial set
+					if (imgcam_get_tecp()->istec)
+					{
+						retval = imgcam_settec(imgcam_get_tecp()->tecpwr, 2);
+					}
+				}
+				break;
+#endif
 		}
 		if ((retval == 0) && (strlen(cammsg) == 0))
 		{
@@ -596,6 +675,12 @@ int imgcam_disconnect()
 #ifdef HAVE_SBIG
 		case 2000:
 			retval = (sbig_CloseDevice() == 0);
+			break;
+#endif
+#ifdef HAVE_URVC
+		case 2100:
+			urvc_CloseCamera();
+			retval = 1;
 			break;
 #endif
 	}
@@ -795,6 +880,11 @@ int imgcam_shoot()
 			retval = (sbig_StartExposure(&shpar) == 0);
 			break;
 #endif
+#ifdef HAVE_URVC
+		case 2100:
+			retval = (urvc_StartExposure(&shpar));
+			break;
+#endif
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
 	{
@@ -864,6 +954,16 @@ int imgcam_readout_ext(unsigned char *p)
 	{
 		//SBIG
 		if ((retval = (sbig_Readout(&shpar, p) == 0)) == 1)
+		{
+			length_transferred = shpar.tsize;
+		}
+	}
+#endif
+#ifdef HAVE_URVC
+	else if (camid == 2100)
+	{
+		//PSBIG = URVC
+		if ((retval = urvc_Readout(&shpar, p)) == 1)
 		{
 			length_transferred = shpar.tsize;
 		}
@@ -1003,6 +1103,11 @@ int imgcam_abort()
 			retval = (sbig_KillExposure() == 0);
 			break;
 #endif
+#ifdef HAVE_URVC
+		case 2100:
+			retval = urvc_KillExposure();
+			break;
+#endif
 
 	}
 	loaded = (retval == 1) ? 0 : loaded;
@@ -1047,6 +1152,17 @@ int imgcam_settec(double setValue, int setMode)
 			{
 				// If in auto mode also set auto-freeze mode
 				sbig_SetTemperatureRegulation(5, setValue);
+			}
+			break;
+#endif
+#ifdef HAVE_URVC
+		case 2100:
+			// Set val can be temp or pwm (0-255) depending on set mode
+			retval = urvc_SetTemperatureRegulation(setMode, setValue);
+			if (setMode == 1)
+			{
+				// If in auto mode also set auto-freeze mode
+				urvc_SetTemperatureRegulation(5, setValue);
 			}
 			break;
 #endif
@@ -1096,6 +1212,11 @@ int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 #ifdef HAVE_SBIG
 		case 2000:
 			retval = (sbig_QueryTemperatureStatus(enabled, tC, setTemp, power) == 0);
+			break;
+#endif
+#ifdef HAVE_URVC
+		case 2100:
+			retval = urvc_QueryTemperatureStatus(enabled, tC, setTemp, power);
 			break;
 #endif
 	}
@@ -1217,7 +1338,9 @@ int imgcam_wheel_reset()
 int imgcam_wheel_getstatus(int *status)
 {
 	int retval = 1;
+#ifdef HAVE_SBIG
 	int position = -1;
+#endif
 	
 	cammsg[0] = '\0';
 	switch (camid)

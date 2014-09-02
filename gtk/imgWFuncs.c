@@ -934,11 +934,11 @@ void cfwmsgdestroy(int response)
 	gtk_dialog_response(GTK_DIALOG(cfwmsg), GTK_RESPONSE_NONE);
 	gtk_widget_destroy(cfwmsg);
 	
-	printf("Response = %d\n", response);
+	//printf("Response = %d\n", response);
 	if (response == 1)
 	{
 		// All ok, select the filter name for the naming convention (if config is complete and valid)
-		printf("Combo elements %d, slots %d\n", gtk_combo_box_element_count(cmb_flt), imgcfw_get_slotcount());
+		//printf("Combo elements %d, slots %d\n", gtk_combo_box_element_count(cmb_flt), imgcfw_get_slotcount());
 		if (gtk_combo_box_element_count(cmb_flt) == imgcfw_get_slotcount())
 		{
 			gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_flt), imgcfw_get_slot());

@@ -1,5 +1,5 @@
 /*
- * sbig.c
+ * sbigcore.c
  *
  *  Created on: 05.05.2014
  *      Author: Giampiero Spezzano (gspezzano@gmail.com)
@@ -38,8 +38,8 @@
 #include <limits.h>
 #include <linux/limits.h>
 #include <glib/gi18n.h>
+#include <sbigudrv.h>
 #include "imgCamio.h"
-#include "sbigudrv.h"
 #include "sbigcore.h"
 
 // InitVars sections
@@ -55,15 +55,15 @@
 const int		INVALID_HANDLE_VALUE	= -1;	// for file operations
 //=============================================================================
 // SBIG temperature constants:
-const double		T0 					= 25.000;
-const double    	MAX_AD 				= 4096.000;
-const double    	R_RATIO_CCD 			= 2.570;
-const double    	R_BRIDGE_CCD			= 10.000;
-const double    	DT_CCD 				= 25.000;
-const double    	R0 					= 3.000;
-const double    	R_RATIO_AMBIENT		= 7.791;
-const double    	R_BRIDGE_AMBIENT		= 3.000;
-const double    	DT_AMBIENT 			= 45.000;
+static const double		T0 					= 25.000;
+static const double    	MAX_AD 				= 4096.000;
+static const double    	R_RATIO_CCD 			= 2.570;
+static const double    	R_BRIDGE_CCD			= 10.000;
+static const double    	DT_CCD 				= 25.000;
+static const double    	R0 					= 3.000;
+static const double    	R_RATIO_AMBIENT		= 7.791;
+static const double    	R_BRIDGE_AMBIENT		= 3.000;
+static const double    	DT_AMBIENT 			= 45.000;
 //=============================================================================
 typedef enum
 {
@@ -86,37 +86,38 @@ static char 			basePath[PATH_MAX];
 static sbig_list		m_camera_list;
 static sbig_camdetails	m_camera_details;
 //==========================================================================
-inline int		IsDeviceOpen(){return((m_fd == -1) ? 0 : 1);}
+static inline int		IsDeviceOpen(){return((m_fd == -1) ? 0 : 1);}
 //
-int 				SetDriverHandle(SetDriverHandleParams *sdhp);
-int				GetDriverHandle(GetDriverHandleResults *gdhr);
+static int 			SetDriverHandle(SetDriverHandleParams *sdhp);
+static int			GetDriverHandle(GetDriverHandleResults *gdhr);
 //
-int 				UnivDrvCommand(PAR_COMMAND command, void *params, void *results);
-void				InitVars(int section);
-char 		    *GetErrorString(int err);
-void 		     SetErrorString(int err);
-int				OpenDriver();
-int				CloseDriver();
-int 				GetDriverVersion();
-int 				my_ethernet_query(char *list, int *cams);
-int 				OpenDevice(int devId, int devIp);
-int 				GetLinkStatus(int *linkstat);
-int 				GetCameraList();
-int 				GetCameraDetails();
-int 				GetNumOfCcdChips();
-int 				QueryCommandStatus(PAR_COMMAND cmd, unsigned short *status);
-int 				EndExposure();
-int 				IsExposureComplete(int *complete);
-unsigned short 	CalcSetpoint(double temperature);
-double			CalcTemperature(short thermistorType, short ccdSetpoint);
-double  			BcdPixel2double(ulong bcd);
-float			bcd2float(unsigned short bcd);
+static int 			UnivDrvCommand(PAR_COMMAND command, void *params, void *results);
+static void			InitVars(int section);
+static char 		    *GetErrorString(int err);
+static void 		     SetErrorString(int err);
+static int			OpenDriver();
+static int			CloseDriver();
+static int 			GetDriverVersion();
+static int 			my_ethernet_query(char *list, int *cams);
+static int 			OpenDevice(int devId, int devIp);
+//static int 			GetLinkStatus(int *linkstat);
+static int 			GetCameraList();
+static int 			GetCameraDetails();
+static int 			GetNumOfCcdChips();
+static int 			QueryCommandStatus(PAR_COMMAND cmd, unsigned short *status);
+static int 			EndExposure();
+static int 			IsExposureComplete(int *complete);
+static unsigned short 	CalcSetpoint(double temperature);
+static double			CalcTemperature(short thermistorType, short ccdSetpoint);
+static double  		BcdPixel2double(ulong bcd);
+static float			bcd2float(unsigned short bcd);
 
 //==========================================================================
 int sbig_core_init(char *path)
 {	
 	int res;
-	
+	static int first_time = 1;
+
 	InitVars(VARLST);
 	InitVars(VARALL);
 	strcpy(basePath, path);
@@ -124,7 +125,11 @@ int sbig_core_init(char *path)
 	{
 		if ((res = GetDriverVersion()) == CE_NO_ERROR)
 		{
- 			printf ("SBIG driver Version %1.2lf\n", m_drv_version);
+			if (first_time)
+			{
+	 			printf ("SBIG driver Version %1.2lf\n", m_drv_version);
+	 			first_time = 0;
+	 		}
 			// Load complete list of available camera
 			//res = GetCameraList();
 		}
@@ -769,7 +774,7 @@ char *sbig_GetErrorString()
 // class dealing with multiple cameras on different communications port.
 // Also allows direct access to the SBIG Universal Driver after the driver
 // has been opened.
-int UnivDrvCommand(PAR_COMMAND command, void *params, void *results)
+static int UnivDrvCommand(PAR_COMMAND command, void *params, void *results)
 {	
 	int 					res;
  	
@@ -785,7 +790,7 @@ int UnivDrvCommand(PAR_COMMAND command, void *params, void *results)
  	return(res);
 }
 //==========================================================================
-void InitVars(int section)
+static void InitVars(int section)
 {
 	int i;
 	
@@ -857,13 +862,13 @@ void InitVars(int section)
 	}
 }
 //==========================================================================
-char *GetErrorString(int err)
+static char *GetErrorString(int err)
 {
 	SetErrorString(err);
 	return coremsg;
 }
 //==========================================================================
-void SetErrorString(int err)
+static void SetErrorString(int err)
 {
 	int res;
  	GetErrorStringParams		gesp;
@@ -881,7 +886,7 @@ void SetErrorString(int err)
 	}
 }
 //==========================================================================
-int OpenDriver()
+static int OpenDriver()
 {
 	int					res;
 	GetDriverHandleResults 	gdhr;
@@ -918,7 +923,7 @@ int OpenDriver()
  	return(res);
 }
 //==========================================================================
-int CloseDriver()
+static int CloseDriver()
 {	
 	int res;
 
@@ -929,7 +934,7 @@ int CloseDriver()
  	return(res);
 }
 //=========================================================================
-int GetDriverVersion()
+static int GetDriverVersion()
 {
 	int res;
 	GetDriverInfoParams gdip;
@@ -943,7 +948,7 @@ int GetDriverVersion()
  	return (res);
 }
 //==========================================================================
-int SetDriverHandle(SetDriverHandleParams *sdhp)
+static int SetDriverHandle(SetDriverHandleParams *sdhp)
 {
 	int ret;
 	
@@ -960,7 +965,7 @@ int SetDriverHandle(SetDriverHandleParams *sdhp)
  	return (ret);
 }
 //==========================================================================
-int GetDriverHandle(GetDriverHandleResults *gdhr)
+static int GetDriverHandle(GetDriverHandleResults *gdhr)
 {
 	int ret;
 	
@@ -969,7 +974,7 @@ int GetDriverHandle(GetDriverHandleResults *gdhr)
 	return (ret);
 }
 //==========================================================================
-int OpenDevice(int devId, int devIp)
+static int OpenDevice(int devId, int devIp)
 {
 	int res;
 	OpenDeviceParams odp;
@@ -1006,7 +1011,7 @@ int OpenDevice(int devId, int devIp)
  	return(res);
 }
 //==========================================================================
-int GetLinkStatus(int *linkstat)
+/*int GetLinkStatus(int *linkstat)
 {
 	int ret;
 	GetLinkStatusResults glsr;
@@ -1020,9 +1025,9 @@ int GetLinkStatus(int *linkstat)
 		*linkstat = 0;
 	}
 	return (ret);
-}	
+}*/	
 //==========================================================================
-void _GetCameraName(GetCCDInfoResults0	*gcr, char *camname)
+static void _GetCameraName(GetCCDInfoResults0	*gcr, char *camname)
 {
  	char *p1, *p2;
 	char tmpname[64];
@@ -1063,7 +1068,7 @@ void _GetCameraName(GetCCDInfoResults0	*gcr, char *camname)
     	}
 }
 //==========================================================================
-int GetCameraList()
+static int GetCameraList()
 {
 	int  res, i, cams, usbcams, ethcams;
 	char tmpname[64];
@@ -1281,7 +1286,7 @@ int GetCameraList()
 	return(res);
 }
 //==========================================================================
-int GetCameraDetails()
+static int GetCameraDetails()
 {
 	int  res, curW, modes, i;
 	char tmpstr[256];
@@ -1584,7 +1589,7 @@ int GetCameraDetails()
 	return (res);
 }
 //==========================================================================
-int QueryCommandStatus(PAR_COMMAND cmd, unsigned short *status)
+static int QueryCommandStatus(PAR_COMMAND cmd, unsigned short *status)
 {
 	int res;
 	QueryCommandStatusParams  qcsp;
@@ -1598,7 +1603,7 @@ int QueryCommandStatus(PAR_COMMAND cmd, unsigned short *status)
  	return (res);
 }
 //==========================================================================
-int IsExposureComplete(int *complete)
+static int IsExposureComplete(int *complete)
 {
 	int res;
 	unsigned short status;
@@ -1617,7 +1622,7 @@ int IsExposureComplete(int *complete)
 	return (res);
 }
 //==========================================================================
-int GetNumOfCcdChips()
+static int GetNumOfCcdChips()
 {	
 	int res;
 
@@ -1645,13 +1650,13 @@ int GetNumOfCcdChips()
 	return(res);
 }
 //==========================================================================
-int IsFanControlAvailable()
+/*static int IsFanControlAvailable()
 {
 	if(m_camera_details.camType == ST5C_CAMERA || m_camera_details.camType == ST402_CAMERA) return(0);
 	return(1);
-}
+}*/
 //==========================================================================
-int EndExposure()
+static int EndExposure()
 {
 	int ret = CE_DEVICE_NOT_OPEN;
 	EndExposureParams eep;
@@ -1664,7 +1669,7 @@ int EndExposure()
  	return(ret);
 }
 //==========================================================================
-double BcdPixel2double(ulong bcd)
+static double BcdPixel2double(ulong bcd)
 {
 	double value = 0.0;
 	double digit = 0.01;
@@ -1679,7 +1684,7 @@ double BcdPixel2double(ulong bcd)
 	return(value);
  }
 //==============================================================
-float bcd2float (unsigned short bcd)
+static float bcd2float (unsigned short bcd)
 {  
 	unsigned char b1 = bcd >> 8;	  
 	unsigned char b2 = bcd;
@@ -1691,7 +1696,7 @@ float bcd2float (unsigned short bcd)
 	return (f1 + f2 + f3 + f4);
 }
 //==========================================================================
-unsigned short CalcSetpoint(double temperature)
+static unsigned short CalcSetpoint(double temperature)
 {
  	// Calculate 'setpoint' from the temperature T in degr. of Celsius.
  	double expo = (log(R_RATIO_CCD) * (T0 - temperature)) / DT_CCD;
@@ -1699,7 +1704,7 @@ unsigned short CalcSetpoint(double temperature)
  	return((unsigned short)(((MAX_AD / (R_BRIDGE_CCD / r + 1.0)) + 0.5)));
 }
 //==========================================================================
-double CalcTemperature(short thermistorType, short setpoint)
+static double CalcTemperature(short thermistorType, short setpoint)
 {
  	double r, expo, rBridge, rRatio, dt;
 
@@ -1724,7 +1729,7 @@ double CalcTemperature(short thermistorType, short setpoint)
  	return(T0 - dt * expo);
 }
 //==========================================================================
-int my_ethernet_query(char *list, int *cams)
+static int my_ethernet_query(char *list, int *cams)
 {
 	int res = CE_NO_ERROR, i = 0;
 	char cureth[5];

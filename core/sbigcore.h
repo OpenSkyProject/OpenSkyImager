@@ -1,5 +1,5 @@
 /*
- * sbig.h
+ * sbigcore.h
  *
  *  Created on: 05.05.2014
  *      Author: Giampiero Spezzano (gspezzano@gmail.com)
