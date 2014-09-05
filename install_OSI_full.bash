@@ -35,7 +35,7 @@ fi
 cd ./build
 
 # configuring the environment
-cmake $cmake_params ..
+cmake -D FORCE_QHY_ONLY=off $cmake_params ..
 if [ $? -gt 0 ]; then
     exit 1
 fi
