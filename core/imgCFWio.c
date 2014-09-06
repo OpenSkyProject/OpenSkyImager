@@ -61,7 +61,7 @@ static GThread *thd_read = NULL;
 // used from more than one thread at the time
 static gpointer (*postReadProcess)(int);
 
-gboolean tmr_run(gpointer data)
+static gboolean tmr_run(gpointer data)
 {
 	
 	// Executes the post process to inform the user (and rest of application)
@@ -502,93 +502,100 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 	int nbrw = 0;
 	char wbuf[1];
 	
-	switch (cfwmode)
+	if (cfwIdle)
 	{
-		case 1:
-			// Qhy Serial, chars "0", "1"..., "9" thus 0x30 (decimal 48) onward, then "a", "b", ..., "f"
-			wbuf[0] = (slot < 11) ? (slot + 48) : (slot - 11 + 97);
-			cfwmsg[0] = '\0';
-			if (slot < cfwslotc)
-			{
-				if (slot != cfwpos)
+		switch (cfwmode)
+		{
+			case 1:
+				// Qhy Serial, chars "0", "1"..., "9" thus 0x30 (decimal 48) onward, then "a", "b", ..., "f"
+				wbuf[0] = (slot < 11) ? (slot + 48) : (slot - 11 + 97);
+				cfwmsg[0] = '\0';
+				if (slot < cfwslotc)
 				{
-					/* Flush the input buffer */
-					tcflush(cfwttyfd, TCIOFLUSH);
-					if ((ttyresult = tty_write(cfwttyfd, wbuf, sizeof(wbuf), &nbrw)) == TTY_OK)
+					if (slot != cfwpos)
 					{
-						retval = 1;
+						/* Flush the input buffer */
+						tcflush(cfwttyfd, TCIOFLUSH);
+						if ((ttyresult = tty_write(cfwttyfd, wbuf, sizeof(wbuf), &nbrw)) == TTY_OK)
+						{
+							retval = 1;
+							sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
+							//printf("%s\n", cfwmsg);
+							cfwpos = slot;
+
+							// Starting tty-read thread
+							GError* thd_err = NULL;
+							postReadProcess = postProcess;
+							thd_read = g_thread_try_new("CFW-Change-Slot", thd_qhy_tty_idle_run, GINT_TO_POINTER(cfwpos), &thd_err);
+							if (thd_read == NULL)
+							{
+								strcat(cfwmsg, C_("cfw","Could not start notification thread, btw slot selection command was sent ok."));
+								//printf("%s\n", cfwmsg);
+								postReadProcess = NULL;
+							}
+						}		
+						else
+						{
+							char ttyerr[512];
+							tty_error_msg(ttyresult, ttyerr, 512);
+							sprintf(cfwmsg, C_("cfw","Could not write to CFW on serial port %s, error: %s"), cfwtty, ttyerr);
+							//printf("%s\n", cfwmsg);
+						}
+					}
+				}
+				else
+				{
+					sprintf(cfwmsg, C_("cfw","Requested slot (%d) does not exist. Slots = %d"), slot, cfwslotc);
+					//printf("%s\n", cfwmsg);
+				}
+				break;
+		
+			case 99:
+				if (imgcam_get_camid() < 1000)
+				{
+					// Qky-through-camera
+					postReadProcess = postProcess;
+					if ((retval = imgcam_wheel(slot)) == 1)
+					{
+						cfwpos = slot;
 						sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
-						//printf("%s\n", cfwmsg);
+						g_timeout_add_seconds((READ_TIME * 2), tmr_run, (gpointer)1);
+					}
+					else
+					{
+						sprintf(cfwmsg, "%s", imgcam_get_msg());
+					}
+				}
+				else //if (imgcam_get_camid() == 2000)
+				{
+					// SBIG-Through-camera (and others?)
+					postReadProcess = postProcess;
+					if ((retval = imgcam_wheel(slot)) == 1)
+					{
+						sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
 						cfwpos = slot;
 
-						// Starting tty-read thread
+						// Starting a thread to get move finish
 						GError* thd_err = NULL;
 						postReadProcess = postProcess;
-						thd_read = g_thread_try_new("CFW-Change-Slot", thd_qhy_tty_idle_run, GINT_TO_POINTER(cfwpos), &thd_err);
+						thd_read = g_thread_try_new("CFW-Change-Slot", thd_get_idle_run, NULL, &thd_err);
 						if (thd_read == NULL)
 						{
 							strcat(cfwmsg, C_("cfw","Could not start notification thread, btw slot selection command was sent ok."));
-							//printf("%s\n", cfwmsg);
 							postReadProcess = NULL;
 						}
-					}		
+					}
 					else
 					{
-						char ttyerr[512];
-						tty_error_msg(ttyresult, ttyerr, 512);
-						sprintf(cfwmsg, C_("cfw","Could not write to CFW on serial port %s, error: %s"), cfwtty, ttyerr);
-						//printf("%s\n", cfwmsg);
+						sprintf(cfwmsg, "%s", imgcam_get_msg());
 					}
 				}
-			}
-			else
-			{
-				sprintf(cfwmsg, C_("cfw","Requested slot (%d) does not exist. Slots = %d"), slot, cfwslotc);
-				//printf("%s\n", cfwmsg);
-			}
-			break;
-		
-		case 99:
-			if (imgcam_get_camid() < 1000)
-			{
-				// Qky-through-camera
-				postReadProcess = postProcess;
-				if ((retval = imgcam_wheel(slot)) == 1)
-				{
-					cfwpos = slot;
-					sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
-					g_timeout_add_seconds((READ_TIME * 2), tmr_run, (gpointer)1);
-				}
-				else
-				{
-					sprintf(cfwmsg, "%s", imgcam_get_msg());
-				}
-			}
-			else //if (imgcam_get_camid() == 2000)
-			{
-				// SBIG-Through-camera (and others?)
-				postReadProcess = postProcess;
-				if ((retval = imgcam_wheel(slot)) == 1)
-				{
-					sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
-					cfwpos = slot;
-
-					// Starting a thread to get move finish
-					GError* thd_err = NULL;
-					postReadProcess = postProcess;
-					thd_read = g_thread_try_new("CFW-Change-Slot", thd_get_idle_run, NULL, &thd_err);
-					if (thd_read == NULL)
-					{
-						strcat(cfwmsg, C_("cfw","Could not start notification thread, btw slot selection command was sent ok."));
-						postReadProcess = NULL;
-					}
-				}
-				else
-				{
-					sprintf(cfwmsg, "%s", imgcam_get_msg());
-				}
-			}
-			break;
+				break;
+		}
+	}
+	else
+	{
+		sprintf(cfwmsg, C_("cfw","Wait for current movement to end"));
 	}
 	return (retval);
 }

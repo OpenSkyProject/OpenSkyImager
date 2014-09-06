@@ -154,7 +154,7 @@ int  qhy9l_setregisters(qhy_exposure *expar)
 		time = expar->time - SHORTEXP;
 	}
 	//account for general 1% error on exp time for all QHY camera tested so far
-	time = (int) (time - (time / 100));
+	time = (int) (time + 2. * (time / 100.));
 	
 	antiamp = 0;
 	switch ( expar->amp ) 

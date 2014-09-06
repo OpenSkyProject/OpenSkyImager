@@ -136,7 +136,7 @@
 	int fit = 0, hst = 0;
 	double imgratio = 1., icoratio = 1.;
 	int capture = 0;
-	int run = 0, hold = 0, readout = 0, runerr = 0;
+	int run = 0, hold = 0, expose = 0, readout = 0, runerr = 0;
 	int expnum = 0, shots = 0;
 	double shotfract = 0., expfract = 0.;
 	int fullcamlist = 0;	
@@ -243,7 +243,7 @@
 	extern int fit, hst;
 	extern double imgratio, icoratio;
 	extern int capture;
-	extern int run, hold, readout, runerr;
+	extern int run, hold, expose, readout, runerr;
 	extern int expnum, shots;
 	extern double shotfract, expfract;
 	extern int fullcamlist;	

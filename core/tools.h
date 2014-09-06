@@ -29,4 +29,5 @@ int   isfifo(char* path);
 int   mkpath(char* file_path, mode_t mode);
 char *getusername();
 char *getloginname();
+char *gettimestamp(char* buffer);
 

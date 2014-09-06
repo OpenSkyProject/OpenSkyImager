@@ -243,6 +243,7 @@ int sbig_EstablishLink()
  	elp.sbigUseOnly = 0;
  	if((res = UnivDrvCommand(CC_ESTABLISH_LINK, &elp, &elr)) == CE_NO_ERROR)
  	{
+		//printf("Link established\n");
 	    	/*if ((res = GetLinkStatus(&m_link_status)) == CE_NO_ERROR)
 	    	{
 	    		res = GetCameraDetails();
@@ -776,7 +777,7 @@ char *sbig_GetErrorString()
 // has been opened.
 static int UnivDrvCommand(PAR_COMMAND command, void *params, void *results)
 {	
-	int 					res;
+	int 	res;
  	
  	// Make sure we have a valid handle to the driver.
  	if(m_drv_handle == INVALID_HANDLE_VALUE)
@@ -785,7 +786,9 @@ static int UnivDrvCommand(PAR_COMMAND command, void *params, void *results)
  	}
  	else
  	{
+		//printf("uni try\n");
 		res = SBIGUnivDrvCommand(command, params, results);
+		//printf("uni ok\n");
  	}
  	return(res);
 }
@@ -1155,8 +1158,9 @@ static int GetCameraList()
 				}
 			}
 		}
-		// Now try open lpt
-		if (OpenDevice(DEV_LPT1, 0) == CE_NO_ERROR)
+		// Now try open lpt 
+		// LPT no logner supported through sbigunidrv, please see URVC
+		/* if (OpenDevice(DEV_LPT1, 0) == CE_NO_ERROR)
 		{
 			if (sbig_EstablishLink() == CE_NO_ERROR)
 			{
@@ -1212,7 +1216,7 @@ static int GetCameraList()
 				cams++;
 			}
 			sbig_CloseDevice();
-		}
+		}*/
 		if (m_drv_version < 4.60)
 		{
 			// Try a list of 4 ip got from a config file

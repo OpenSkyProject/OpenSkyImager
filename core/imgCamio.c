@@ -939,7 +939,10 @@ int imgcam_readout_ext(unsigned char *p)
 				}*/
 			}
 		}
+		//char *buf = NULL;
+		//printf("Begin readout: %s\n", gettimestamp(buf));
 		retval = qhy_getImgData(shpar.tsize, p, &error, &length_transferred);
+		//printf("End readout  : %s\n", gettimestamp(buf));
 	}
 	else if (camid == 1000) // plouis
 	{

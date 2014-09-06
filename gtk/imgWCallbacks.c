@@ -912,7 +912,7 @@ void cmd_load_click(GtkWidget *widget, gpointer data)
 void cmd_run_click(GtkWidget *widget, gpointer data)
 {
 	static int error = 0, kill = 0;
-	int brun = 0, breadout = 0;
+	int brun = 0, bexpose = 0, breadout = 0;
 	
 	if (error == 0)
 	{
@@ -934,6 +934,7 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 		{
 			g_rw_lock_reader_lock(&thd_caplock);
 			brun = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)? 1: 0;
+			bexpose = expose;
 			breadout = readout;
 			g_rw_lock_reader_unlock(&thd_caplock);
 			if (brun == 1)
@@ -996,10 +997,11 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 			}
 			else
 			{
-				if (breadout)
+				if ((breadout) || (bexpose))
 				{
+					//printf("Expose: %d, Readout: %d\n", bexpose, breadout);
 					// Long exposure running; abort
-					if (imgcam_get_shpar()->time > 1000)
+					if ((imgcam_get_shpar()->time > 1000) && (breadout == 0))
 					{
 						if (kill == 1)
 						{
@@ -1039,7 +1041,7 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 							gtk_button_set_label(GTK_BUTTON(widget), C_("main","Kill"));
 							gtk_widget_modify_bkg(widget, GTK_STATE_ACTIVE, &clrKill);
 							gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
-							gtk_widget_set_sensitive(cmd_hold, 0);
+							gtk_widget_set_sensitive(cmd_hold, 0);							
 						}
 					}
 					else
@@ -1388,11 +1390,12 @@ gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 				g_rw_lock_writer_lock(&thd_caplock);
 				run  = 0;
 				runerr = 1;
-				if (readout)
+				if ((readout) || (expose))
 				{
 					imgcam_abort();
 				}
 				readout = 0;
+				expose = 0;
 				g_rw_lock_writer_unlock(&thd_caplock);
 				imgcam_end();
 				break;
@@ -1532,11 +1535,12 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 						g_rw_lock_writer_lock(&thd_caplock);
 						run  = 0;
 						runerr = 1;
-						if (readout)
+						if ((readout) || (expose))
 						{
 							imgcam_abort();
 						}
 						readout = 0;
+						expose = 0;
 						g_rw_lock_writer_unlock(&thd_caplock);
 						break;
 					default:
@@ -2834,10 +2838,18 @@ void cmb_cfwwhl_changed (GtkComboBox *widget, GtkWidget **awidget)
 
 void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
 {
+	int i;
+	
 	//printf("Got value: %d\n", (int)user_data);
 	//imgcfw_set_slot((int)user_data, NULL);
 	if (imgcfw_set_slot(GPOINTER_TO_INT(user_data), (gpointer) cfwmsgdestroy))
-	{	
+	{
+		// Disable all slot buttons
+		for (i = 0; i < CFW_SLOTS; i++)
+		{
+			gtk_widget_set_sensitive(cmb_cfwwhl[i], 0);
+			gtk_widget_set_sensitive(cmd_cfwwhl[i], 0);
+		}
 		// Show the change slot message
 		cfwmsg = gtk_message_dialog_new ((GtkWindow *) window, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_NONE, C_("cfw","Please wait for the filter to reach position..."));	
 		gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(cfwmsg), C_("cfw","Dialog will disappear when done"));
@@ -3774,9 +3786,13 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 							gtk_button_clicked(GTK_BUTTON(cmd_cfwwhl[ival]));
 							printf("Fifo: %s=ACK\n", cmd);
 						}
-						else
+						else if (imgcfw_is_idle())
 						{
 							printf("Fifo: ERROR=CFW position %d is not valid\n", ival);
+						}
+						else
+						{
+							printf("Fifo: ERROR=Wait for last goto to end\n");
 						}
 					}
 					else

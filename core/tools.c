@@ -24,10 +24,14 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include "tools.h"
+
+
 
 // Hints got from: http://stackoverflow.com/questions/9629850/how-to-get-cpu-info-in-c-on-linux-such-as-number-of-cores
 int get_cpu_cores(void)
@@ -215,5 +219,27 @@ char *getusername()
 char *getloginname()
 {
 	return getenv("USER");
+}
+
+char *gettimestamp(char* buffer)
+{
+	struct timeval tv;
+	struct tm* tm_info;
+	char buf2[25];
+
+	buffer = (char*) realloc(buffer, 25);
+	gettimeofday(&tv,NULL);
+	//time_t      tv.tv_sec  // seconds
+	//suseconds_t tv.tv_usec // microseconds
+
+	tm_info = localtime(&tv.tv_sec);
+
+	strftime(buffer, 25, "%Y%m%d-%H:%M:%S", tm_info);
+	sprintf(buf2, ".%03d", (int)tv.tv_usec / 1000);
+
+	strcat(buffer, buf2); 
+	//printf("%s\n", buffer);
+	
+	return(buffer);
 }
 

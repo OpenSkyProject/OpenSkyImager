@@ -931,6 +931,8 @@ void combo_ttylist(GtkWidget *cmb)
 
 void cfwmsgdestroy(int response)
 {
+	int i;
+	
 	gtk_dialog_response(GTK_DIALOG(cfwmsg), GTK_RESPONSE_NONE);
 	gtk_widget_destroy(cfwmsg);
 	
@@ -948,6 +950,12 @@ void cfwmsgdestroy(int response)
 	{
 		sprintf(imgmsg, C_("cfw","Filter wheel reported error"));
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
+	// Enable active slot buttons
+	for (i = 0; i < CFW_SLOTS; i++)
+	{
+		gtk_widget_set_sensitive(cmb_cfwwhl[i], (i < imgcfw_get_slotcount()));
+		gtk_widget_set_sensitive(cmd_cfwwhl[i], (i < imgcfw_get_slotcount()));
 	}
 }
 
@@ -1243,7 +1251,8 @@ gpointer thd_capture_run(gpointer thd_data)
 		// Shoot
 		writeavih = imgcam_get_expar()->edit;
 		thdshoot = imgcam_shoot();
-		readout = thdshoot;
+		expose = thdshoot;
+		readout = 0;
 		thdrun = run;
 		thdexp = imgcam_get_shpar()->wtime;
 		if (thdreadok == 1)
@@ -1294,7 +1303,7 @@ gpointer thd_capture_run(gpointer thd_data)
 					{
 						// User abort
 						g_rw_lock_writer_lock(&thd_caplock);
-						readout = 0;
+						expose = 0;
 						g_rw_lock_writer_unlock(&thd_caplock);		
 						break;
 					}
@@ -1303,15 +1312,21 @@ gpointer thd_capture_run(gpointer thd_data)
 					thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
 					thdtimer += thdtimeradd;
 				}
+				char *buf = NULL;
+				printf("Exposure end : %s\n", gettimestamp(buf));
 				expfract = 1.0;
 			}
 			else if (thdexp > 100)
 			{
 				g_usleep((thdexp * 1000));
+				//char *buf = NULL;
+				//printf("Exposure end : %s\n", gettimestamp(buf));
 				expfract = -1.0;
 			}
 			else
 			{
+				//char *buf = NULL;
+				//printf("Exposure end : %s\n", gettimestamp(buf));
 				expfract = -1.0;
 			}
 			tmrexpprgrefresh = g_timeout_add(1, (GSourceFunc) tmr_exp_progress_refresh, NULL);
@@ -1319,6 +1334,8 @@ gpointer thd_capture_run(gpointer thd_data)
 			{
 				// Prevent tec readig during frame transfer
 				g_rw_lock_reader_lock(&thd_teclock);
+				expose = 0;
+				readout = 1;
 				// Unless aborted during exposure time
 				if (imgcam_readout())
 				{

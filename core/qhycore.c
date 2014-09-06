@@ -598,7 +598,7 @@ int qhy_setColorWheel(int Pos)
 
 int qhy_getImgData(int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred)
 {
-	*errcode = libusb_bulk_transfer( hDevice, endp.bulk, databuffer, transfer_size, length_transferred, ((transfer_size > 20000000) ? 60000: 20000));
+	*errcode = libusb_bulk_transfer( hDevice, endp.bulk, databuffer, transfer_size, length_transferred, ((transfer_size > 15000000) ? 60000: 40000));
 	if (*errcode != 0)
 	{
 		//printf("Bulk errcode: %d\n", *errcode);
