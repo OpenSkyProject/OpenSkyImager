@@ -519,7 +519,7 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 						if ((ttyresult = tty_write(cfwttyfd, wbuf, sizeof(wbuf), &nbrw)) == TTY_OK)
 						{
 							retval = 1;
-							sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
+							sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot + 1);
 							//printf("%s\n", cfwmsg);
 							cfwpos = slot;
 
@@ -545,7 +545,7 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 				}
 				else
 				{
-					sprintf(cfwmsg, C_("cfw","Requested slot (%d) does not exist. Slots = %d"), slot, cfwslotc);
+					sprintf(cfwmsg, C_("cfw","Requested slot (%d) does not exist. Slots = %d"), slot + 1, cfwslotc);
 					//printf("%s\n", cfwmsg);
 				}
 				break;
@@ -558,7 +558,7 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 					if ((retval = imgcam_wheel(slot)) == 1)
 					{
 						cfwpos = slot;
-						sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
+						sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot + 1);
 						g_timeout_add_seconds((READ_TIME * 2), tmr_run, (gpointer)1);
 					}
 					else
@@ -572,7 +572,7 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 					postReadProcess = postProcess;
 					if ((retval = imgcam_wheel(slot)) == 1)
 					{
-						sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot);
+						sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot + 1);
 						cfwpos = slot;
 
 						// Starting a thread to get move finish

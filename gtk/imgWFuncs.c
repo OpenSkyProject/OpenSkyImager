@@ -1312,8 +1312,8 @@ gpointer thd_capture_run(gpointer thd_data)
 					thdtimeradd = ((clkwe.tv_sec - clkws.tv_sec) * 1000 + 0.001 * (clkwe.tv_usec - clkws.tv_usec));
 					thdtimer += thdtimeradd;
 				}
-				char *buf = NULL;
-				printf("Exposure end : %s\n", gettimestamp(buf));
+				//char *buf = NULL;
+				//printf("Exposure end : %s\n", gettimestamp(buf));
 				expfract = 1.0;
 			}
 			else if (thdexp > 100)

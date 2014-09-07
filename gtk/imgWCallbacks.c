@@ -2777,8 +2777,16 @@ void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
 {
 	if ((gtk_combo_box_get_active(widget) != -1) && (gtk_widget_get_sensitive(GTK_WIDGET(widget))))
 	{
+		int i;
+		
 		imgcfw_set_model(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
 		sprintf(imgmsg, C_("cfw","Filter wheel configuration: %d slots, %s model"), imgcfw_get_slotcount(), imgcfw_get_model());
+		// Set UI
+		for (i = 0; i < CFW_SLOTS; i++)
+		{
+			gtk_widget_set_sensitive(cmb_cfwwhl[i], (i < imgcfw_get_slotcount()));
+			gtk_widget_set_sensitive(cmd_cfwwhl[i], (i < imgcfw_get_slotcount()));
+		}
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 }
