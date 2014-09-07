@@ -165,11 +165,12 @@ int imgcfw_set_mode(int mode)
 	{
 		case 0:
 		case 1:
-			// QHY-Serial
+		case 2:
+			// QHY-Serial (and 2)
 			cfwmode = mode;
 			retval = 1;
 			break;
-		
+				
 		case 99:
 			// QHY-Through-camera
 			if ((imgcam_connected() == 1) && (strlen(imgcam_get_camui()->whlstr) > 0))
@@ -246,7 +247,8 @@ int imgcfw_connect()
 			break;
 		
 		case 1:
-			// QHY-Serial
+		case 2:
+			// QHY-Serial (and 2)
 			if ((ttyresult = tty_connect(cfwtty, 9600, 8, PARITY_NONE, 1, &cfwttyfd)) == TTY_OK)
 			{
 				if ((retval = imgcfw_read_all()) == 0)
@@ -299,7 +301,8 @@ int imgcfw_disconnect()
 			break;
 		
 		case 1:
-			// QHY-Serial
+		case 2:
+			// QHY-Serial (and 2)
 			if ((retval = tty_disconnect(cfwttyfd)) == TTY_OK)
 			{
 				cfwttyfd = -1;
@@ -404,6 +407,32 @@ int imgcfw_read_all()
 		}
 		return (ttyresult == TTY_OK);
 	}
+	else if (cfwmode == 2)
+	{
+		// QHY-Serial (2)
+		int nbrw = 0;
+		char buf[2];
+		int ttyresult = 0;
+
+		cfwmsg[0] = '\0';
+		cfwmodel[0] = '\0';
+		if (cfwttyfd > -1)
+		{
+			/* Flush the input buffer */
+			tcflush(cfwttyfd,TCIOFLUSH);
+			// Waiting for initial reset to end (triggered by connection)
+			if ((ttyresult = tty_read(cfwttyfd, buf, 1, READ_TIME * 5, &nbrw)) == TTY_OK)
+			{
+				if (buf[0] == '1')
+				{
+					cfwmodid = 0;
+					cfwslotc = 5;
+					strcpy(cfwmodels, C_("camio","5-Positions|6-Positions|7-Positions|8-Positions:0"));
+				}
+			}
+		}
+		return ((ttyresult == TTY_OK) && (buf[0] == '1'));
+	}
 	else if (cfwmode == 99)
 	{
 		//Through camera
@@ -446,6 +475,19 @@ int imgcfw_reset()
 			}
 		}
 		return (ttyresult == TTY_OK);
+	}
+	else if (cfwmode == 2)
+	{
+		int retval = 0;
+		// QHY-Serial (2)
+		if (imgcfw_disconnect())
+		{
+			if (imgcfw_connect())
+			{
+				retval = 1;
+			}
+		}
+		return (retval);
 	}
 	else if ((cfwmode == 99))
 	{
@@ -507,7 +549,8 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 		switch (cfwmode)
 		{
 			case 1:
-				// Qhy Serial, chars "0", "1"..., "9" thus 0x30 (decimal 48) onward, then "a", "b", ..., "f"
+			case 2:
+				// Qhy Serial (also 2), chars "0", "1"..., "9" thus 0x30 (decimal 48) onward, then "a", "b", ..., "f"
 				wbuf[0] = (slot < 11) ? (slot + 48) : (slot - 11 + 97);
 				cfwmsg[0] = '\0';
 				if (slot < cfwslotc)

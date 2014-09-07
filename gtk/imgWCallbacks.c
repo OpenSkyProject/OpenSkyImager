@@ -2644,6 +2644,15 @@ void cmb_cfw_changed (GtkComboBox *widget, gpointer user_data)
 				// This will read the configuration from the wheel itself
 				break;
 			
+			case 2:
+				// QHY Serial (2)
+				gtk_widget_set_sensitive(cmb_cfwtty, 1);
+				combo_ttylist(cmb_cfwtty);
+				gtk_widget_set_sensitive(cmd_cfwtty, 1);
+				gtk_widget_set_sensitive(cmd_cfw, 1);
+				gtk_widget_set_sensitive(cmb_cfwcfg, 1);
+				break;
+			
 			case 99:
 				// This is manufacturer specific so we load the list of choices 
 				// from the camera UI.
@@ -2787,6 +2796,8 @@ void cmb_cfwcfg_changed (GtkComboBox *widget, gpointer user_data)
 			gtk_widget_set_sensitive(cmb_cfwwhl[i], (i < imgcfw_get_slotcount()));
 			gtk_widget_set_sensitive(cmd_cfwwhl[i], (i < imgcfw_get_slotcount()));
 		}
+		// CFW in use, ser filter list if all configured
+		cmb_cfwwhl_changed (GTK_COMBO_BOX(cmb_cfwwhl[0]), cmb_cfwwhl);
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 }

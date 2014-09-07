@@ -847,6 +847,7 @@ void cmb_cfw_build()
 	/// Value "No CFW" of the cfw combo, please preserve the n-xxxxx format
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_cfw), C_("cfw","0-None"));
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_cfw), C_("cfw","1-QHY Serial"));
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_cfw), C_("cfw","2-QHY Serial (2)"));
 	
 	g_signal_connect(G_OBJECT(cmb_cfw), "changed", G_CALLBACK(cmb_cfw_changed),  NULL);	
 	gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_cfw), 0);
