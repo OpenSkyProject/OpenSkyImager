@@ -447,7 +447,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 							else if (imgcam_get_tecp()->settemp < imgcam_get_tecp()->tectemp) 
 							{
 								suspect = 0;
-								if ((oldT - imgcam_get_tecp()->tectemp) < (0.05 * tecspeed))
+								if ((oldT - imgcam_get_tecp()->tectemp) < (0.05 * (tecspeed +1)))
 								{
 									//setTemp is still far. We gently pull tec up or down
 									imgcam_get_tecp()->tecpwr += 6;
@@ -466,7 +466,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 							else if (imgcam_get_tecp()->settemp > imgcam_get_tecp()->tectemp) 
 							{
 								suspect = 0;
-								if ((imgcam_get_tecp()->tectemp - oldT) < (0.05 * tecspeed))
+								if ((imgcam_get_tecp()->tectemp - oldT) < (0.05 * (tecspeed +1)))
 								{
 									imgcam_get_tecp()->tecpwr -= 6;
 									imgcam_get_tecp()->tecpwr = MAX(imgcam_get_tecp()->tecpwr, 0);
