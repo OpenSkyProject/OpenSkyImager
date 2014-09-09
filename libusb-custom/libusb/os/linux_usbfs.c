@@ -142,7 +142,7 @@ static int sysfs_can_relate_devices = -1;
 static int sysfs_has_descriptors = -1;
 
 /* how many times have we initted (and not exited) ? */
-static volatile int init_count = 0;
+static int init_count = 0;
 
 /* Serialize hotplug start/stop */
 usbi_mutex_static_t linux_hotplug_startstop_lock = USBI_MUTEX_INITIALIZER;
@@ -1987,6 +1987,7 @@ static int submit_bulk_transfer(struct usbi_transfer *itransfer)
 
 		if (i > 0 && use_bulk_continuation)
 			urb->flags |= USBFS_URB_BULK_CONTINUATION;
+
 		/* we have already checked that the flag is supported */
 		if (is_out && i == num_urbs - 1 &&
 		    transfer->flags & LIBUSB_TRANSFER_ADD_ZERO_PACKET)
@@ -2678,6 +2679,12 @@ static int op_handle_events(struct libusb_context *ctx,
 			hpriv = _device_handle_priv(handle);
 			if (hpriv->fd == pollfd->fd)
 				break;
+		}
+
+		if (!hpriv || hpriv->fd != pollfd->fd) {
+			usbi_err(ctx, "cannot find handle for fd %d\n",
+				 pollfd->fd);
+			continue;
 		}
 
 		if (pollfd->revents & POLLERR) {

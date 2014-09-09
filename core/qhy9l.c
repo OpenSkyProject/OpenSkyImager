@@ -143,16 +143,8 @@ int  qhy9l_setregisters(qhy_exposure *expar)
 	
 	expar->wtime = expar->time;
 	bin = expar->bin;
-	if(expar->time < SHORTEXP) 
-	{  
-		ShortExp = 1;
-		time = expar->time;
-	}
-	else                   
-	{
-		ShortExp = 0; 
-		time = expar->time - SHORTEXP;
-	}
+	time = expar->time;
+	ShortExp = (time < SHORTEXP);
 	//account for general 1% error on exp time for all QHY camera tested so far
 	time = (int) (time + 1.0 * (time / 100.));
 	

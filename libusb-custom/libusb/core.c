@@ -899,10 +899,14 @@ int API_EXPORTED libusb_get_max_packet_size(libusb_device *dev,
 	}
 
 	ep = find_endpoint(config, endpoint);
-	if (!ep)
-		return LIBUSB_ERROR_NOT_FOUND;
+	if (!ep) {
+		r = LIBUSB_ERROR_NOT_FOUND;
+		goto out;
+	}
 
 	r = ep->wMaxPacketSize;
+
+out:
 	libusb_free_config_descriptor(config);
 	return r;
 }
@@ -950,17 +954,21 @@ int API_EXPORTED libusb_get_max_iso_packet_size(libusb_device *dev,
 	}
 
 	ep = find_endpoint(config, endpoint);
-	if (!ep)
-		return LIBUSB_ERROR_NOT_FOUND;
+	if (!ep) {
+		r = LIBUSB_ERROR_NOT_FOUND;
+		goto out;
+	}
 
 	val = ep->wMaxPacketSize;
 	ep_type = (enum libusb_transfer_type) (ep->bmAttributes & 0x3);
-	libusb_free_config_descriptor(config);
 
 	r = val & 0x07ff;
 	if (ep_type == LIBUSB_TRANSFER_TYPE_ISOCHRONOUS
 			|| ep_type == LIBUSB_TRANSFER_TYPE_INTERRUPT)
 		r *= (1 + ((val >> 11) & 3));
+
+out:
+	libusb_free_config_descriptor(config);
 	return r;
 }
 
@@ -1659,7 +1667,7 @@ int API_EXPORTED libusb_alloc_streams(libusb_device_handle *dev,
  * Since version 1.0.19, \ref LIBUSB_API_VERSION >= 0x01000103
  *
  * \param dev a device handle
- * \param endpoints array of endpoints to allocate streams on
+ * \param endpoints array of endpoints to free streams on
  * \param num_endpoints length of the endpoints array
  * \returns LIBUSB_SUCCESS, or a LIBUSB_ERROR code on failure
  */

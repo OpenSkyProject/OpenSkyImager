@@ -1252,7 +1252,7 @@ int imgcam_shutter(int cmd)
 		case 12:
 			break;
 		case 9:
-		//case 91: We need to understand why is shutter command not working.
+		//case 91: //We need to understand why is shutter command not working.
 			cammsg[0] = '\0';
 			retval = qhy_Shutter(cmd);
 			break;
