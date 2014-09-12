@@ -170,8 +170,10 @@ int urvc_StartExposure(qhy_exposure *expar)
 	int expMode = expar->mode;
 	int ret = CCDExpose (urvcCam, (int) (expTime / 10), (expMode) ? 2 : 1);
 
-	expar->wtime = expar->time;
-	expar->tsize = ((m_camera_details.ccdActiveW / expar->bin) * (m_camera_details.ccdActiveH / expar->bin) * 2);
+	expar->wtime  = expar->time;
+	expar->width  = m_camera_details.ccdActiveW / expar->bin;
+	expar->height = m_camera_details.ccdActiveH / expar->bin;
+	expar->tsize  = (expar->width * expar->height * expar->bytepix);
 	expar->totsize = expar->tsize;
 	
 	coremsg[0] = '\0';
@@ -199,8 +201,7 @@ int urvc_KillExposure()
 //==========================================================================
 int urvc_Readout(qhy_exposure *expar, unsigned char *databuffer)
 {
-	int ret = 0, expComp = 0, bin = expar->bin;
-	int width = 0, height = 0;
+	int ret = 0, expComp = 0;
 	unsigned short *dbuffer = (unsigned short *) databuffer;
 	
 	coremsg[0] = '\0';
@@ -209,12 +210,8 @@ int urvc_Readout(qhy_exposure *expar, unsigned char *databuffer)
 	{
 		usleep(100000);
 	}
-	//width  = Cams[urvcCam->cameraID].horzImage / bin;
-	//height = Cams[urvcCam->cameraID].vertImage / bin;
-	width  = (m_camera_details.ccdActiveW / bin);
-	height = (m_camera_details.ccdActiveH / bin);
 	// tx & ty are relative to full active frame in bin mode
-	ret = CCDReadout(dbuffer, urvcCam, 0, 0, width, height, bin);
+	ret = CCDReadout(dbuffer, urvcCam, 0, 0, expar->width, expar->height, expar->bin);
 	if (ret)
 	{
 		sprintf(coremsg, "CCD readout failed (%d)", ret);
@@ -309,7 +306,7 @@ static int IsCamera(int devId, int *camId, char *camName)
 					}
 					if (camName != NULL)
 					{
-						sprintf(camName, "PSBIG %s", Cams[gvr.cameraID].fullName);
+						sprintf(camName, "PSBIG %s", Cams[eePtr.model].fullName);
 					}
 				}
 				ret = 1;	

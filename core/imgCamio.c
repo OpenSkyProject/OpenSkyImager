@@ -1162,11 +1162,6 @@ int imgcam_settec(double setValue, int setMode)
 		case 2100:
 			// Set val can be temp or pwm (0-255) depending on set mode
 			retval = urvc_SetTemperatureRegulation(setMode, setValue);
-			if (setMode == 1)
-			{
-				// If in auto mode also set auto-freeze mode
-				urvc_SetTemperatureRegulation(5, setValue);
-			}
 			break;
 #endif
 	}
