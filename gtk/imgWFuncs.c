@@ -936,6 +936,13 @@ void cfwmsgdestroy(int response)
 	gtk_dialog_response(GTK_DIALOG(cfwmsg), GTK_RESPONSE_NONE);
 	gtk_widget_destroy(cfwmsg);
 	
+	if (imgcfw_get_mode() == 99)
+	{
+		// In this case the tec thread was set to pause,
+		// we need to re-enable it
+		g_rw_lock_reader_unlock(&thd_teclock);
+	}	
+	
 	//printf("Response = %d\n", response);
 	if (response == 1)
 	{
@@ -1250,7 +1257,10 @@ gpointer thd_capture_run(gpointer thd_data)
 		}
 		// Shoot
 		writeavih = imgcam_get_expar()->edit;
+		// We also need to pause the tec thread
+		g_rw_lock_reader_lock(&thd_teclock);
 		thdshoot = imgcam_shoot();
+		g_rw_lock_reader_unlock(&thd_teclock);
 		expose = thdshoot;
 		readout = 0;
 		thdrun = run;

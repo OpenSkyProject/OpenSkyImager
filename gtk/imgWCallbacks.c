@@ -2861,6 +2861,11 @@ void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
 	
 	//printf("Got value: %d\n", (int)user_data);
 	//imgcfw_set_slot((int)user_data, NULL);
+	if (imgcfw_get_mode() == 99)
+	{
+		// We also need to pause the tec thread when "in camera"
+		g_rw_lock_reader_lock(&thd_teclock);
+	}
 	if (imgcfw_set_slot(GPOINTER_TO_INT(user_data), (gpointer) cfwmsgdestroy))
 	{
 		// Disable all slot buttons
@@ -2876,6 +2881,17 @@ void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
 		gtk_window_set_deletable(GTK_WINDOW(cfwmsg), FALSE);
 		gtk_window_set_keep_above(GTK_WINDOW(cfwmsg), TRUE);
 		gtk_widget_show_all(cfwmsg);
+	}
+	else 
+	{
+		
+		if (imgcfw_get_mode() == 99)
+		{
+			// Unlock here only in event of failure
+			// Otherwise unlock is done in "cfwmsgdestroy" (see imgWfuncs.c)
+			// The tec thread must stay paused while program checks and waits for the cfw to idle
+			g_rw_lock_reader_unlock(&thd_teclock);
+		}
 	}
 	sprintf(imgmsg, "%s", imgcfw_get_msg());
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);

@@ -37,23 +37,23 @@
 #include "qhy5ii.h"
 
 // Not meant to be used elsewhere
-int    qhy5ii_SetSpeed(int i);
-int    qhy5ii_SetUSBTraffic(int i);
-int    qhy5lii_SetHDR(int on);
-int    qhy5lii_SetDepth(int Bpp);
-int    qhy5ii_SetExposureTime(int etime);
-int    qhy5ii_SetGain(int gain);
-void   qhy5lii_SetGainMono(double gain);
-void   qhy5lii_SetGainColor(double gain, double RG, double BG);
-int    qhy5ii_set_imgsize(int width, int height);
-void   qhy5ii_set_Resolution(int width, int height);
-void   qhy5lii_set_1280x960();
-void   qhy5lii_set_1024x768();
-void   qhy5lii_set_800x600();
-void   qhy5lii_set_640x480();
-void   qhy5lii_set_320x240();
-void   qhy5liiInitRegs();
-double qhy5lii_setPLL(unsigned char clk);
+static int    qhy5ii_SetSpeed(int i);
+static int    qhy5ii_SetUSBTraffic(int i);
+static int    qhy5lii_SetHDR(int on);
+static int    qhy5lii_SetDepth(int Bpp);
+static int    qhy5ii_SetExposureTime(int etime);
+static int    qhy5ii_SetGain(int gain);
+static void   qhy5lii_SetGainMono(double gain);
+static void   qhy5lii_SetGainColor(double gain, double RG, double BG);
+static int    qhy5ii_set_imgsize(int width, int height);
+static void   qhy5ii_set_Resolution(int width, int height);
+static void   qhy5lii_set_1280x960();
+static void   qhy5lii_set_1024x768();
+static void   qhy5lii_set_800x600();
+static void   qhy5lii_set_640x480();
+static void   qhy5lii_set_320x240();
+static void   qhy5liiInitRegs();
+static double qhy5lii_setPLL(unsigned char clk);
 
 static int camvariant = 0, camcolor = 0;
 
