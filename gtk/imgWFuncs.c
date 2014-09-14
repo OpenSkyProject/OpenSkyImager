@@ -1376,7 +1376,7 @@ gpointer thd_capture_run(gpointer thd_data)
 						// UI flags update in save mode
 						shots++;
 						filenaming(thdfit);
-						if ((savefmt == 2) || (savefmt == 3))
+						if ((savefmt == 2) || (savefmt == 3) || (savefmt == 4))
 						{
 							// Avi
 							if ((imgcam_get_shpar()->width != imgavi_get_width()) || (imgcam_get_shpar()->height != imgavi_get_height()) || (imgcam_get_shpar()->bytepix != imgavi_get_bytepix()) || (shots > avimaxframes))
@@ -1449,7 +1449,7 @@ gpointer thd_capture_run(gpointer thd_data)
 						}
 						if ((savefmt == 2) || (savefmt == 3))
 						{
-							// Avi
+							// Avi (for savefmt == 4, save it's done in the pixbuf run, save from preview)
 							if (thd_avisav != NULL)
 							{
 								g_thread_join(thd_avisav);
@@ -1584,6 +1584,23 @@ gpointer thd_capture_run(gpointer thd_data)
 		{
 			imgavi_close();
 		}
+	} 
+	else if (savefmt == 4)
+	{
+		//No matter TL mode (and error status), if avi is saved it must be ended properly
+		if (thdreadok == 1)
+		{			
+			if (thd_pixbuf != NULL)
+			{
+				// Checks and wait if the last frame add is completed
+				g_thread_join(thd_pixbuf);
+				thd_pixbuf = NULL;
+			}
+		}
+		if (imgavi_isopen())
+		{
+			imgavi_close();
+		}	
 	}
 
 	if ((thdrun > 0) || (thderror == 1))
@@ -1647,6 +1664,13 @@ gpointer thd_pixbuf_run(gpointer thd_data)
 	}
 	// Update image and graph / preview from the main thread (safer)
 	load_image_from_data();
+	if (savefmt == 4)
+	{
+		g_rw_lock_reader_lock(&thd_caplock);
+		// Save AVI data from preview
+		imgavi_add_from_preview((unsigned char*)gdk_pixbuf_get_pixels(imgpix_get_data()), gdk_pixbuf_get_rowstride(imgpix_get_data()), gdk_pixbuf_get_n_channels(imgpix_get_data()));
+		g_rw_lock_reader_unlock(&thd_caplock);
+	}
 	if ((savejpg == 1) && (thd_data != NULL))
 	{
 		// Save the captures image to jpg

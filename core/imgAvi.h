@@ -36,5 +36,6 @@ int             imgavi_isopen();
 void            imgavi_init();
 int             imgavi_open();
 int             imgavi_add();
+int             imgavi_add_from_preview(unsigned char *imgptr, int rowstride, int bpp);
 int             imgavi_close();
 

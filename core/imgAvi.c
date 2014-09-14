@@ -243,6 +243,43 @@ int imgavi_add()
 	return (retval);	
 }
 
+int imgavi_add_from_preview(unsigned char *imgptr, int rowstride, int bpp)
+{
+	int retval = 0;
+	int i, j;
+	unsigned char *f = framebuffer;
+	unsigned char *p;
+	
+	avimsg[0] = '\0';
+	if (databuffer != NULL)
+	{
+		// Convert Data
+		for (i = 0; i < aheight; i++)
+		{
+			for (j = 0; j < awidth; j++)
+			{
+				p = imgptr + (i * rowstride) + (j * bpp);
+				f = framebuffer + (i * 3 * awidth) + (j * 3);
+				f[2] = p[0]; //R
+				f[1] = p[1]; //G
+				f[0] = p[2]; //B			
+			}
+		}
+		// Proper add into avi
+		if (AVI_write_frame(aviptr, (char *)framebuffer, (awidth * aheight * 3), frameno) == 0)
+		{
+			frameno++;
+			retval = 1;
+		}
+		else
+		{
+			sprintf(avimsg, "%s", AVI_strerror());
+		}
+	}
+	return (retval);	
+}
+
+
 int imgavi_close()
 {
 	int retval = 0;

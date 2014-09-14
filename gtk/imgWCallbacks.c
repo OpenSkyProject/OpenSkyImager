@@ -184,7 +184,7 @@ gboolean tmr_capture_progress_refresh (int *readoutok)
 					/// Message on statusbar about last saved frame (%s)
 					sprintf(imgmsg, C_("main","Image: %s saved"), g_path_get_basename(imgfit_get_name()));
 				}
-				else if (savefmt == 2)
+				else if ((savefmt == 2) || (savefmt == 4))
 				{
 					/// Message on statusbar about last frame add to avi (%s)
 					sprintf(imgmsg, C_("main","Frame: add to %s"), g_path_get_basename(imgavi_get_name()));
@@ -2363,7 +2363,7 @@ void cmb_fmt_changed (GtkComboBox *widget, gpointer user_data)
 	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
 	{
 		sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%d-%[^\n]", &tmp, str);
-		if ((tmp >= 1) && (tmp <= 3))
+		if ((tmp >= 1) && (tmp <= 4))
 		{
 			savefmt = tmp;
 		}

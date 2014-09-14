@@ -144,7 +144,7 @@
 	int scrmaxadu = 255;
 	int scrminadu = 0;
 	char *fltstr = "---|L|R|G|B|Dk|Ff|Bs|IR|UV|CLS|Ha|S2|O3|Hb|CH4|KaK|Kont|:0";
-	char *fmtstr = "1-.fit|2-.avi|3-.fit + .avi|:0";
+	char *fmtstr = "1-.fit|2-.avi|3-.fit + .avi|4-preview2avi|:0";
 	int  savefmt = 1;
 	guint tmrstatusbar = -1;
 	guint tmrstatusfit = -1;
