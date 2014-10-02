@@ -1309,11 +1309,11 @@ gpointer thd_capture_run(gpointer thd_data)
 					thdmode = capture;
 					thdsavejpg = savejpg;
 					g_rw_lock_reader_unlock(&thd_caplock);		
-					if (thdrun == 0)
+					if ((thdrun == THDCAPSTATESTOP) || (thdrun == THDCAPSTATEREADEND))
 					{
 						// User abort
 						g_rw_lock_writer_lock(&thd_caplock);
-						expose = 0;
+						expose = (thdrun == THDCAPSTATEREADEND);
 						g_rw_lock_writer_unlock(&thd_caplock);		
 						break;
 					}

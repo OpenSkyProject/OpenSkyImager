@@ -1057,7 +1057,7 @@ int imgcam_readout_ext(unsigned char *p)
 	return (retval);
 }
 
-int imgcam_abort()
+int imgcam_abort(int mode)
 {
 	int retval = 0;
 	
@@ -1089,12 +1089,16 @@ int imgcam_abort()
 		case 9:
 		case 91:
 		case 10:
-			retval = qhy_ccdAbortCapture();
-			usleep(100000);
-			break;
 		case 11:
 		case 12:
-			retval = qhy_ccdAbortCapture();
+			if (mode == REQKILL)
+			{
+				retval = qhy_ccdAbortCapture();
+			}
+			else
+			{
+				retval = qhy_ccdStopCapture() * -1;
+			}
 			usleep(100000);
 			break;
 		case 1000:

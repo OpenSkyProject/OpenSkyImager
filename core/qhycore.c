@@ -406,8 +406,18 @@ int qhy_ccdStartExposure(int exposuretime)
    	return retcode;
 }
 
+int qhy_ccdStopCapture()
+{
+	// This forces capture stop (download of data collected so far required)
+	unsigned char REG[1];
+
+	REG[0]=0;
+	return qhy_cameraiIO(endp.iwrite, REG, sizeof(REG));
+}
+
 int qhy_ccdAbortCapture()
 {
+	// This really kills the capture (no image download required)
 	unsigned char REG[1];
 
 	REG[0]=0xff;
@@ -416,7 +426,7 @@ int qhy_ccdAbortCapture()
 
 int qhy_getTrigStatus()
 {
-	unsigned char REG[4];
+	unsigned char REG[64];
 	signed short i = 0;
 
 	if (qhy_cameraiIO(endp.iread, REG, sizeof(REG)))
@@ -428,7 +438,7 @@ int qhy_getTrigStatus()
 
 int qhy_getCameraStatus()
 {
-	unsigned char REG[4];
+	unsigned char REG[64];
 	signed short i = 0;
 
 	if (qhy_cameraiIO(endp.iread, REG, sizeof(REG)))
@@ -526,7 +536,7 @@ int qhy_getDC201(double *tC, double *mV)
 
 int qhy_getDC201_i(double *tC, double *mV)
 {
-	unsigned char REG[4] = {0x0, 0x0, 0x0, 0x0};
+	unsigned char REG[64]; // = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 	signed short i = 0;
 	int retval = 0;
 

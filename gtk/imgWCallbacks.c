@@ -950,7 +950,7 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 				}
 				g_rw_lock_writer_lock(&thd_caplock);
 				runerr = 0;
-				run    = 1;
+				run    = THDCAPSTATERUN;
 				g_rw_lock_writer_unlock(&thd_caplock);
 				gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbr_expnum), 0.0);
 				GError* thd_err = NULL;
@@ -962,7 +962,7 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 					gtk_widget_destroy(dialog);			
 					g_error_free(thd_err);
 					thd_err = NULL;
-					run = 0;
+					run = THDCAPSTATESTOP;
 					error = 1;
 					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
 					gtk_button_set_label(GTK_BUTTON(widget), "Start");
@@ -1005,11 +1005,11 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 					{
 						if (kill == 1)
 						{
-							if (imgcam_abort())
+							if ((brun = imgcam_abort(((capture) ? REQSTOP : REQKILL))) != 0)
 							{
 								kill = 0;
 								g_rw_lock_writer_lock(&thd_caplock);
-								run  = 0;
+								run  = (brun > 0) ? THDCAPSTATESTOP : THDCAPSTATEREADEND;
 								g_rw_lock_writer_unlock(&thd_caplock);
 								// Reset style
 								gtk_button_set_label(GTK_BUTTON(widget), C_("main","Start"));
@@ -1018,7 +1018,14 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 								gtk_widget_set_sensitive(spn_shots, 1);
 								gtk_widget_set_sensitive(cmd_load, 1);
 								gtk_widget_set_sensitive(cmd_hold, 0);
-								gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","Running exposure aborted"));
+								if (run == THDCAPSTATESTOP)
+								{
+									gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","Running exposure aborted"));
+								}
+								else
+								{
+									gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","Exposure stopped, saving image"));
+								}
 							}
 							else
 							{
@@ -1033,7 +1040,7 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 							// Reactivate with noop
 							kill  = 1;
 							g_rw_lock_writer_lock(&thd_caplock);
-							run   = 2;
+							run   = THDCAPSTATEWAITEEND;
 							g_rw_lock_writer_unlock(&thd_caplock);
 							error = 1;
 							// Set style
@@ -1047,7 +1054,7 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 					else
 					{
 						g_rw_lock_writer_lock(&thd_caplock);
-						run  = 2;
+						run  = THDCAPSTATEWAITEEND;
 						g_rw_lock_writer_unlock(&thd_caplock);
 						error = 1;
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -1057,7 +1064,7 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 				else
 				{
 					g_rw_lock_writer_lock(&thd_caplock);
-					run  = 2;
+					run  = THDCAPSTATESTOP;
 					g_rw_lock_writer_unlock(&thd_caplock);
 					if (kill == 1)
 					{
@@ -1392,7 +1399,7 @@ gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 				runerr = 1;
 				if ((readout) || (expose))
 				{
-					imgcam_abort();
+					imgcam_abort(REQKILL);
 				}
 				readout = 0;
 				expose = 0;
@@ -1474,7 +1481,7 @@ gboolean numbers_input_keypress (GtkWidget *widget, GdkEventKey *event, int maxc
 	
 	//printf("Keypress: %s %d\n", kname, event->keyval);
 
-	if ((strcmp(kname, "BackSpace") == 0) || (strcmp(kname, "Home") == 0) || (strcmp(kname, "End") == 0) || (strcmp(kname, "Up") == 0) || (strcmp(kname, "Down") == 0) || (strcmp(kname, "Left") == 0) || (strcmp(kname, "Right") == 0) || (strcmp(kname, "Page_Up") == 0) || (strcmp(kname, "Page_Down") == 0))
+	if ((strcmp(kname, "Tab") == 0) || (strcmp(kname, "ISO_Left_Tab") == 0) || (strcmp(kname, "BackSpace") == 0) || (strcmp(kname, "Home") == 0) || (strcmp(kname, "End") == 0) || (strcmp(kname, "Up") == 0) || (strcmp(kname, "Down") == 0) || (strcmp(kname, "Left") == 0) || (strcmp(kname, "Right") == 0) || (strcmp(kname, "Page_Up") == 0) || (strcmp(kname, "Page_Down") == 0))
 		// Movement keys are accepted no matter what
 		return FALSE;	
 
@@ -1537,7 +1544,7 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 						runerr = 1;
 						if ((readout) || (expose))
 						{
-							imgcam_abort();
+							imgcam_abort(REQKILL);
 						}
 						readout = 0;
 						expose = 0;
@@ -1955,31 +1962,15 @@ void cmb_depth_changed (GtkComboBox *widget, gpointer user_data)
 
 void cmd_saveas_click(GtkWidget *widget, gpointer data)
 {
-	char *filename = NULL;
-	char  folder[1024];
-	char  file[1024];
-	char *pch      = NULL;
-	
-	get_filename(&filename, 1, "*.fit");
-
-	if (filename != NULL)
+	gchar *selected_fd = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+	//printf("%s\n", selected_fd);
+	gtk_entry_set_text(GTK_ENTRY(txt_fitfolder), selected_fd);
+	if (gtk_entry_get_text_length(GTK_ENTRY(txt_fitbase)) == 0)
 	{
-		strcpy(folder, strcat(g_path_get_dirname(filename), "/"));
-		strcpy(file, g_path_get_basename(filename));
-		if ((pch = strrchr(file, '.')) != NULL)
-		{
-			if (strcmp(pch, ".fit") == 0)
-			{
-				// Get rid of the .fit
-				file[pch - file] = '\0';
-			}
-		}
-		gtk_entry_set_text(GTK_ENTRY(txt_fitfolder), folder);
-		gtk_entry_set_text(GTK_ENTRY(txt_fitbase), file);
-		sprintf(imgmsg, C_("main","Base folder/file set: %s%s"), folder, file);
-		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+		gtk_entry_set_text(GTK_ENTRY(txt_fitbase), "Image");
 	}
-	g_free(filename);
+	sprintf(imgmsg, C_("main","Base folder/file set: %s/%s"), gtk_entry_get_text(GTK_ENTRY(txt_fitfolder)), gtk_entry_get_text(GTK_ENTRY(txt_fitbase)));
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
 void cmd_audela_click(GtkWidget *widget, gpointer data)
@@ -2271,14 +2262,14 @@ gboolean spn_tlperiod_changed (GtkSpinButton *spinbutton, gpointer user_data)
 void txt_fitfolder_changed(GtkEditable *editable, gpointer user_data)
 {
 	strcpy(fitfolder, gtk_editable_get_chars(editable, 0, -1));
-	sprintf(imgmsg, C_("main","Base folder/file set: %s%s"), fitfolder, fitbase);
+	sprintf(imgmsg, C_("main","Base folder/file set: %s/%s"), fitfolder, fitbase);
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
 void txt_fitbase_changed(GtkEditable *editable, gpointer user_data)
 {
 	strcpy(fitbase, gtk_editable_get_chars(editable, 0, -1));
-	sprintf(imgmsg, C_("main","Base folder/file set: %s%s"), fitfolder, fitbase);
+	sprintf(imgmsg, C_("main","Base folder/file set: %s/%s"), fitfolder, fitbase);
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
@@ -3219,6 +3210,10 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					printf("Fifo: ERROR=Camera is not connected\n");
 				}
+			}
+			else if (strcmp(cmd, "ISIDLE") == 0)
+			{
+				printf("Fifo: %s=%d\n", cmd, (run==0));
 			}
 			else if (strcmp(cmd, "AUDELA") == 0)
 			{

@@ -22,6 +22,9 @@
 
 #include "guider.h"
 
+#define REQKILL 0
+#define REQSTOP 1
+
 typedef struct
 {
 	int gain;     // 0-100 gain value
@@ -97,7 +100,7 @@ int             imgcam_reset();
 int             imgcam_shoot();
 int             imgcam_readout_ext(unsigned char *p);
 int             imgcam_readout();
-int             imgcam_abort();
+int             imgcam_abort(int mode);
 int             imgcam_settec(double setValue, int setMode);
 int             imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled);
 int             imgcam_shutter(int cmd);

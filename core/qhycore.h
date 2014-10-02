@@ -97,6 +97,7 @@ int qhy_cmosAbortCapture(int transfer_size);
 int qhy_cmosDumpImage(int transfer_size);
 
 int qhy_ccdStartExposure(int exposuretime);
+int qhy_ccdStopCapture();
 int qhy_ccdAbortCapture();
 
 int qhy_getPatch (int totalsize, int refsize, int buffercamera);

@@ -593,11 +593,13 @@ void cmb_debayer_build()
 
 void cmd_saveas_build()
 {
-	cmd_saveas = gtk_button_new_with_label(C_("filename","Save As"));
+	//for select a folder
+	cmd_saveas = gtk_file_chooser_button_new(_("select a folder"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	gtk_widget_set_size_request(cmd_saveas, 80, 30);
-	
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(cmd_saveas), g_get_home_dir());
+
 	// Callbacks
-	g_signal_connect(G_OBJECT(cmd_saveas), "clicked", G_CALLBACK(cmd_saveas_click), NULL);
+	g_signal_connect(G_OBJECT(cmd_saveas), "selection_changed", G_CALLBACK(cmd_saveas_click), NULL);
 }
 
 void cmd_audela_build()

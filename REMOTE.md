@@ -49,7 +49,7 @@ confirm a new preview image is available:
 - READMINADU:, Will return MINADU current value
 - TECREAD:0-1, Enable / disable tec read feature
   Will return Fifo: ERROR=No TEC to read, if camera has no TEC or temp read
-- TECAUTO:0-1, nable disable tec feedback mode (using current target temp)
+- TECAUTO:0-1, Enable disable tec feedback mode (using current target temp)
   Will return Fifo: ERROR=No TEC to set, if camera has no TEC
 - SETTEMP:float value, Set target temperature (if tecread & tecauto are not set 
    already, it will do). Will return Fifo: ERROR=No TEC to set, if camera...
@@ -61,6 +61,7 @@ confirm a new preview image is available:
   (if > 1000ms) just issue a second STOP request
 - HOLD:0-1, Enable / disable a pause in the current camera capture run. Will 
   return error if no captureis running or camera is not connected
+- ISIDLE: reports capture thread run status. Return 1 = idle, 0 = run 
 - AUDELA:0-1, Sets "audela" naming convention (save folder = ~/*current date*, 
   base name="image")
 - IRIS:0-1, Add a variant to file numbering to be iris compatible

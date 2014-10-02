@@ -19,6 +19,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+ 
+ // 0 = idle/kill, 1 = run, 2 = wait end capture time, 3 = end now and readout 
+ #define THDCAPSTATESTOP      0
+ #define THDCAPSTATERUN       1
+ #define THDCAPSTATEWAITEEND  2
+ #define THDCAPSTATEREADEND   3
 
 void fithdr_init(fit_rowhdr *hdr, int hdrsz);
 void get_filename(char **filename, int mode, char* flt);
