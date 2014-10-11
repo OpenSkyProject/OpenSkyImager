@@ -59,6 +59,9 @@ int main(int argc, char* argv[])
 	strcpy(imgVrtHnd, imgBasePath);
 	strcat(imgVrtHnd, VRTHND);
 	
+	// Change workdir (imgCamio script, for now)
+	chdir(imgBasePath);
+	
 	#if GLIB_MINOR_VERSION < 32
 	if(!g_thread_supported())
 	{

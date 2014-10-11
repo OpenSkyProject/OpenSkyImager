@@ -24,6 +24,8 @@
 #include "imgWFuncs.h"
 #include "imgWCallbacks.h"
 
+#define SAVEONKILL 1
+
 gboolean tmr_imgstatus_wipe (GtkWidget *widget)
 {
 	const gchar* wdgname;
@@ -912,8 +914,8 @@ void cmd_load_click(GtkWidget *widget, gpointer data)
 void cmd_run_click(GtkWidget *widget, gpointer data)
 {
 	static int error = 0, kill = 0;
-	int brun = 0, bexpose = 0, breadout = 0;
-	
+	int brun = 0, trun =  0, bexpose = 0, breadout = 0;
+
 	if (error == 0)
 	{
 		/*printf("Current exposure paramenters\n");
@@ -934,10 +936,11 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 		{
 			g_rw_lock_reader_lock(&thd_caplock);
 			brun = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)? 1: 0;
+			trun = run;
 			bexpose = expose;
 			breadout = readout;
 			g_rw_lock_reader_unlock(&thd_caplock);
-			if (brun == 1)
+			if ((brun == 1) && (trun == 0))
 			{
 				if (zerofc)
 				{
@@ -995,6 +998,12 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 					}
 				}
 			}
+			else if ((brun == 1) && (trun != 0))
+			{
+				error = 1;
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
+				gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","Wait last capture end"));					
+			}
 			else
 			{
 				if ((breadout) || (bexpose))
@@ -1005,7 +1014,11 @@ void cmd_run_click(GtkWidget *widget, gpointer data)
 					{
 						if (kill == 1)
 						{
+							#if SAVEONKILL
 							if ((brun = imgcam_abort(((capture) ? REQSTOP : REQKILL))) != 0)
+							#else
+							if (imgcam_abort(REQKILL))
+							#endif
 							{
 								kill = 0;
 								g_rw_lock_writer_lock(&thd_caplock);
@@ -3152,7 +3165,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				// This command has no arg
 				if (imgcam_connected())
 				{
-					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)) == FALSE)
+					if ((run==0) && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)) == FALSE))
 					{
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), TRUE);
 						printf("Fifo: %s=ACK\n", cmd);				
@@ -3174,7 +3187,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				// This command has no arg
 				if (imgcam_connected())
 				{
-					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)))
+					if ((run!=0) && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run))))
 					{
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_run), FALSE);
 						printf("Fifo: %s=ACK\n", cmd);				
@@ -3196,7 +3209,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				{
 					sscanf(arg, "%d", &ival);
 					sprintf(arg, "%d", ival);
-					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run)))
+					if ((run!=0) && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_run))))
 					{
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_hold), (ival > 0));
 						printf("Fifo: %s=ACK\n", cmd);				
