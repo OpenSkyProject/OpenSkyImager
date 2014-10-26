@@ -20,7 +20,7 @@ Commands on the input fifo will follow this general rule: "COMMANDNAME:value" or
 
 OpenSkyImager will respond with "Fifo: COMMANDNAME=value" or 
 "Fifo: COMMANDNAME=ACK" where most appropriate.
-If value is not accepted or other unexpected conditions prevent program to 
+If value is not accepted or other unexpected conditions prevents program to 
 fulfill the request, a "Fifo: ERROR=*description*" will be returned.
 
 Both command and responses will be new line terminated, or the pipe must be 
@@ -34,7 +34,7 @@ While running "focus" or "capture" a message will be sent on the stdout to
 confirm a new preview image is available:
 "Fifo: PREVIEW=New preview image available".
 
-*As of version 0.8.14* the following commands are available:
+*As of version 0.9.0* the following commands are available:
 
 - EXPTIME:ms, Exposure time in ms
 - TOTSHOTS:number, Shots to do in a run
@@ -55,12 +55,12 @@ confirm a new preview image is available:
    already, it will do). Will return Fifo: ERROR=No TEC to set, if camera...
 - GETTEMP:, Print current CCD temp on the command line
 - CAPMODE:0-1, Set capture / focus mode 
-- RUN:, This will start camera capture in current CAPMODE will retrun errors
+- RUN:, This will start camera capture in current CAPMODE will return errors
   if camera is not connected or capture already running
 - STOP: This will request stop current camera capture run. To kill last capture
   (if > 1000ms) just issue a second STOP request
 - HOLD:0-1, Enable / disable a pause in the current camera capture run. Will 
-  return error if no captureis running or camera is not connected
+  return error if no capture is running or camera is not connected
 - ISIDLE: reports capture thread run status. Return 1 = idle, 0 = run 
 - AUDELA:0-1, Sets "audela" naming convention (save folder = ~/*current date*, 
   base name="image")
@@ -68,7 +68,7 @@ confirm a new preview image is available:
 - DATEADD:0-1, Add current date to the file naming convention
 - TIMEADD:0-1, Add current time to the naming convention
 - FLTADD:0-1, Add current filter name to the naming convention
-- FLTLIST:0-1, Prints the filter (pipe separated) list to the command line.
+- FLTLIST: Prints the filter (pipe separated) list to the command line.
   FLTSET must use ordinal position (0 based) from this list.
   That is FLTSET:1 will set the second element
 - FLTSET:number, Set active the nth element in the filters combobox
