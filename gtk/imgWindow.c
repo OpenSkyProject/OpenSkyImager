@@ -630,6 +630,35 @@ void cmd_tlenable_build()
 	g_signal_connect(G_OBJECT(cmd_tlenable), "clicked", G_CALLBACK(cmd_tlenable_click), NULL);
 }
 
+void cmd_ditherenable_build()
+{
+	cmd_ditherenable = gtk_toggle_button_new_with_label_color(C_("filename","Dithering"), 80, 30, &clrSelected);
+	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_ditherenable), "clicked", G_CALLBACK(cmd_ditherenable_click), NULL);
+}
+
+void cmb_dither_build()
+{
+	cmb_dither = gtk_combo_box_text_new();
+	gtk_widget_set_size_request(cmb_dither, 80, 30);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_dither), "Lin_guider");
+	gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_dither), 0);
+	gtk_widget_set_sensitive(cmb_dither, 0);
+	
+	g_signal_connect(G_OBJECT(cmb_dither), "changed", G_CALLBACK(cmb_dither_changed),  NULL);
+}
+
+void spn_dither_build()
+{
+	spn_dither = gtk_spin_button_new_with_range (0.0, 100.0, 1.0);
+	gtk_widget_set_size_request(spn_dither, 80, 30);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_dither), 0.0);
+	gtk_widget_set_sensitive(spn_dither, 0);
+
+	//Callbacks
+	g_signal_connect(G_OBJECT(spn_dither), "value-changed", G_CALLBACK(spn_dither_changed),  NULL);
+}
+
 void txt_fitfolder_build()
 {
 	txt_fitfolder = gtk_entry_new();
@@ -1073,20 +1102,27 @@ void box_filename_build()
 	cmb_flt_build();
 	cmd_zerofc_build();
 	cmd_tlenable_build();
+	cmd_ditherenable_build();
+	cmb_dither_build();
+	spn_dither_build();
 	
 	//gtk_table_attach(GTK_TABLE(box_filename), gtk_label_new_with_align("", 0.5, 0.5), 0, 1, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_saveas,  0,  2,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_audela,  2,  4,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),      cmd_iris,  4,  6,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),       cmb_fmt,  6,  8,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename), txt_fitfolder,  0,  8,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),   txt_fitbase,  0,  8,  3,  4, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),   cmd_dateadd,  0,  2,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),   cmd_timeadd,  2,  4,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_fltadd,  4,  6,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),       cmb_flt,  6,  8,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),    cmd_zerofc,  0,  2,  5,  6, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_filename),  cmd_tlenable,  0,  2,  6,  7, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),      cmd_saveas,  0,  2,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),      cmd_audela,  2,  4,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),        cmd_iris,  4,  6,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),         cmb_fmt,  6,  8,  1,  2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),   txt_fitfolder,  0,  8,  2,  3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),     txt_fitbase,  0,  8,  3,  4, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),     cmd_dateadd,  0,  2,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),     cmd_timeadd,  2,  4,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),      cmd_fltadd,  4,  6,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),         cmb_flt,  6,  8,  4,  5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),      cmd_zerofc,  0,  2,  5,  6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),    cmd_tlenable,  0,  2,  6,  7, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),cmd_ditherenable,  0,  2,  7,  8, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),      cmb_dither,  2,  4,  7,  8, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),gtk_label_new_with_align(C_("filename","Capture pause (s)"), 0.5, 0.5, 80, 30),  4,  6,  7,  8, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_filename),      spn_dither,  6,  8,  7,  8, GTK_FILL, GTK_FILL, 0, 0);
 }
 
 void box_timelapse_build()

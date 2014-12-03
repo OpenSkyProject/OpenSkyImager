@@ -152,3 +152,12 @@ already tested (http://sourceforge.net/projects/iastrohub/).
   fixes or improvement will be released. Current release will be using high 
   performance DMA access if kernel and usb chip allow for this.
 
+*Version 0.9.0*
+- release with QHY IC8300 support
+
+*Version 0.9.1*
+- QHYCFW2 new firmware support and new feature used (tty mode), old firmware
+  still compatible
+- New: Dithering mode now available through communication with Lin_guider
+  This feature was kindly submitted by Max Chen, to whom goes my gratitude.
+

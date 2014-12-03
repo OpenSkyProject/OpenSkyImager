@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <time.h>
 #include <math.h>
@@ -37,7 +38,7 @@
 #define VRTHND "handle_o.png"
 #define APPNAM "OpenSkyImager"
 #define APPTIT "OpenSkyImager (c) 2013 JP & C AstroSoftware"
-#define APPVER "0.9.0"
+#define APPVER "0.9.1"
 
 #ifdef DECLARE_MAIN
 	char imgBasePath[PATH_MAX];

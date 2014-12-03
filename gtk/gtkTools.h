@@ -22,6 +22,7 @@
 
 GtkWidget *gtk_label_new_with_align(const gchar *label, gfloat xalign, gfloat yalign, gint width, gint height);
 int        gtk_statusbar_write (GtkStatusbar *statusbar, guint context_id, const gchar *text);
+int        gtk_statusbar_write_from_thread (GtkStatusbar *statusbar, guint context_id, const gchar *text);
 #if GTK_MAJOR_VERSION == 2
 GtkWidget *gtk_toggle_button_new_with_label_color(const gchar *label, gint width, gint height, GdkColor *clrSel);
 void       gtk_color_get_lighter (GdkColor *color);

@@ -25,6 +25,21 @@
 #include "gtkversions.h"
 #include "gtkTools.h"
 
+static char _msg[1024];
+static int  _contextid  = 0;
+static int  _tmrstatusbar = -1;
+static GtkStatusbar *_statbar;
+
+gboolean tmr_statusbar_write (GtkWidget *widget, gpointer statbar)
+{
+	
+	gtk_statusbar_remove_all(_statbar, _contextid);
+	gtk_statusbar_write(_statbar, _contextid, _msg);
+	_tmrstatusbar = -1;
+	
+	return FALSE;
+}
+
 GtkWidget *gtk_label_new_with_align(const gchar *label, gfloat xalign, gfloat yalign, gint width, gint height)
 {
 	GtkWidget *lbl = gtk_label_new(label);
@@ -45,6 +60,19 @@ int gtk_statusbar_write (GtkStatusbar *statusbar, guint context_id, const gchar 
 {
 	gtk_statusbar_remove_all(statusbar, context_id);
 	return gtk_statusbar_push(statusbar, context_id, text);
+}
+
+int gtk_statusbar_write_from_thread (GtkStatusbar *statusbar, guint context_id, const gchar *text)
+{
+	if (_tmrstatusbar != -1)
+	{
+		g_source_remove(_tmrstatusbar);
+	}
+	strcpy(_msg, text);
+	_contextid = context_id;
+	_statbar = statusbar;
+	_tmrstatusbar = g_timeout_add(1, (GSourceFunc) tmr_statusbar_write, _statbar);	
+	return (_tmrstatusbar != -1);
 }
 
 #if GTK_MAJOR_VERSION == 2

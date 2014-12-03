@@ -30,9 +30,15 @@
 #include "imgWFuncs.h"
 #include "imgWCallbacks.h"
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 static int intTrue  = 1;
 static int intFalse = 0;
+
+//for Dither
+#define LG_HDR_SZ 8
 
 void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 {
@@ -1148,7 +1154,7 @@ gpointer thd_capture_run(gpointer thd_data)
 {
 	int thdrun = 1, thderror = 0, thdhold = 0, thdmode = 0, thdshoot = 0;
 	int thdpreshots = shots, thdexp = 0, thdtlmode = 0, thdsavejpg = 0;
-	int thdtimer = 0, thdtimeradd = 0;
+	int thdtimer = 0, thdtimeradd = 0, thdditherok = 0;
 	int avimaxframes = 0, writeavih = 0;
 	int thdreadok = 1;
 	char thdfit[2048];
@@ -1167,6 +1173,7 @@ gpointer thd_capture_run(gpointer thd_data)
 	thdsavejpg = savejpg;
 	thdrun = run;
 	thdtlmode = tlenable + tlcalendar;
+	thdditherok = ditherenable;
 	if ((thdtlmode == 2) && (thdrun == 1))
 	{
 		// In FULL TimeLapse mode only start / end / interval count
@@ -1308,6 +1315,7 @@ gpointer thd_capture_run(gpointer thd_data)
 					thdrun = run;
 					thdmode = capture;
 					thdsavejpg = savejpg;
+					thdditherok = ditherenable;
 					g_rw_lock_reader_unlock(&thd_caplock);		
 					if ((thdrun == THDCAPSTATESTOP) || (thdrun == THDCAPSTATEREADEND))
 					{
@@ -1505,6 +1513,15 @@ gpointer thd_capture_run(gpointer thd_data)
 				thdrun = ((thdrun == 1) && (expnum > (shots - thdpreshots)));
 			}
 			g_rw_lock_reader_unlock(&thd_caplock);
+			//if dither and we are still ok to proceed
+			if ((thdditherok) && (thdrun == 1))
+			{
+				if (dithermode == DITHER_LINGUIDER)
+				{
+					thdditherok = dither_linguider();
+				}
+			}
+			//
 			if ((tecrun == 1) && (imgcam_get_tecp()->istec == 1))
 			{
 				if (thdexp < 500)
@@ -1514,12 +1531,12 @@ gpointer thd_capture_run(gpointer thd_data)
 					g_usleep(400000);
 				}
 			}
-			// If we are in tlmode, even bare tl mode
-			if ((thdtlmode > 0) && (thdrun == 1))
+			// If we are in tlmode, even bare tl mode (or ditherenable)
+			if (((thdditherok) || (thdtlmode > 0)) && (thdrun == 1))
 			{
-				// Wait for the tlperiod seconds in 500ms jumps
+				// Wait for the bigger of tlperiod and ditherpause seconds in 500ms jumps
 				thdtimer = 0;
-				while (thdtimer < (tlperiod * 1000))
+				while ((thdtimer < (tlperiod * (thdtlmode > 0) * 1000)) || (thdtimer < (ditherpause * thdditherok * 1000)))
 				{
 					// We yeld to other threads until 500ms are passed by
 					g_usleep(500000);
@@ -1721,6 +1738,105 @@ gpointer thd_avisav_run(gpointer thd_data)
 		g_rw_lock_writer_unlock(&thd_caplock);
 	}
 	return 0;
+}
+
+int dither_linguider()
+{
+	int iOk = 0;
+	int sockfd, servlen;
+	struct sockaddr_un  serv_addr;
+	char readbuf[16384];
+	char msg[16384];
+
+	msg[0] = '\0';
+	bzero((char *)&serv_addr,sizeof(serv_addr));
+	serv_addr.sun_family = AF_UNIX;
+	strcpy(serv_addr.sun_path, "/tmp/lg_ss");
+	servlen = strlen(serv_addr.sun_path) + sizeof(serv_addr.sun_family);
+	if( (sockfd = socket(AF_UNIX, SOCK_STREAM,0)) >= 0 ) 
+	{
+		if( connect(sockfd, (struct sockaddr *)&serv_addr, servlen) == 0 ) 
+		{
+			//printf("Connected to Lin_guider\n");
+			//gtk_statusbar_write_from_thread(GTK_STATUSBAR(imgstatus), 0, C_("main","Connected to Lin_guider"));
+
+			char out[256];
+			uint16_t *ptr16 = (uint16_t *)out;
+			uint32_t *ptr32 = (uint32_t *)out;
+
+			ptr16[0] = 2;	// SIGNATURE
+			ptr16[1] = 4;	// DITHER CMD
+			ptr32[1] = 0;	// NO DATA
+
+			int n = 0;
+			
+			n = write( sockfd, out, 8 );
+			if( n >= 0 ) 
+			{
+				//printf("Wrote\n");
+				gtk_statusbar_write_from_thread(GTK_STATUSBAR(imgstatus), 0, C_("main","Connected to Lin_guider, command sent"));
+				int pos = 0;
+				int n = 0;
+				int to_read = LG_HDR_SZ;
+				do
+				{
+					n = read( sockfd, readbuf+pos, to_read );
+					pos += n;
+					if( n == to_read )
+					{
+						int data_sz = ((uint32_t*)(readbuf+4))[0];
+						//printf("answer data size = %d\n", data_sz);
+						if( data_sz < 0 || data_sz > 16000 ) 
+						{
+							//printf("ERROR length to read");
+							gtk_statusbar_write_from_thread(GTK_STATUSBAR(imgstatus), 0, C_("main","Error reading data from socket, dither aborted"));
+							break;
+						}
+						to_read += data_sz;
+					}
+				}
+				while( pos < to_read );
+				//printf("The return message was '%.*s'\n", ((uint32_t*)(readbuf+4))[0], readbuf + LG_HDR_SZ);
+				sprintf(msg ,"%.*s", ((uint32_t*)(readbuf+4))[0], readbuf + LG_HDR_SZ);
+				if ((strstr(msg, "Error:") != NULL) || (strstr(msg, "BUSY:") != NULL))
+				{
+					sprintf(msg ,"%s, dither aborted", msg);
+				}
+				else
+				{
+					// Success
+					iOk = 1;
+					if (ditherpause)
+					{
+						sprintf(msg, "Dither done, wait %d seconds", ditherpause);
+					}
+					else
+					{
+						strcpy(msg, "Dither done");
+					}
+				}
+				gtk_statusbar_write_from_thread(GTK_STATUSBAR(imgstatus), 0, msg);
+				//printf("=== dither done ===\n");
+			}
+			else
+			{
+				//printf("ERROR writing to socket");
+				gtk_statusbar_write_from_thread(GTK_STATUSBAR(imgstatus), 0, C_("main","Error writing to socket, dither aborted"));
+			}		
+		}
+		else
+		{
+			//printf("Error Connecting to Lin_guider\n");
+			gtk_statusbar_write_from_thread(GTK_STATUSBAR(imgstatus), 0, C_("main","Error Connecting to Lin_guider, dither aborted"));
+		}
+		close(sockfd);
+	}
+	else
+	{
+		//printf("Error Creating socket\n");
+		gtk_statusbar_write_from_thread(GTK_STATUSBAR(imgstatus), 0, C_("main","Error Creating socket, dither aborted"));
+	}
+	return (iOk);
 }
 
 

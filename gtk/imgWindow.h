@@ -74,6 +74,8 @@
 #define HDR_OBSERVER  24
 #define HDR_OBJECT    25
 
+#define DITHER_LINGUIDER 0
+
 #ifdef DECLARE_WINDOW
 
 	// Decorations
@@ -105,6 +107,7 @@
 	GtkWidget *txt_fitfolder, *txt_fitbase;
 	GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	GtkWidget *cmd_tlenable;
+	GtkWidget *cmd_ditherenable, *cmb_dither, *spn_dither;
 	GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
 	GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmd_cfwrst, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS], *cfwmsg;
 	GtkWidget *hsc_offset, *hsc_gain;
@@ -162,6 +165,7 @@
 	char fitflt[16];
 	double fps = 0.;
 	int fitdateadd = 0, fittimeadd = 0, audelanaming = 0, irisnaming = 0, zerofc = 0, tlenable = 0, tlcalendar = 0;
+	int ditherenable = 0, dithermode = 0, ditherpause = 0;
 	int tlpick = 0, tlperiod = 1;
 	guint tmrtlrefresh = -1;
 	char imgmsg[2560];
@@ -213,6 +217,7 @@
 	extern GtkWidget *txt_fitfolder, *txt_fitbase;
 	extern GtkWidget *cmd_audela, *cmd_iris, *cmd_zerofc;
 	extern GtkWidget *cmd_tlenable;
+	extern GtkWidget *cmd_ditherenable, *cmb_dither, *spn_dither;
 	extern GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
 	extern GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmd_cfwrst, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS], *cfwmsg;
 	extern GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps, *lbl_fbkfwhm;
@@ -269,6 +274,7 @@
 	extern char fitflt[16];
 	extern double fps;
 	extern int fitdateadd, fittimeadd, audelanaming, irisnaming, zerofc, tlenable, tlcalendar;
+	extern int ditherenable, dithermode, ditherpause;
 	extern guint tmrtlrefresh;
 	extern int tlpick, tlperiod;
 	extern char imgmsg[2560];

@@ -82,7 +82,21 @@ gpointer thd_qhy_tty_idle_run(gpointer thd_data)
 	int i = 0;
 	char resp = GPOINTER_TO_INT(thd_data);
 	
-	resp = (resp < 10) ? (resp + 49) : (resp - 10 + 97);
+	if (cfwmode == 1)
+	{ 
+		// Old Model
+		resp = 0x2D;
+	}
+	else if  (cfwmodel == 0)
+	{
+		// Old firmware
+		resp = (resp < 10) ? (resp + 49) : (resp - 10 + 97);
+	}
+	else
+	{
+		// New model, new firmware
+		resp = (resp < 10) ? (resp + 48) : (resp - 10 + 96);
+	}
 	buf[0] = '\0';
 	cfwIdle = 0;
 	// Attempts 3 reads of 5 seconds each, to allow enough time for to the CFW
@@ -101,7 +115,7 @@ gpointer thd_qhy_tty_idle_run(gpointer thd_data)
 	// The post process will work on the GUI, hence to be thread safe must be 
 	// run from the main loop -> timer.
 	cfwIdle = 1;
-	ttyret = ((ttyret == TTY_OK) && ((buf[0] == 0x2D) || (buf[0] == resp)));
+	ttyret = ((ttyret == TTY_OK) && (buf[0] == resp));
 	//printf("ttyret = %d\n", ttyret);
 	cfwpos = (ttyret == 1)? cfwpos : -1;
 	g_timeout_add(1, tmr_run, GINT_TO_POINTER(ttyret));
@@ -412,10 +426,12 @@ int imgcfw_read_all()
 		// QHY-Serial (2)
 		int nbrw = 0;
 		char buf[2];
+		char wbuf[3] = {0x4D, 0x58, 0x50}; //MXP
 		int ttyresult = 0;
 
 		cfwmsg[0] = '\0';
 		cfwmodel[0] = '\0';
+		cfwmodid = 0;
 		if (cfwttyfd > -1)
 		{
 			/* Flush the input buffer */
@@ -425,13 +441,40 @@ int imgcfw_read_all()
 			{
 				if (buf[0] == '1')
 				{
+					// Old Firmware
 					cfwmodid = 0;
 					cfwslotc = 5;
 					strcpy(cfwmodels, C_("camio","5-Positions|6-Positions|7-Positions|8-Positions:0"));
 				}
+				else if(buf[0] == '0')
+				{
+					// New Firmware, reading positions
+					if ((ttyresult = tty_write(cfwttyfd, wbuf, sizeof(wbuf), &nbrw)) == TTY_OK)
+					{
+						// Reading answer
+						if ((ttyresult = tty_read(cfwttyfd, buf, 1, READ_TIME, &nbrw)) == TTY_OK)
+						{
+							cfwmodid = buf[0];
+							// According to manual that should have been (software bug or manual bug?)
+							//cfwslotc = (buf[0] < 58) ? (buf[0] - 48) : (buf[0] < 70) ? (buf[0] - 65 + 10) : -1;
+							cfwslotc = (buf[0] < 58) ? (buf[0] - 48) : (buf[0] < 70) ? (buf[0] - 65 + 10) : -1;
+							if (cfwslotc > 0)
+							{
+								// Read ok
+								sprintf(cfwmodel, C_("cfw","%d-QHY %d slots"), cfwslotc, cfwslotc);
+								sprintf(cfwmodels, C_("cfw","|%d-Positions"), cfwslotc);
+							}	
+							else
+							{
+								// Fail prompo all models?
+								strcpy(cfwmodels, C_("camio","5-Positions|6-Positions|7-Positions|8-Positions:0"));
+							}
+						}
+					}
+				}
 			}
 		}
-		return ((ttyresult == TTY_OK) && (buf[0] == '1'));
+		return ((ttyresult == TTY_OK) && ((buf[0] == '1') || (cfwmodid != 0)));
 	}
 	else if (cfwmode == 99)
 	{

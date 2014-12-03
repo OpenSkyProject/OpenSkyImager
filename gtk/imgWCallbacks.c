@@ -2076,6 +2076,41 @@ void cmd_tlenable_click(GtkWidget *widget, gpointer data)
 	}
 }   	
 
+void cmd_ditherenable_click(GtkWidget *widget, gpointer data)
+{	
+	ditherenable = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE);
+	if (ditherenable)
+	{
+		gtk_widget_set_sensitive(cmb_dither, 1);
+		gtk_widget_set_sensitive(spn_dither, 1);
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","Dithering mode enabled"));
+	}
+	else
+	{
+		gtk_widget_set_sensitive(cmb_dither, 0);
+		gtk_widget_set_sensitive(spn_dither, 0);
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","Dithering mode disabled"));
+	}
+}   	
+
+void cmb_dither_changed(GtkComboBox *widget, gpointer data)
+{
+	g_rw_lock_writer_lock(&thd_caplock);
+	if (gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != -1)
+	{
+		dithermode = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+	}
+	g_rw_lock_writer_unlock(&thd_caplock);
+}
+
+gboolean spn_dither_changed (GtkSpinButton *spinbutton, gpointer user_data)
+{
+	g_rw_lock_writer_lock(&thd_caplock);
+	ditherpause = gtk_spin_button_get_value(spinbutton);
+	g_rw_lock_writer_unlock(&thd_caplock);
+	return FALSE;
+}
+
 void rbt_tlstart_click(GtkWidget *widget, gpointer data)
 {	
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)
