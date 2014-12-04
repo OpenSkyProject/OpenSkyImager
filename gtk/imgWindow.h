@@ -112,6 +112,9 @@
 	GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmd_cfwrst, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS], *cfwmsg;
 	GtkWidget *hsc_offset, *hsc_gain;
 	GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps, *lbl_fbkfwhm;
+	GtkWidget *txt_fovotafl, *txt_fovotadia, *spn_fovbarlow, *cmd_fovcurccd, *txt_fovxpix, *txt_fovypix, *txt_fovxszpix, *txt_fovyszpix, *cmd_fovcalc, *cmd_fovclear, *cmd_fovsetfit, *cmd_fovclrfit;
+	GtkWidget *txt_fovusefl, *txt_fovxamin, *txt_fovyamin, *txt_fovxadeg, *txt_fovyadeg, *txt_fovxasecpx, *txt_fovyasecpx;
+	GtkWidget *txt_fovcrtfr, *txt_fovcrtfl;
 	GdkCursor* watchCursor;
 	GdkPixbuf *tecpixbuf = NULL;
 	GdkPixbuf *icopixbuf = NULL;
@@ -221,6 +224,9 @@
 	extern GtkWidget *rbt_tlstart, *rbt_tlend, *lbl_tlstart, *lbl_tlend, *spn_tlhstart, *spn_tlhend, *spn_tlmstart, *spn_tlmend, *spn_tlsstart, *spn_tlsend, *cmd_tlcalendar, *cal_tldpick, *hsc_tlperiod, *spn_tlperiod;
 	extern GtkWidget *cmb_cfw, *cmb_cfwtty, *cmd_cfwtty, *cmd_cfw, *cmb_cfwcfg, *cmd_cfwrst, *cmb_cfwwhl[CFW_SLOTS], *cmd_cfwwhl[CFW_SLOTS], *cfwmsg;
 	extern GtkWidget *lbl_fbkimg, *lbl_fbktec, *lbl_fbkfps, *lbl_fbkfwhm;
+	extern GtkWidget *txt_fovotafl, *txt_fovotadia, *spn_fovbarlow, *cmd_fovcurccd, *txt_fovxpix, *txt_fovypix, *txt_fovxszpix, *txt_fovyszpix, *cmd_fovcalc, *cmd_fovclear, *cmd_fovsetfit, *cmd_fovclrfit;
+	extern GtkWidget *txt_fovusefl, *txt_fovxamin, *txt_fovyamin, *txt_fovxadeg, *txt_fovyadeg, *txt_fovxasecpx, *txt_fovyasecpx;
+	extern GtkWidget *txt_fovcrtfr, *txt_fovcrtfl;
 	extern GdkCursor* watchCursor;
 	extern GdkPixbuf *tecpixbuf;
 	extern GdkPixbuf *icopixbuf;

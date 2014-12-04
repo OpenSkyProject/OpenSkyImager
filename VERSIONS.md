@@ -161,3 +161,8 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - New: Dithering mode now available through communication with Lin_guider
   This feature was kindly submitted by Max Chen, to whom goes my gratitude.
 
+*Version 0.9.2*
+- New: FOV calculator
+- Known issue: "Current CCD settings" can only bve used after CCD has shoot one
+  frame with the intended configuration
+

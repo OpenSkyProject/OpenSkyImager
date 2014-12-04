@@ -1488,9 +1488,10 @@ void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
-gboolean numbers_input_keypress (GtkWidget *widget, GdkEventKey *event, int maxchars)
+gboolean numbers_input_keypress (GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
 	char *kname = gdk_keyval_name(event->keyval);
+	int  maxchars = GPOINTER_TO_INT(data);
 	
 	//printf("Keypress: %s %d\n", kname, event->keyval);
 
@@ -1516,6 +1517,17 @@ gboolean numbers_input_keypress (GtkWidget *widget, GdkEventKey *event, int maxc
 	if ((sysloc->decimal_point[0] == event->keyval) && (strchr(gtk_entry_get_text(GTK_ENTRY(widget)), sysloc->decimal_point[0]) == NULL))
 		// Only one decimal separator is allowed
 		return FALSE;
+
+	return TRUE;
+}
+
+gboolean disable_input_keypress (GtkWidget *widget, GdkEventKey *event, gpointer data)
+{
+	char *kname = gdk_keyval_name(event->keyval);
+
+	if ((strcmp(kname, "Tab") == 0) || (strcmp(kname, "ISO_Left_Tab") == 0) || (strcmp(kname, "BackSpace") == 0) || (strcmp(kname, "Home") == 0) || (strcmp(kname, "End") == 0) || (strcmp(kname, "Up") == 0) || (strcmp(kname, "Down") == 0) || (strcmp(kname, "Left") == 0) || (strcmp(kname, "Right") == 0) || (strcmp(kname, "Page_Up") == 0) || (strcmp(kname, "Page_Down") == 0))
+		// Movement keys are accepted no matter what
+		return FALSE;	
 
 	return TRUE;
 }
@@ -1611,6 +1623,7 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 					combo_setlist(cmb_depth, "");
 					gtk_widget_set_sensitive(cmb_debayer, 1);
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_debayer), 0);
+					gtk_widget_set_sensitive(cmd_fovcurccd, 0);	
 					//Enable choice list
 					gtk_widget_set_sensitive(cmb_camera, 1);
 					gtk_widget_set_sensitive(cmd_setcamlst, 1);
@@ -1674,6 +1687,7 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 					gtk_widget_set_sensitive(cmb_debayer, 1);
 					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_debayer), 0);
 				}
+				gtk_widget_set_sensitive(cmd_fovcurccd, 1);	
 				// Header values
 				if (imgcam_get_camui()->pszx > 0)
 				{
@@ -2934,6 +2948,270 @@ void cmd_cfwwhl_click (GtkComboBox *widget, gpointer user_data)
 	}
 	sprintf(imgmsg, "%s", imgcfw_get_msg());
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}
+
+void txt_fovotafl_changed(GtkEditable *editable, gpointer user_data)
+{
+	int itmp;
+	double dtmp = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_fovbarlow));
+	
+	sscanf(gtk_editable_get_chars(editable, 0, -1), "%d", &itmp); 
+	itmp = (itmp < 0) ? 0 : (int)round(itmp * dtmp);	
+	//g_rw_lock_writer_lock(&thd_caplock);
+	//fithdr[HDR_FOCALLEN].ivalue = itmp;
+	//fithdr[HDR_FOCALLEN].dtype = 'I';
+	//g_rw_lock_writer_unlock(&thd_caplock);
+	sprintf(imgmsg, C_("calc","OTA focal length: %d"), itmp);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}
+
+void txt_fovotadia_changed(GtkEditable *editable, gpointer user_data)
+{
+	int tmp;
+	
+	sscanf(gtk_editable_get_chars(editable, 0, -1), "%d", &tmp); 
+	tmp = (tmp < 0) ? 0 : tmp;	
+	//g_rw_lock_writer_lock(&thd_caplock);
+	//fithdr[HDR_APTDIA].ivalue = tmp;
+	//fithdr[HDR_APTDIA].dtype = 'I';
+	//g_rw_lock_writer_unlock(&thd_caplock);
+	sprintf(imgmsg, C_("calc","OTA aperture: %d"), tmp);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+}
+
+gboolean spn_fovbarlow_changed(GtkSpinButton *spinbutton, gpointer user_data)
+{
+	double tmp = gtk_spin_button_get_value(spinbutton);
+	
+	sprintf(imgmsg, C_("calc","FL multiply: %04.2Fx"), (float)tmp);
+	//g_rw_lock_writer_lock(&thd_caplock);
+	//fithdr[HDR_FOCALLEN].ivalue = tmp;
+	//g_rw_lock_writer_unlock(&thd_caplock);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	return FALSE;
+}
+
+void cmd_fovcurccd_click(GtkWidget *widget, gpointer data)
+{
+	if ((imgcam_connected()) && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))))
+	{	
+		char stmp[64];
+		
+		sprintf(stmp, "%5.2F", fithdr[HDR_PSZX].dvalue);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovxszpix), stmp);
+		sprintf(stmp, "%5.2F", fithdr[HDR_PSZY].dvalue);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovyszpix), stmp);
+		sprintf(stmp, "%d", imgcam_get_shpar()->width);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovxpix), stmp);
+		sprintf(stmp, "%d", imgcam_get_shpar()->height);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovypix), stmp);
+		
+		gtk_widget_set_sensitive(txt_fovxszpix, 0);	
+		gtk_widget_set_sensitive(txt_fovyszpix, 0);	
+		gtk_widget_set_sensitive(txt_fovxpix, 0);	
+		gtk_widget_set_sensitive(txt_fovypix, 0);	
+	}
+	else
+	{
+		gtk_widget_set_sensitive(txt_fovxszpix, 1);	
+		gtk_widget_set_sensitive(txt_fovyszpix, 1);	
+		gtk_widget_set_sensitive(txt_fovxpix, 1);	
+		gtk_widget_set_sensitive(txt_fovypix, 1);	
+	}
+}
+
+void cmd_fovcalc_click(GtkWidget *widget, gpointer data)
+{
+	int iFL, iDia, icFL, iPx, iPy;
+	double dtmp = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_fovbarlow));
+	double xasecpx, yasecpx, xamin, yamin, xadeg, yadeg;
+	float dPxsz, dPysz;
+	char sTmp[64];
+	
+	// Get basic data
+	sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovotafl)), "%d", &iFL); 
+	iFL = (iFL < 0) ? 0 : (int)round(iFL * dtmp);	
+
+	// Get camera data
+	sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovxszpix)), "%f", &dPxsz); 
+	dPxsz = (dPxsz < 0) ? 0 : dPxsz;	
+	sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovyszpix)), "%f", &dPysz); 
+	dPysz = (dPysz < 0) ? 0 : dPysz;	
+	sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovxpix)), "%d", &iPx); 
+	iPx = (iPx < 0) ? 0 : iPx;	
+	sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovypix)), "%d", &iPy); 
+	iPy = (iPy < 0) ? 0 : iPy;	
+
+	// If both basic and camra are present
+	if ((iFL > 0) && (iPx > 0)  && (iPy > 0) && (dPxsz > 0) && (dPysz > 0))
+	{
+		sprintf(sTmp, "%d", iFL);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovusefl), sTmp);
+		
+		xasecpx = (dPxsz / (double)iFL) * 206.3;
+		xamin   = xasecpx * (double)iPx / 60.0;
+		xadeg = xamin / 60.0;
+		yasecpx = (dPysz / (double)iFL) * 206.3;
+		yamin   = yasecpx * (double)iPy / 60.0;
+		yadeg = yamin / 60.0;
+		
+		sprintf(sTmp, "%6.2F", xamin);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovxamin), sTmp);
+		sprintf(sTmp, "%6.2F", yamin);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovyamin), sTmp);
+		sprintf(sTmp, "%6.3F", xadeg);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovxadeg), sTmp);
+		sprintf(sTmp, "%6.3F", yadeg);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovyadeg), sTmp);
+		sprintf(sTmp, "%5.2F", xasecpx);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovxasecpx), sTmp);
+		sprintf(sTmp, "%5.2F", yasecpx);
+		gtk_entry_set_text(GTK_ENTRY(txt_fovyasecpx), sTmp);
+
+		// Get ancillary diameter
+		sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovotadia)), "%d", &iDia); 
+		iDia = (iDia < 0) ? 0 : iDia;	
+
+		// Set sky sampling on the fit header only if the current CCD is used
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cmd_fovcurccd)))
+		{
+			g_rw_lock_writer_lock(&thd_caplock);
+			fithdr[HDR_FOCALLEN].ivalue = iFL;
+			fithdr[HDR_FOCALLEN].dtype = 'I';
+			if (iDia > 0)
+			{
+				fithdr[HDR_APTDIA].ivalue = iDia;
+				fithdr[HDR_APTDIA].dtype = 'I';
+			}
+			else
+			{
+				fithdr[HDR_APTDIA].dtype = '\0';
+			}
+			fithdr[HDR_IPANGX].dvalue = xasecpx;
+			fithdr[HDR_IPANGX].dtype = 'F';
+			fithdr[HDR_IPANGY].dvalue = yasecpx;
+			fithdr[HDR_IPANGY].dtype = 'F';
+			g_rw_lock_writer_unlock(&thd_caplock);
+		}
+		
+		if (iDia > 0)
+		{
+			icFL = (int)round(((iDia * MAX(dPxsz, dPysz) * 1000.0)/(510.0 * 1.22)) * 3.0); //510 = Green, 650 = Red, 475 = Blue
+			sprintf(sTmp, "%d", icFL);
+			gtk_entry_set_text(GTK_ENTRY(txt_fovcrtfl), sTmp);
+			sprintf(sTmp, "%4.1F", (icFL / (iDia * 1.0)));
+			gtk_entry_set_text(GTK_ENTRY(txt_fovcrtfr), sTmp);
+		}
+		else
+		{
+			gtk_entry_set_text(GTK_ENTRY(txt_fovcrtfl), "");
+			gtk_entry_set_text(GTK_ENTRY(txt_fovcrtfr), "");
+		}
+	}
+	else
+	{
+		gtk_entry_set_text(GTK_ENTRY(txt_fovusefl), "");
+		gtk_entry_set_text(GTK_ENTRY(txt_fovxamin), "");
+		gtk_entry_set_text(GTK_ENTRY(txt_fovyamin), "");
+		gtk_entry_set_text(GTK_ENTRY(txt_fovxadeg), "");
+		gtk_entry_set_text(GTK_ENTRY(txt_fovyadeg), "");
+		gtk_entry_set_text(GTK_ENTRY(txt_fovxasecpx), "");
+		gtk_entry_set_text(GTK_ENTRY(txt_fovyasecpx), "");
+		gtk_entry_set_text(GTK_ENTRY(txt_fovcrtfl), "");
+		gtk_entry_set_text(GTK_ENTRY(txt_fovcrtfr), "");
+	}	
+}
+
+void cmd_fovclear_click(GtkWidget *widget, gpointer data)
+{
+	gtk_entry_set_text(GTK_ENTRY(txt_fovusefl), "");
+	gtk_entry_set_text(GTK_ENTRY(txt_fovxamin), "");
+	gtk_entry_set_text(GTK_ENTRY(txt_fovyamin), "");
+	gtk_entry_set_text(GTK_ENTRY(txt_fovxadeg), "");
+	gtk_entry_set_text(GTK_ENTRY(txt_fovyadeg), "");
+	gtk_entry_set_text(GTK_ENTRY(txt_fovxasecpx), "");
+	gtk_entry_set_text(GTK_ENTRY(txt_fovyasecpx), "");
+	gtk_entry_set_text(GTK_ENTRY(txt_fovcrtfl), "");
+	gtk_entry_set_text(GTK_ENTRY(txt_fovcrtfr), "");
+}
+
+void cmd_fovsetfit_click(GtkWidget *widget, gpointer data)
+{
+	int iFL, iDia, iSet = 0;
+	double dtmp = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_fovbarlow));
+	float xasecpx, yasecpx;
+
+	sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovotafl)), "%d", &iFL); 
+	iFL = (iFL < 0) ? 0 : (int)round(iFL * dtmp);	
+	sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovotadia)), "%d", &iDia); 
+	iDia = (iDia < 0) ? 0 : iDia;	
+	sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovxasecpx)), "%f", &xasecpx); 
+	xasecpx = (xasecpx < 0) ? 0 : xasecpx;	
+	sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovyasecpx)), "%f", &yasecpx); 
+	yasecpx = (yasecpx < 0) ? 0 : yasecpx;	
+
+	g_rw_lock_writer_lock(&thd_caplock);
+	if (iFL > 0)
+	{
+		fithdr[HDR_FOCALLEN].ivalue = iFL;
+		fithdr[HDR_FOCALLEN].dtype = 'I';
+		iSet = 1;
+	}
+	else
+	{
+		fithdr[HDR_FOCALLEN].dtype = '\0';
+	
+	}
+	if (iDia > 0)
+	{
+		fithdr[HDR_APTDIA].ivalue = iDia;
+		fithdr[HDR_APTDIA].dtype = 'I';
+		iSet = 1;
+	}
+	else
+	{
+		fithdr[HDR_APTDIA].dtype = '\0';
+	}
+	if (xasecpx > 0)
+	{
+		fithdr[HDR_IPANGX].dvalue = xasecpx;
+		fithdr[HDR_IPANGX].dtype = 'F';
+		iSet = 1;
+	}
+	else
+	{
+		fithdr[HDR_IPANGX].dtype = '\0';
+	}
+	if (yasecpx > 0)
+	{
+		fithdr[HDR_IPANGY].dvalue = yasecpx;
+		fithdr[HDR_IPANGY].dtype = 'F';	
+		iSet = 1;
+	}
+	else
+	{
+		fithdr[HDR_IPANGY].dtype = '\0';
+	}
+	g_rw_lock_writer_unlock(&thd_caplock);
+	if (iSet)
+	{
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("calc","Fit header set with calculated data"));
+	}
+	else
+	{
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("calc","Nothing to set in fit header!"));
+	}
+}
+
+void cmd_fovclrfit_click(GtkWidget *widget, gpointer data)
+{
+	g_rw_lock_writer_lock(&thd_caplock);
+	fithdr[HDR_FOCALLEN].dtype = '\0';
+	fithdr[HDR_APTDIA].dtype = '\0';
+	fithdr[HDR_IPANGX].dtype = '\0';
+	fithdr[HDR_IPANGY].dtype = '\0';
+	g_rw_lock_writer_unlock(&thd_caplock);
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("calc","Fit header cleared from calculated data"));
 }
 
 gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)

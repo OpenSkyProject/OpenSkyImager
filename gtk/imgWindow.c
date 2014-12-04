@@ -147,7 +147,7 @@ void cmb_exptime_build()
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmb_exptime), tmp);
 	
 	g_signal_connect(G_OBJECT(cmb_exptime), "changed", G_CALLBACK(cmb_exptime_changed),  NULL);
-	g_signal_connect(G_OBJECT(gtk_bin_get_child (GTK_BIN(cmb_exptime))), "key-press-event", G_CALLBACK(numbers_input_keypress), (gpointer)5);	
+	g_signal_connect(G_OBJECT(gtk_bin_get_child (GTK_BIN(cmb_exptime))), "key-press-event", G_CALLBACK(numbers_input_keypress), GINT_TO_POINTER(5));	
 	crows = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gtk_combo_box_get_model(GTK_COMBO_BOX(cmb_exptime))), NULL);
 	if (crows > 0)
 	{
@@ -757,7 +757,7 @@ void spn_tectgt_build()
 	
 	//Callbacks
 	g_signal_connect(G_OBJECT(spn_tectgt), "value-changed", G_CALLBACK(spn_tectgt_changed),  NULL);
-	g_signal_connect(G_OBJECT(spn_tectgt), "key-press-event", G_CALLBACK(numbers_input_keypress), (gpointer)5);	
+	g_signal_connect(G_OBJECT(spn_tectgt), "key-press-event", G_CALLBACK(numbers_input_keypress), GINT_TO_POINTER(5));	
 }
 
 void spn_tecspd_build()
@@ -770,7 +770,7 @@ void spn_tecspd_build()
 	
 	//Callbacks
 	g_signal_connect(G_OBJECT(spn_tecspd), "value-changed", G_CALLBACK(spn_tecspd_changed),  NULL);
-	g_signal_connect(G_OBJECT(spn_tecspd), "key-press-event", G_CALLBACK(numbers_input_keypress), (gpointer)2);	
+	g_signal_connect(G_OBJECT(spn_tecspd), "key-press-event", G_CALLBACK(numbers_input_keypress), GINT_TO_POINTER(2));	
 }
 
 void vsc_tectemp_build()
@@ -973,6 +973,160 @@ void cmd_cfwwhl_build()
 	
 		g_signal_connect(G_OBJECT(cmd_cfwwhl[i]), "clicked", G_CALLBACK(cmd_cfwwhl_click),   GINT_TO_POINTER(i));	
 	}
+}
+
+void txt_fovotafl_build()
+{
+	txt_fovotafl = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovotafl, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovotafl), 5);
+	//Callbacks
+	g_signal_connect(G_OBJECT(txt_fovotafl), "changed", G_CALLBACK(txt_fovotafl_changed),  NULL);
+	g_signal_connect(G_OBJECT(txt_fovotafl), "key-press-event", G_CALLBACK(numbers_input_keypress), GINT_TO_POINTER(5));	
+}
+
+void txt_fovotadia_build()
+{
+	txt_fovotadia = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovotadia, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovotadia), 4);
+	//Callbacks
+	g_signal_connect(G_OBJECT(txt_fovotadia), "changed", G_CALLBACK(txt_fovotadia_changed),  NULL);
+	g_signal_connect(G_OBJECT(txt_fovotadia), "key-press-event", G_CALLBACK(numbers_input_keypress), GINT_TO_POINTER(4));	
+}
+
+void spn_fovbarlow_build()
+{
+	spn_fovbarlow = gtk_spin_button_new_with_range(+0.01, +1.00, 0.1);
+	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(spn_fovbarlow), 2);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_fovbarlow), +1.0);
+	gtk_widget_set_size_request(spn_fovbarlow, 80, 25);	
+	
+	//Callbacks
+	g_signal_connect(G_OBJECT(spn_fovbarlow), "value-changed", G_CALLBACK(spn_fovbarlow_changed),  NULL);
+	g_signal_connect(G_OBJECT(spn_fovbarlow), "key-press-event", G_CALLBACK(numbers_input_keypress), GINT_TO_POINTER(4));	
+}
+
+void cmd_fovcurccd_build()
+{
+	cmd_fovcurccd = gtk_toggle_button_new_with_label_color(C_("calc","Use current CCD settings"), 160, 30, &clrSelected);
+	gtk_widget_set_sensitive(cmd_fovcurccd, 0);	
+	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_fovcurccd), "clicked", G_CALLBACK(cmd_fovcurccd_click), NULL);
+}
+
+void txt_fovxpix_build()
+{
+	txt_fovxpix = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovxpix, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovxpix), 5);
+	//Callbacks
+	//g_signal_connect(G_OBJECT(txt_fovxpix), "changed", G_CALLBACK(txt_fovxpix_changed),  NULL);
+	g_signal_connect(G_OBJECT(txt_fovxpix), "key-press-event", G_CALLBACK(numbers_input_keypress), GINT_TO_POINTER(5));	
+}
+
+void txt_fovypix_build()
+{
+	txt_fovypix = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovypix, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovypix), 5);
+	//Callbacks
+	//g_signal_connect(G_OBJECT(txt_fovypix), "changed", G_CALLBACK(txt_fovypix_changed),  NULL);
+	g_signal_connect(G_OBJECT(txt_fovypix), "key-press-event", G_CALLBACK(numbers_input_keypress), GINT_TO_POINTER(5));	
+}
+
+void txt_fovxszpix_build()
+{
+	txt_fovxszpix = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovxszpix, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovxszpix), 5);
+	//Callbacks
+	//g_signal_connect(G_OBJECT(txt_fovxszpix), "changed", G_CALLBACK(txt_fovxszpix_changed),  NULL);
+	g_signal_connect(G_OBJECT(txt_fovxszpix), "key-press-event", G_CALLBACK(numbers_input_keypress), GINT_TO_POINTER(5));	
+}
+
+void txt_fovyszpix_build()
+{
+	txt_fovyszpix = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovyszpix, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovyszpix), 5);
+	//Callbacks
+	//g_signal_connect(G_OBJECT(txt_fovyszpix), "changed", G_CALLBACK(txt_fovyszpix_changed),  NULL);
+	g_signal_connect(G_OBJECT(txt_fovyszpix), "key-press-event", G_CALLBACK(numbers_input_keypress), GINT_TO_POINTER(5));	
+}
+
+void cmd_fovcalc_build()
+{
+	cmd_fovcalc = gtk_button_new_with_label(C_("calc","Calculate"));
+	gtk_widget_set_size_request(cmd_fovcalc, 80, 30);
+	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_fovcalc), "clicked", G_CALLBACK(cmd_fovcalc_click), NULL);
+}
+
+void cmd_fovclear_build()
+{
+	cmd_fovclear = gtk_button_new_with_label(C_("calc","Clear"));
+	gtk_widget_set_size_request(cmd_fovclear, 80, 30);
+	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_fovclear), "clicked", G_CALLBACK(cmd_fovclear_click), NULL);
+}
+
+void cmd_fovsetfit_build()
+{
+	cmd_fovsetfit = gtk_button_new_with_label(C_("calc","Set Header"));
+	gtk_widget_set_size_request(cmd_fovsetfit, 80, 30);
+	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_fovsetfit), "clicked", G_CALLBACK(cmd_fovsetfit_click), NULL);
+}
+
+void cmd_fovclrfit_build()
+{
+	cmd_fovclrfit = gtk_button_new_with_label(C_("calc","Clear Header"));
+	gtk_widget_set_size_request(cmd_fovclrfit, 80, 30);
+	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_fovclrfit), "clicked", G_CALLBACK(cmd_fovclrfit_click), NULL);
+}
+
+void txt_fov_results_build()
+{
+	txt_fovusefl = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovusefl, 80, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovusefl), 7);
+	txt_fovxamin = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovxamin, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovxamin), 5);
+	txt_fovyamin = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovyamin, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovyamin), 5);
+	txt_fovxadeg = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovxadeg, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovxadeg), 5);
+	txt_fovyadeg = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovyadeg, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovyadeg), 5);
+	txt_fovxasecpx = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovxasecpx, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovxasecpx), 5);
+	txt_fovyasecpx = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovyasecpx, 60, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovyasecpx), 5);
+	txt_fovcrtfr = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovcrtfr, 40, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovcrtfr), 3);
+	txt_fovcrtfl = gtk_entry_new();
+	gtk_widget_set_size_request(txt_fovcrtfl, 80, 30);
+	gtk_entry_set_width_chars(GTK_ENTRY(txt_fovcrtfl), 7);
+
+	//Callbacks
+	g_signal_connect(G_OBJECT(txt_fovusefl), "key-press-event", G_CALLBACK(disable_input_keypress), NULL);	
+	g_signal_connect(G_OBJECT(txt_fovxamin), "key-press-event", G_CALLBACK(disable_input_keypress), NULL);	
+	g_signal_connect(G_OBJECT(txt_fovyamin), "key-press-event", G_CALLBACK(disable_input_keypress), NULL);	
+	g_signal_connect(G_OBJECT(txt_fovxadeg), "key-press-event", G_CALLBACK(disable_input_keypress), NULL);	
+	g_signal_connect(G_OBJECT(txt_fovyadeg), "key-press-event", G_CALLBACK(disable_input_keypress), NULL);	
+	g_signal_connect(G_OBJECT(txt_fovxasecpx), "key-press-event", G_CALLBACK(disable_input_keypress), NULL);	
+	g_signal_connect(G_OBJECT(txt_fovyasecpx), "key-press-event", G_CALLBACK(disable_input_keypress), NULL);	
+	g_signal_connect(G_OBJECT(txt_fovcrtfr), "key-press-event", G_CALLBACK(disable_input_keypress), NULL);	
+	g_signal_connect(G_OBJECT(txt_fovcrtfl), "key-press-event", G_CALLBACK(disable_input_keypress), NULL);	
 }
 
 void box_ccd_build()
@@ -1277,6 +1431,106 @@ void box_cfw_build()
 	gtk_table_attach(GTK_TABLE(box_cfw), gtk_hseparator_new(),  0, 12, 14, 15, GTK_FILL, GTK_FILL, 0, 0);	
 }
 
+void box_calc_build()
+{
+	box_calc = gtk_table_new(15, 13, FALSE);
+	gtk_table_set_row_spacings(GTK_TABLE(box_calc), 4);
+	gtk_table_set_col_spacings(GTK_TABLE(box_calc), 4);
+	gtk_container_set_border_width(GTK_CONTAINER(box_calc), 4);
+
+	txt_fovotafl_build();
+	txt_fovotadia_build();
+	spn_fovbarlow_build();
+	cmd_fovcurccd_build();
+	txt_fovxpix_build();
+	txt_fovypix_build();
+	txt_fovxszpix_build();
+	txt_fovyszpix_build();
+	cmd_fovcalc_build();
+	cmd_fovclear_build();
+	cmd_fovsetfit_build();
+	cmd_fovclrfit_build();
+	
+	txt_fov_results_build();
+		
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","Data"), 0.5, 0.5, 60, 30), 0, 6, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_vseparator_new(), 6, 7, 0, 15, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","Results"), 0.5, 0.5, 60, 30), 7, 13, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+	
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","Ota FL:"), 0.0, 0.5, 80, 30), 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovotafl, 1, 3, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","   aperture:"), 1.0, 0.5, 80, 30), 3, 4, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovotadia, 4, 6, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","FL multiply:"), 0.0, 0.5, 80, 30), 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), spn_fovbarlow, 1, 4, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), cmd_fovcurccd, 0, 6, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","Pixels:"), 0.0, 0.5, 80, 30), 0, 1, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovxpix, 1, 3, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc"," X "), 0.5, 0.5, 20, 30), 3, 4, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovypix, 4, 6, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","Pixel size:"), 0.0, 0.5, 80, 30), 0, 1, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovxszpix, 1, 3, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc"," X "), 0.5, 0.5, 20, 30), 3, 4, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovyszpix, 4, 6, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_hseparator_new(), 0, 6, 6, 7, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), cmd_fovcalc, 0, 3, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), cmd_fovclear, 3, 6, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), cmd_fovsetfit, 0, 3, 8, 9, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), cmd_fovclrfit, 3, 6, 8, 9, GTK_FILL, GTK_FILL, 0, 0);
+
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","Focal length used:"), 0.0, 0.5, 120, 30), 7, 10, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovusefl, 10, 13, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","FOV arcmin:"), 0.0, 0.5, 100, 30), 7, 9, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovxamin, 9, 10, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc"," X "), 0.5, 0.5, 20, 30), 10, 11, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovyamin, 11, 13, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","FOV arcdeg:"), 0.0, 0.5, 100, 30), 7, 9, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovxadeg, 9, 10, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc"," X "), 0.5, 0.5, 20, 30), 10, 11, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovyadeg, 11, 13, 3, 4, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","Sky sampling"), 0.5, 0.5, 100, 30), 7, 13, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","arcsec/px:"), 0.0, 0.5, 100, 30), 7, 9, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovxasecpx, 9, 10, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc"," X "), 0.5, 0.5, 20, 30), 10, 11, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovyasecpx, 11, 13, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","Critical sampling"), 0.5, 0.5, 100, 30), 7, 13, 6, 7, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","F ratio:"), 0.0, 0.5, 50, 30), 7, 8, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovcrtfr,  8, 9, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), gtk_label_new_with_align(C_("calc","FL:"), 1.0, 0.5, 30, 30), 9, 10, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_calc), txt_fovcrtfl, 10, 13, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
+
+/*
+	gtk_table_attach(GTK_TABLE(box_ccd), gtk_label_new_with_align(C_("settings","Gain"), 0.0, 0.5, 90, 30), 0, 1, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_ccd), hsc_gain, 1, 6, 4, 5, GTK_FILL, GTK_FILL, 0, 0);
+
+	gtk_table_attach(GTK_TABLE(box_ccd), gtk_label_new_with_align(C_("settings","Binning Mode"), 0.0, 0.5, 70, 30), 0, 3, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_ccd), cmb_bin, 3, 6, 5, 6, GTK_FILL, GTK_FILL, 0, 0);
+
+	gtk_table_attach(GTK_TABLE(box_ccd), gtk_label_new_with_align(C_("settings","Capture Size"), 0.0, 0.5, 70, 30), 0, 3, 6, 7, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_ccd), cmb_csize, 3, 6, 6, 7, GTK_FILL, GTK_FILL, 0, 0);
+		
+	gtk_table_attach(GTK_TABLE(box_ccd), gtk_label_new_with_align(C_("settings","Download Speed"), 0.0, 0.5, 70, 30), 0, 3, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_ccd), cmb_dspeed, 3, 6, 7, 8, GTK_FILL, GTK_FILL, 0, 0);
+
+	gtk_table_attach(GTK_TABLE(box_ccd), lbl_mode, 0, 3, 8, 9, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_ccd), cmb_mode, 3, 6, 8, 9, GTK_FILL, GTK_FILL, 0, 0);
+
+	gtk_table_attach(GTK_TABLE(box_ccd), gtk_label_new_with_align(C_("settings","Amp Control"), 0.0, 0.5, 70, 30), 0, 3, 9, 10, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_ccd), cmb_amp, 3, 6, 9, 10, GTK_FILL, GTK_FILL, 0, 0);
+
+	gtk_table_attach(GTK_TABLE(box_ccd), gtk_label_new_with_align(C_("settings","Noise reduction"), 0.0, 0.5, 70, 30), 0, 3, 10, 11, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_ccd), cmb_denoise, 3, 6, 10, 11, GTK_FILL, GTK_FILL, 0, 0);
+
+	gtk_table_attach(GTK_TABLE(box_ccd), gtk_label_new_with_align(C_("settings","Image depth"), 0.0, 0.5, 70, 30), 0, 3, 11, 12, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_ccd), cmb_depth, 3, 6, 11, 12, GTK_FILL, GTK_FILL, 0, 0);
+
+	// Color mode
+	gtk_table_attach(GTK_TABLE(box_ccd), gtk_hseparator_new(), 0, 6, 12, 13, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_ccd), gtk_label_new_with_align(C_("settings","Color mode"), 0.0, 0.5, 70, 30), 0, 3, 13, 14, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_ccd), cmb_debayer, 3, 6, 13, 14, GTK_FILL, GTK_FILL, 0, 0);
+	*/
+}
+
 void tab_settings_build()
 {
 	// Notebook (tab) for settings...
@@ -1291,7 +1545,7 @@ void tab_settings_build()
 	box_scripting = gtk_vbox_new(FALSE, 4);
 	box_header    = gtk_vbox_new(FALSE, 4);
 	box_cfw_build();
-	box_calc      = gtk_vbox_new(FALSE, 4);
+	box_calc_build();
 	
 	// Pack into tab_settings
 	gtk_notebook_append_page(GTK_NOTEBOOK(tab_settings), box_ccd, gtk_label_new(C_("main","Camera")));
