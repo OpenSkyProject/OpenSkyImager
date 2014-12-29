@@ -130,7 +130,7 @@ int begin_realtime ()
     {
       perror ("iopl(3)");
       fprintf (stderr, "this program must be run suid root (see chmod(1))\n");
-      fprintf (stderr, "or set capailites on the binary:\n");
+      fprintf (stderr, "or set capabilites on the binary:\n");
       fprintf (stderr, "sudo setcap 'cap_ipc_lock+ep cap_sys_rawio+ep cap_sys_nice+ep' <binary-name>\n");
       //exit (1);
       return -1;

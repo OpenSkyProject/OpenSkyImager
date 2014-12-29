@@ -38,6 +38,9 @@ void cmd_about_click(GtkWidget *widget, gpointer data);
 gboolean spn_expnum_changed(GtkSpinButton *spinbutton, gpointer user_data);
 gboolean spn_shots_changed(GtkSpinButton *spinbutton, gpointer user_data);
 void cmd_capture_click(GtkWidget *widget, gpointer data);
+void cmd_exptime_click(GtkWidget *widget, gpointer data);
+gboolean spn_exptime_changed (GtkSpinButton *spinbutton, gpointer user_data);
+//void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data);
 void cmd_load_click(GtkWidget *widget, gpointer data);
 void cmd_run_click(GtkWidget *widget, gpointer data);
 void cmd_hold_click(GtkWidget *widget, gpointer data);
@@ -53,7 +56,6 @@ gboolean image_button_press (GtkWidget *widget, GdkEventButton *event, gpointer 
 void mainw_destroy( GtkWidget *widget, gpointer   data );
 gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data);
 void cmb_debayer_changed (GtkComboBox *widget, gpointer user_data);
-void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data);
 gboolean numbers_input_keypress (GtkWidget *widget, GdkEventKey *event, gpointer data);
 gboolean disable_input_keypress (GtkWidget *widget, GdkEventKey *event, gpointer data);
 void cmb_camera_changed (GtkComboBox *widget, gpointer user_data);

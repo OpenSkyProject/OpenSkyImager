@@ -78,7 +78,13 @@ confirm a new preview image is available:
 - BASENAME:*file base name* Sets a custom base name for captured frames
 - OUTMODE:number, Sets the output mode (1:Fit, 2:Avi 3:Avi+Fit)
   Will eventually return Fifo: ERROR=Output mode out of range (1-3)
-- CAMLIST:, Prints the camera (pipe separated) list to the command line.
+- DITHERENABLE:0-1, Enable dithering mode
+- DITHERMODELIST: Prints the dithering mode (pipe separated) list.
+- DITHERMODESET:number, Set active the nth element in the dithering modes 
+  combobox.
+- DITHERPAUSE: number, Set the pause in between frames to allow for the guide
+  program to perform the command and the mount to settle afterwards.
+- CAMLIST: Prints the camera (pipe separated) list to the command line.
   CAMSET must use ordinal position (0 based) from this list
   That is CAMSET:1 will set the second element
 - CAMSET:number, Set active the nth element in the camera combobox.

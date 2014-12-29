@@ -166,3 +166,13 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - Known issue: "Current CCD settings" can only bve used after CCD has shoot one
   frame with the intended configuration
 
+*Version 0.9.3*
+- New: remote commands for ditherig, see REMOTE.md
+- New: rfcomm configured tty ports for bluetooth devices are now listed.
+  Since testing connection it's a lengthy process these tty ports are listed
+  but *not* tested.
+- Exposure time setting now based on a spin box and a button (ms/s)
+- Several small aestetical fixes
+- Update: IC8300 firmware (20141003) 
+- Fix: Math overflow occurring on saturated pixels when using URVC2 driver
+

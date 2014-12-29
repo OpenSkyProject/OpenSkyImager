@@ -23,7 +23,7 @@ PAR_ERROR
 SPPGetPixel (unsigned short *vidPtr, CCD_ID chip)
 {
   int ret = CE_NO_ERROR;
-  unsigned short u;
+  unsigned long u;
 
   // asi to tu bejt nemusi... (skoro vzdycky se to stiha driv, chyba je ovsem problem... :(
   if ((ret = CameraReady ()))
@@ -38,7 +38,7 @@ SPPGetPixel (unsigned short *vidPtr, CCD_ID chip)
   u += CameraIn (0x20) << 8;
   u += CameraIn (0x30) << 12;
 
-  *vidPtr = u;
+  *vidPtr = ((u > 65535) ? 65535 : u); 
 
   return ret;
 }

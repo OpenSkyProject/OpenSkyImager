@@ -42,17 +42,8 @@ gboolean tmr_statusbar_write (GtkWidget *widget, gpointer statbar)
 
 GtkWidget *gtk_label_new_with_align(const gchar *label, gfloat xalign, gfloat yalign, gint width, gint height)
 {
-	GtkWidget *lbl = gtk_label_new(label);
+	GtkWidget *lbl = gtk_widget_new(GTK_TYPE_LABEL, "label", label, "xalign", xalign, "yalign", yalign, NULL);
 	gtk_widget_set_size_request(lbl, width, height);
-	gtk_misc_set_alignment(GTK_MISC(lbl), xalign, yalign);
-	if (strlen(label) > 0)
-	{
-		gtk_label_set_max_width_chars(GTK_LABEL(lbl), strlen(label));
-	}
-	else
-	{
-		gtk_label_set_max_width_chars(GTK_LABEL(lbl), 999);
-	}
 	return lbl;
 }
 

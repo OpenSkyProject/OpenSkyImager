@@ -92,14 +92,14 @@
 	// Widgets
 	GtkWidget *window, *swindow, *fixed, *imgevent;
 	GtkWidget *image, *histogram, *fwhmroi;
-	GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_focus, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
+	GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_focus,*cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
 	GtkWidget *hsc_maxadu, *hsc_minadu;
 	GtkWidget *box_main, *pnd_main, *pnd_left, *box_top_left, *box_bot_left, *tab_right, *tab_settings;
 	GtkWidget *imgstatus, *imgstatec, *imgstafit;
 	GtkWidget *frm_histogram;
 	GtkWidget *spn_histogram;
 	GtkWidget *box_ccd, *box_cooling, *box_filename, *box_scripting, *box_timelapse, *box_header, *box_cfw, *box_calc;
-	GtkWidget *cmb_exptime, *spn_expnum, *spn_shots, *pbr_expnum, *pbr_exptime;
+	GtkWidget *cmd_exptime, *spn_exptime, *spn_expnum, *spn_shots, *pbr_expnum, *pbr_exptime;
 	GtkWidget *cmb_camera, *cmb_bin, *cmb_csize, *cmb_dspeed, *cmb_mode, *lbl_mode, *cmb_amp, *cmb_denoise, *cmb_depth, *cmb_debayer;
 	GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
 	GtkWidget *cmd_tecenable, *cmd_tecdisable, *cmd_tecauto, *cmd_tecmanual, *spn_tectgt, *spn_tecspd, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
@@ -141,7 +141,7 @@
 	// Flags
 	int fit = 0, hst = 0;
 	double imgratio = 1., icoratio = 1.;
-	int capture = 0;
+	int capture = 0, expsec = 1;
 	int run = 0, hold = 0, expose = 0, readout = 0, runerr = 0;
 	int expnum = 0, shots = 0;
 	double shotfract = 0., expfract = 0.;
@@ -211,7 +211,7 @@
 	extern GtkWidget *frm_histogram;
 	extern GtkWidget *spn_histogram;
 	extern GtkWidget *box_ccd, *box_cooling, *box_filename, *box_scripting, *box_timelapse, *box_header, *box_cfw, *box_calc;
-	extern GtkWidget *cmb_exptime, *spn_expnum, *spn_shots, *pbr_expnum, *pbr_exptime;
+	extern GtkWidget *cmd_exptime,*spn_exptime, *spn_expnum, *spn_shots, *pbr_expnum, *pbr_exptime;
 	extern GtkWidget *cmb_camera, *cmb_bin, *cmb_csize, *cmb_dspeed, *cmb_mode, *lbl_mode, *cmb_amp, *cmb_denoise, *cmb_depth, *cmb_debayer;
 	extern GtkWidget *cmd_camera, *cmd_setcamlst, *cmd_updcamlst, *cmd_resetcam;
 	extern GtkWidget *cmd_tecenable, *cmd_tecdisable, *cmd_tecauto, *cmd_tecmanual, *spn_tectgt, *spn_tecspd, *vsc_tectemp, *vsc_tecpwr, *frm_tecgraph, *tecgraph;
@@ -253,7 +253,7 @@
 	// Flags
 	extern int fit, hst;
 	extern double imgratio, icoratio;
-	extern int capture;
+	extern int capture, expsec;
 	extern int run, hold, expose, readout, runerr;
 	extern int expnum, shots;
 	extern double shotfract, expfract;

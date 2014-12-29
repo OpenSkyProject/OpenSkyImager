@@ -768,19 +768,40 @@ void cmd_about_click(GtkWidget *widget, gpointer data)
 
 gboolean spn_expnum_changed(GtkSpinButton *spinbutton, gpointer user_data)
 {
-	g_rw_lock_writer_lock(&thd_caplock);
-	expnum = gtk_spin_button_get_value(spinbutton);
-	g_rw_lock_writer_unlock(&thd_caplock);
+	int   val;
+	char  ptr[5];	
+	
+	strcpy(ptr, gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(GTK_WIDGET(spinbutton)))));
+	sscanf(ptr, "%d", &val);
+	
+	val = (val > 0) ? val : 1;
+	if (val != expnum)
+	{
+		g_rw_lock_writer_lock(&thd_caplock);
+		expnum = val;
+		g_rw_lock_writer_unlock(&thd_caplock);
+		sprintf(imgmsg, C_("main","Saved shots set to: %d"), expnum);
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+	}
 	return FALSE;
 }
 
 gboolean spn_shots_changed(GtkSpinButton *spinbutton, gpointer user_data)
 {
-	if (shots != gtk_spin_button_get_value(spinbutton))
+	int   val;
+	char  ptr[5];	
+	
+	strcpy(ptr, gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(GTK_WIDGET(spinbutton)))));
+	sscanf(ptr, "%d", &val);
+
+	val = (val > 0) ? val : 0;
+	if (shots != val)
 	{
 		g_rw_lock_writer_lock(&thd_caplock);
-		shots = gtk_spin_button_get_value(spinbutton);
+		shots = val;
 		g_rw_lock_writer_unlock(&thd_caplock);
+		sprintf(imgmsg, C_("main","Total shots set to: %d"), shots);
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
 	return FALSE;
 }
@@ -868,6 +889,102 @@ void cmd_capture_click(GtkWidget *widget, gpointer data)
 	}
 }
 
+void cmd_exptime_click(GtkWidget *widget, gpointer data)
+{	
+	gdouble emin, emax, eval;
+	gtk_spin_button_get_range(GTK_SPIN_BUTTON(spn_exptime), &emin, &emax);
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)
+	{
+		expsec = 1000;
+		gtk_button_set_label(GTK_BUTTON(widget), C_("main","Time (s)"));
+		eval = round(gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_exptime)) / 1000.0);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_exptime), eval);
+	}
+	else
+	{
+		expsec = 1;
+		gtk_button_set_label(GTK_BUTTON(widget), C_("main","Time (ms)"));
+		eval = round(gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_exptime)) * 1000.0);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_exptime), eval);
+	}
+	if ((eval > emax) || (eval < emin))
+	{
+		g_signal_emit_by_name(G_OBJECT(spn_exptime), "value-changed");
+	}
+}
+
+gboolean spn_exptime_changed (GtkSpinButton *spinbutton, gpointer user_data)
+{
+	int   val;
+	char  ptr[5];	
+	
+	strcpy(ptr, gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(GTK_WIDGET(spinbutton)))));
+	sscanf(ptr, "%d", &val);
+
+	if (val > 0)
+	{
+		g_rw_lock_writer_lock(&thd_caplock);
+		imgcam_get_expar()->time = val * expsec;
+		fithdr[HDR_EXPTIME].dvalue = (double)(imgcam_get_expar()->time/1000.);
+		fithdr[HDR_EXPOSURE].dvalue = (double)(imgcam_get_expar()->time/1000.);
+		imgcam_get_expar()->edit = 1;
+		g_rw_lock_writer_unlock(&thd_caplock);
+		if (expsec > 1)
+		{
+			sprintf(imgmsg, C_("main","Exposure time set to: %4.0F"), fithdr[HDR_EXPTIME].dvalue);
+		}
+		else
+		{
+			sprintf(imgmsg, C_("main","Exposure time set to: %8.3F"), fithdr[HDR_EXPTIME].dvalue);
+		}
+		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+		// Custom increment
+		if (val < 20)
+		{
+			gtk_spin_button_set_increments(spinbutton, 1, 1);
+		}
+		else if (val < 200)
+		{
+			gtk_spin_button_set_increments(spinbutton, 10, 10);
+		}
+		else if (val < 2000)
+		{
+			gtk_spin_button_set_increments(spinbutton, 100, 100);
+		}
+		else
+		{
+			gtk_spin_button_set_increments(spinbutton, 1000, 1000);
+		}
+		//gtk_spin_button_update(spinbutton);
+	}
+	return FALSE;
+}
+
+/*void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
+{
+	//printf("%s\n", gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+	float tmp = 0;
+	
+	g_rw_lock_writer_lock(&thd_caplock);
+	sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%f", &tmp);
+	if (tmp > 0) 
+	{
+		imgcam_get_expar()->time = (int) (tmp * 1000);
+		fithdr[HDR_EXPTIME].dvalue = (double)(imgcam_get_expar()->time/1000.);
+		fithdr[HDR_EXPOSURE].dvalue = (double)(imgcam_get_expar()->time/1000.);
+	}
+	else
+	{
+		imgcam_get_expar()->time = 1;
+		fithdr[HDR_EXPTIME].dvalue = 0.001;
+		fithdr[HDR_EXPOSURE].dvalue = 0.001;
+	}
+	imgcam_get_expar()->edit = 1;
+	g_rw_lock_writer_unlock(&thd_caplock);
+	sprintf(imgmsg, C_("main","Exposure time set to: %s"), gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
+} */
+   	
 void cmd_load_click(GtkWidget *widget, gpointer data)
 {
 	char *filename = NULL;
@@ -1463,61 +1580,97 @@ void cmb_debayer_changed (GtkComboBox *widget, gpointer user_data)
 	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 }
 
-void cmb_exptime_changed (GtkComboBox *widget, gpointer user_data)
+gboolean numbers_input_keypress (GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
-	//printf("%s\n", gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
-	float tmp = 0;
+	int   maxchars, isdecimal;
+	float minval, maxval, val;
+	char  callevent[64];
+	callevent[0] = '\0';
+	sscanf((char*)data, "%d:%f:%f:%d:%s", &maxchars, &minval, &maxval, &isdecimal, callevent);
+	char *ptr;
+	ptr = (char *)malloc(maxchars+1);
+	char *kname = gdk_keyval_name(event->keyval);
+	int   cursor = gtk_editable_get_position(GTK_EDITABLE(widget));
+	int   curlen = maxchars+1;
 	
-	g_rw_lock_writer_lock(&thd_caplock);
-	sscanf(gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)), "%f", &tmp);
-	if (tmp > 0) 
+	//printf("Keypress: %s %d\n", kname, event->keyval);
+	//printf("CallEvent: %s\n", callevent);
+	//printf("MaxChars: %d, MinVal: %f, MaxVal: %f\n", maxchars, minval, maxval);
+
+	if ((strcmp(kname, "Tab") == 0) || (strcmp(kname, "ISO_Left_Tab") == 0) || (strcmp(kname, "Home") == 0) || (strcmp(kname, "End") == 0) || (strcmp(kname, "Up") == 0) || (strcmp(kname, "Down") == 0) || (strcmp(kname, "Left") == 0) || (strcmp(kname, "Right") == 0) || (strcmp(kname, "Page_Up") == 0) || (strcmp(kname, "Page_Down") == 0))
 	{
-		imgcam_get_expar()->time = (int) (tmp * 1000);
-		fithdr[HDR_EXPTIME].dvalue = (double)(imgcam_get_expar()->time/1000.);
-		fithdr[HDR_EXPOSURE].dvalue = (double)(imgcam_get_expar()->time/1000.);
+		// Movement keys are accepted no matter what
+		free(ptr);
+		return FALSE;	
+	}
+	
+	// Get current buffer content	
+	strcpy(ptr, gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget))));
+	curlen = strlen(ptr);
+
+	if (strcmp(kname, "BackSpace") == 0)
+	{
+		if (cursor > 0)
+		{
+			ptr[cursor-1] = '\0';
+			gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(widget)), ptr, curlen);
+			gtk_editable_set_position (GTK_EDITABLE (widget), cursor - 1);
+			if (strlen(callevent))
+			{
+				g_signal_emit_by_name(G_OBJECT(widget), callevent);
+			}
+		}
+		free(ptr);
+		return TRUE;
+	}
+	
+	if (cursor >= maxchars)
+	{
+		// In order to accept key, string must be shorter than max
+		free(ptr);
+		return TRUE;
+	}
+	
+	if ((strcmp(kname, "plus") == 0) && (cursor == 0))
+	{
+		// + is accepted as first char only
+		ptr[cursor] = '+';
+	}	
+	else if ((strcmp(kname, "minus") == 0) && (cursor == 0))
+	{
+		// - is accepted as first char only
+		ptr[cursor] = '-';
+	}
+	else if ((event->keyval >= 48) && (event->keyval <= 57))
+	{
+		// Numbers are accepted
+		ptr[cursor] = event->keyval;
+	}
+	else if ((sysloc->decimal_point[0] == event->keyval) && (strchr(ptr, sysloc->decimal_point[0]) == NULL) && (isdecimal))
+	{
+		// Only one decimal separator is allowed
+		ptr[cursor] = '.';
 	}
 	else
 	{
-		imgcam_get_expar()->time = 1;
-		fithdr[HDR_EXPTIME].dvalue = 0.001;
-		fithdr[HDR_EXPOSURE].dvalue = 0.001;
-	}
-	imgcam_get_expar()->edit = 1;
-	g_rw_lock_writer_unlock(&thd_caplock);
-	sprintf(imgmsg, C_("main","Exposure time set to: %s"), gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
-	gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
-}
-
-gboolean numbers_input_keypress (GtkWidget *widget, GdkEventKey *event, gpointer data)
-{
-	char *kname = gdk_keyval_name(event->keyval);
-	int  maxchars = GPOINTER_TO_INT(data);
-	
-	//printf("Keypress: %s %d\n", kname, event->keyval);
-
-	if ((strcmp(kname, "Tab") == 0) || (strcmp(kname, "ISO_Left_Tab") == 0) || (strcmp(kname, "BackSpace") == 0) || (strcmp(kname, "Home") == 0) || (strcmp(kname, "End") == 0) || (strcmp(kname, "Up") == 0) || (strcmp(kname, "Down") == 0) || (strcmp(kname, "Left") == 0) || (strcmp(kname, "Right") == 0) || (strcmp(kname, "Page_Up") == 0) || (strcmp(kname, "Page_Down") == 0))
-		// Movement keys are accepted no matter what
-		return FALSE;	
-
-	if (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) >= maxchars)
-		// In order to accept key, string must be shorter than max
+		// Drop the key
+		free(ptr);
 		return TRUE;
+	}
 
-	if ((strcmp(kname, "plus") == 0) && (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) == 0))
-		// + is accepted as first char only
-		return FALSE;	
-		
-	if ((strcmp(kname, "minus") == 0) && (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) == 0))
-		// - is accepted as first char only
-		return FALSE;	
-		
-	if ((event->keyval >= 48) && (event->keyval <= 57))
-		// Numbers are accepted
-		return FALSE;	
-	if ((sysloc->decimal_point[0] == event->keyval) && (strchr(gtk_entry_get_text(GTK_ENTRY(widget)), sysloc->decimal_point[0]) == NULL))
-		// Only one decimal separator is allowed
-		return FALSE;
-
+	// Get values
+	sscanf(ptr, "%f", &val);
+	if ((val >= minval) && (val <= maxval))
+	{
+		// If value is valid		
+		gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(widget)), ptr, curlen + 1);
+		gtk_editable_set_position (GTK_EDITABLE (widget), cursor + 1);	
+		if (strlen(callevent))
+		{
+			g_signal_emit_by_name(G_OBJECT(widget), callevent);
+		}
+	}
+	free(ptr);
 	return TRUE;
 }
 
@@ -3245,14 +3398,36 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 			sscanf(msg, "%[^:]:%[^\n]", cmd, arg);
 			if (strcmp(cmd, "EXPTIME") == 0)
 			{
-				// Exposure time in ms
+				// Exposure time in ms				
 				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if (ival > 9999)
+				{
+					if (expsec == 1)
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_exptime), TRUE);
+					}
+					gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_exptime), (gdouble)(ival/expsec));
+					sprintf(arg, "%5.3f", gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_exptime)));
+				}
+				else
+				{
+					if (expsec > 1)
+					{
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_exptime), FALSE);
+					}
+					gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_exptime), (gdouble)(ival));
+					sprintf(arg, "%5.3f", (gtk_spin_button_get_value(GTK_SPIN_BUTTON(spn_exptime)) / 1000));
+				}
+				printf("Fifo: %s=%s\n", cmd, arg);
+				
+				/*sscanf(arg, "%d", &ival);
 				sprintf(arg, "%d", ival);
 				fval = (float)(ival / 1000.);
 				sprintf(arg, "%05.3f", fval);
 				GtkWidget *text = gtk_bin_get_child(GTK_BIN(cmb_exptime));
 				gtk_entry_set_text(GTK_ENTRY(text), arg);
-				printf("Fifo: %s=%s\n", cmd, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);*/
 			}			
 			else if (strcmp(cmd, "TOTSHOTS") == 0)
 			{
@@ -3637,6 +3812,51 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 				else
 				{
 					printf("Fifo: ERROR=Output mode out of range (1-3)\n");
+				}
+			}
+			else if (strcmp(cmd, "DITHERENABLE") == 0)
+			{
+				// Enable dithering mode
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_ditherenable), (ival > 0));
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "DITHERMODELIST") == 0)
+			{
+				// Prints the dithering modes list to the command line
+				// DITHERODESET must use ordinal position (0 based) from this list
+				// That is DITHERMODESET:1 will set the second element
+				combo_getlist(cmb_dither, arg);
+				printf("Fifo: %s=%s\n", cmd, arg);
+			}
+			else if (strcmp(cmd, "DITHERMODESET") == 0)
+			{
+				// Set active the nth element in the dithering mode combobox
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival >= 0) && (ival < gtk_combo_box_element_count(cmb_dither)))
+				{
+					gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_dither), ival);
+					printf("Fifo: %s=%s\n", cmd, arg);
+				}
+				else
+				{
+					printf("Fifo: ERROR=Dithering mode index out of range (0-%d)\n", gtk_combo_box_element_count(cmb_dither)-1);
+				}
+			}
+			else if (strcmp(cmd, "DITHERPAUSE") == 0)
+			{
+				sscanf(arg, "%d", &ival);
+				sprintf(arg, "%d", ival);
+				if ((ival > -1) && (ival < 101))
+				{
+					gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_dither), (gdouble)ival);
+					printf("Fifo: %s=%s\n", cmd, arg);					
+				}
+				else
+				{
+					printf("Fifo: ERROR=Dither pause %d out of range\n", ival);
 				}
 			}
 			else if (strcmp(cmd, "CAMLIST") == 0)

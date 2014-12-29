@@ -5,7 +5,7 @@
  *      Author: Giampiero Spezzano (gspezzano@gmail.com)
  *
  Original code from from Søren Holm on a StakOverflow page:
- http://stackoverflow.com/questions/2336242/recursive-mkdir-system-call-on-unix 
+ http://stackoverflow.com/questions/2530096/how-to-find-all-serial-devices-ttys-ttyusb-on-linux-without-opening-them 
  Licensed under cc-wiki with attibution required as per: 
  http://blog.stackoverflow.com/2009/06/attribution-required/ 
  *
@@ -38,7 +38,8 @@
 #include <sys/ioctl.h>
 #include <linux/serial.h>
 
-#define SYSDIR "/sys/class/tty/"
+#define SYSDIR 	"/sys/class/tty/"
+#define TRYRFCOM	0
 
 void get_driver(char *ttydir, char *ttydrv) 
 {
@@ -95,18 +96,12 @@ int getComList(char *ttylist)
 
 				// Construct full absolute file path
 				sprintf(devicedir, "%s%s", SYSDIR, namelist[n]->d_name);
-
-				// Get the device driver
-				get_driver(devicedir, driver);
-				if (strlen(driver) > 0)
+				if (strstr(devicedir, "rfcomm") != NULL)
 				{
-					// Non empty drivers might be ok
-					//printf("Device: /dev/%s, Driver: %s\n", namelist[n]->d_name, driver);
-					sprintf(devfile, "/dev/%s", namelist[n]->d_name);					
-
-					if (strstr(driver, "8250") != NULL)
-					{
-						// Check serial8250-devices separeately
+					// Since rfcomm it's a special case.
+					sprintf(devfile, "/dev/%s", namelist[n]->d_name);	
+					#if TRYRFCOM
+						// Check rfcommXX-devices separeately
 						if ((fd = open(devfile, O_RDWR | O_NONBLOCK | O_NOCTTY)) >= 0) 
 						{
 							// If device open
@@ -116,19 +111,54 @@ int getComList(char *ttylist)
 								if (serinfo.type != PORT_UNKNOWN)
 								{
 									// If device type is no PORT_UNKNOWN we accept the port
-									//printf("Device 8250 has port, accepted\n");
+									//printf("Device rfcommXX has port, accepted\n");
 									strcat(ttylist, "|");
 									strcat(ttylist, devfile);
 								}
 							}
 							close(fd);
 						}
-					} 
-					else
-					{
-						// whatever has a driver and is not serial8250 is sure good
+					#else
 						strcat(ttylist, "|");
 						strcat(ttylist, devfile);
+					#endif
+				}
+				else
+				{
+					// Get the device driver
+					get_driver(devicedir, driver);
+					if (strlen(driver) > 0)
+					{
+						// Non empty drivers might be ok
+						//printf("Device: /dev/%s, Driver: %s\n", namelist[n]->d_name, driver);
+						sprintf(devfile, "/dev/%s", namelist[n]->d_name);					
+
+						if (strstr(driver, "8250") != NULL)
+						{
+							// Check serial8250-devices separeately
+							if ((fd = open(devfile, O_RDWR | O_NONBLOCK | O_NOCTTY)) >= 0) 
+							{
+								// If device open
+								if (ioctl(fd, TIOCGSERIAL, &serinfo) == 0) 
+								{
+									// If can get get serial_info
+									if (serinfo.type != PORT_UNKNOWN)
+									{
+										// If device type is no PORT_UNKNOWN we accept the port
+										//printf("Device 8250 has port, accepted\n");
+										strcat(ttylist, "|");
+										strcat(ttylist, devfile);
+									}
+								}
+								close(fd);
+							}
+						} 
+						else
+						{
+							// whatever has a driver and is not serial8250 is sure good
+							strcat(ttylist, "|");
+							strcat(ttylist, devfile);
+						}
 					}
 				}
 			}
