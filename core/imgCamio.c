@@ -35,15 +35,20 @@
 #include "qhy8l.h"
 #include "qhy9.h"
 #include "qhy9l.h"
+#include "qhy90a.h"
 #include "qhy10.h"
 #include "qhy11.h"
 #include "qhy12.h"
+#include "minicam5.h"
 #include "dsi2pro.h"
 #ifdef HAVE_SBIG
 #include "sbigcore.h"
 #endif
 #ifdef HAVE_URVC
 #include "urvccore.h"
+#endif
+#ifdef HAVE_ATIK
+#include "atikcore.h"
 #endif
 
 static char *cammsg;
@@ -58,6 +63,8 @@ static qhy_exposure expar;
 static qhy_exposure shpar;
 static qhy_tecpars  tecp;
 static qhy_camui    camui;
+static 	int isizeX = 0, isizeY = 0;
+
 
 char *get_core_msg()
 {
@@ -114,6 +121,11 @@ int imgcam_iscamera(const char *model)
 		retcode = qhy5ii_iscamera();
 		camid = 52;
 	}
+	else if (strcmp(model, "miniCAM5-Series") == 0)
+	{
+		retcode = minicam5_iscamera();
+		camid = 53;
+	}
 	else if (strcmp(model, "QHY6") == 0)
 	{
 		retcode = qhy6_iscamera();
@@ -141,6 +153,10 @@ int imgcam_iscamera(const char *model)
 	else if (strcmp(model, "IC8300") == 0)
 	{
 		retcode = qhy9l_iscamera();
+	}
+	else if (strcmp(model, "QHY90A") == 0)
+	{
+		retcode = qhy90a_iscamera();
 	}
 	else if (strcmp(model, "QHY10") == 0)
 	{
@@ -214,6 +230,11 @@ void imgcam_set_model(const char *val)
 		qhy5ii_init();
 		camid = 52;
 	}
+	else if (strcmp(val, "miniCAM5-Series") == 0)
+	{
+		minicam5_init();
+		camid = 53;
+	}
 	else if (strcmp(val, "QHY6") == 0)
 	{
 		qhy6_init();
@@ -248,6 +269,11 @@ void imgcam_set_model(const char *val)
 	{
 		qhy9l_init();
 		camid = 91;
+	}
+	else if (strcmp(val, "QHY90A") == 0)
+	{
+		qhy90a_init();
+		camid = 92;
 	}
 	else if (strcmp(val, "QHY10") == 0)
 	{
@@ -303,6 +329,15 @@ void imgcam_set_model(const char *val)
 		}
 	}
 #endif
+#ifdef HAVE_ATIK
+	else if (strncmp(val, "Atik", 4) == 0) 
+	{
+		if (atik_list_item_select(strdup(val)))
+		{
+			camid = 3000;
+		}
+	}
+#endif
 	strcpy(cammodel, val);
 }
 
@@ -335,6 +370,9 @@ void imgcam_init()
 #ifdef HAVE_SBIG
 		sbig_core_close();
 #endif
+#ifdef HAVE_ATIK
+		atik_list_destroy();
+#endif
 	}
 #ifdef HAVE_SBIG
 	sbig_core_init(imgBasePath);
@@ -363,6 +401,8 @@ void imgcam_init()
 	cammodel[0] = '\0';	
 	cammsg[0] = '\0';	
 	imgcam_init_list(0);
+	imgcam_get_camui()->hasgain = 0;
+	imgcam_get_camui()->hasoffset = 0;
 	strcpy(imgcam_get_camui()->binstr, "");
 	strcpy(imgcam_get_camui()->roistr, "");
 	strcpy(imgcam_get_camui()->spdstr, "");
@@ -399,6 +439,9 @@ void imgcam_end()
 #endif
 #ifdef HAVE_URVC
 	urvc_core_init();
+#endif
+#ifdef HAVE_ATIK
+	atik_list_destroy();
 #endif
 }
 
@@ -456,6 +499,11 @@ char *imgcam_init_list(int all)
 		strcat(imgcam_get_camui()->camstr, "|IC8300");
 	}
 	
+	if ((imgcam_iscamera("QHY90A")) || (all))
+	{
+		strcat(imgcam_get_camui()->camstr, "|QHY90A");
+	}
+
 	if ((imgcam_iscamera("QHY10")) || (all))
 	{
 		strcat(imgcam_get_camui()->camstr, "|QHY10");
@@ -480,6 +528,10 @@ char *imgcam_init_list(int all)
 #ifdef HAVE_URVC
 	urvc_core_reload_list();
 	strcat(imgcam_get_camui()->camstr, urvc_GetCameraList()->camlist);
+#endif
+#ifdef HAVE_ATIK
+	atik_list_create();
+	strcat(imgcam_get_camui()->camstr, atik_list_get());	
 #endif
 	strcat(imgcam_get_camui()->camstr, "|:0");
 	return imgcam_get_camui()->camstr;
@@ -510,6 +562,12 @@ int imgcam_connect()
 					retval = qhy5ii_bonjour();
 				}
 				break;
+			case 53:
+				if ((retval = qhy_opencamera()) == 1)
+				{
+					retval = minicam5_bonjour();
+				}
+				break;
 			case 20:
 			case 6:
 			case 60:
@@ -528,6 +586,7 @@ int imgcam_connect()
 				}
 				break;
 			case 91:
+			case 92:
 				if ((retval = qhy_OpenCamera()) == 1)
 				{
 					// TODO send oled
@@ -548,6 +607,8 @@ int imgcam_connect()
 					if ((retval = (sbig_EstablishLink() == 0)) == 1)
 					{
 						//Set all UI related
+						imgcam_get_camui()->hasgain = 0;
+						imgcam_get_camui()->hasoffset = 0;
 						strcpy(imgcam_get_camui()->binstr, sbig_GetCameraDetails()->binList);
 						strcpy(imgcam_get_camui()->roistr, C_("camio","Full|512x512|256x256:0"));
 						strcpy(imgcam_get_camui()->spdstr, sbig_GetCameraDetails()->spdList);
@@ -598,6 +659,8 @@ int imgcam_connect()
 				if ((retval = urvc_OpenCamera(devName)) == 1)
 				{
 					//Set all UI related
+					imgcam_get_camui()->hasgain = 0;
+					imgcam_get_camui()->hasoffset = 0;
 					strcpy(imgcam_get_camui()->binstr, urvc_GetCameraDetails()->binList);
 					strcpy(imgcam_get_camui()->roistr, "");
 					strcpy(imgcam_get_camui()->spdstr, urvc_GetCameraDetails()->spdList);
@@ -634,6 +697,70 @@ int imgcam_connect()
 				}
 				break;
 #endif
+#ifdef HAVE_ATIK
+			case 3000:
+				// Atik camera
+				if ((retval = atik_camera_open()) == 1)
+				{
+					//Set all UI related
+					imgcam_get_camui()->hasgain = 0;
+					imgcam_get_camui()->hasoffset = 0;
+					strcpy(imgcam_get_camui()->binstr, atik_camera_getBinList());
+					strcpy(imgcam_get_camui()->roistr, C_("camio","Full|512x512|256x256:0"));
+					// Gain and Offset and PreviewMode are said not functional on VS class camera
+					// Waiting for info to gather wich are the camera type that can support that feature
+					// This will work with version >= 1.4. No effect for version 1.1
+					// No way to check lib version. No way to check if the command has effect
+					if (atik_camera_getType() == IC24)
+					{
+						strcpy(imgcam_get_camui()->spdstr, C_("camio","0-Slow|1-Fast:0"));
+					} 
+					else
+					{
+						strcpy(imgcam_get_camui()->spdstr, "");
+					}
+					strcpy(imgcam_get_camui()->ampstr, C_("camio","0-AmpOff|1-AmpOn|2-Auto:2"));
+					if (atik_camera_getCapabilities()->hasShutter)
+					{
+						strcpy(imgcam_get_camui()->modstr, C_("camio","0-Light|1-Dark:0"));
+						strcpy(imgcam_get_camui()->moddsc, C_("camio","Light/Dark mode"));
+					}
+					else
+					{
+						strcpy(imgcam_get_camui()->modstr, "");
+						strcpy(imgcam_get_camui()->moddsc, "");
+					}
+					if (atik_camera_getCapabilities()->has8BitMode)
+					{	
+						strcpy(imgcam_get_camui()->bppstr, "1-8Bit|2-16Bit|:1");
+					}
+					else
+					{
+						strcpy(imgcam_get_camui()->bppstr, "2-16Bit|:0");
+					}
+					sprintf(imgcam_get_camui()->byrstr, "%d", atik_camera_getColorId());
+					// Cfw
+					strcpy(imgcam_get_camui()->whlstr, atik_camera_getCfwList());
+					// Tec
+					imgcam_get_tecp()->istec      = (atik_camera_getCapabilities()->cooler == COOLER_SETPOINT) ? 4 : 0;  // Mode see imgCamio.h
+					imgcam_get_tecp()->tecerr     = 0;      // Error reading / setting tec; 
+					imgcam_get_tecp()->tecpwr     = 5;      // Basically 0 - tecmax
+					imgcam_get_tecp()->tecmax     = 255;      // 0-255
+					imgcam_get_tecp()->tecauto    = 0;      // 0 = Manual, 1 = Seek target temp
+					imgcam_get_tecp()->tectemp    = 0.;     // Only meaningful when tecauto = 1; 
+					imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
+					// Shutter
+					imgcam_get_camui()->shutterMode = atik_camera_getCapabilities()->hasShutter;
+					// Header values
+					imgcam_get_camui()->pszx = atik_camera_getCapabilities()->pixelSizeX;
+					imgcam_get_camui()->pszy = atik_camera_getCapabilities()->pixelSizeY;
+					// Basic expar
+					imgcam_get_expar()->bitpix  = 16;	
+					imgcam_get_expar()->bytepix = 2;	
+					imgcam_get_expar()->tsize   = 0;
+					imgcam_get_expar()->edit    = 0;
+				}
+#endif
 		}
 		if ((retval == 0) && (strlen(cammsg) == 0))
 		{
@@ -654,6 +781,7 @@ int imgcam_disconnect()
 		case 20:
 		case 5:
 		case 52:
+		case 53:
 		case 6:
 		case 7:
 		case 60:
@@ -666,6 +794,7 @@ int imgcam_disconnect()
 			retval = qhy_CloseCamera();
 			break;
 		case 91:
+		case 92:
 			// TODO send oled
 			retval = qhy_CloseCamera();
 			break;
@@ -682,6 +811,15 @@ int imgcam_disconnect()
 			urvc_CloseCamera();
 			retval = 1;
 			break;
+#endif
+#ifdef HAVE_ATIK
+		case 3000:
+			// Atik camera
+			if (imgcam_get_tecp()->istec)
+			{
+				atik_camera_initiateWarmUp();
+			}
+			atik_camera_close();
 #endif
 	}
 	if (retval == 0)
@@ -708,6 +846,9 @@ int imgcam_reset()
 		case 52:
 			retval = qhy5ii_reset();
 			break;
+		case 53:
+			retval = minicam5_reset();
+			break;
 		case 6:
 			retval = qhy6_reset();
 			break;
@@ -728,6 +869,9 @@ int imgcam_reset()
 			break;
 		case 91:
 			retval = qhy9l_reset();
+			break;
+		case 92:
+			retval = qhy90a_reset();
 			break;
 		case 10:
 			retval = qhy10_reset();
@@ -787,6 +931,12 @@ int imgcam_shoot()
 			break;
 		case 52:
 			if ((retval = qhy5ii_setregisters(&shpar)) == 1)
+			{
+				retval = qhy_ccdStartExposure(shpar.time);
+			}
+			break;
+		case 53:
+			if ((retval = minicam5_setregisters(&shpar)) == 1)
 			{
 				retval = qhy_ccdStartExposure(shpar.time);
 			}
@@ -854,6 +1004,19 @@ int imgcam_shoot()
 				}
 			}
 			break;
+		case 92:
+			if ((retval = ((shpar.edit) ? qhy90a_setregisters(&shpar) : 1)) == 1)
+			{
+				// printf("setRegisters ok\n");
+				// In dark mode
+				// Close the shutter, otherwise noop
+				if ((retval = ((shpar.mode > 0) ? imgcam_shutter(1) : 1)) == 1)
+				{
+					retval = qhy_ccdStartExposure(shpar.time);
+					// printf("startExposure returned %d\n", retval);
+				}
+			}
+			break;
 		case 10:
 			if ((retval = ((shpar.edit) ? qhy10_setregisters(&shpar) : 1)) == 1)
 			{
@@ -884,6 +1047,60 @@ int imgcam_shoot()
 		case 2100:
 			retval = (urvc_StartExposure(&shpar));
 			break;
+#endif
+#ifdef HAVE_ATIK
+		case 3000:
+			{
+				// Atik camera
+				if (shpar.edit)
+				{
+					// Gain and offset are for OEM only and not all models do support it
+					// Please have a look at comments on cAtik.cpp
+					//if (imgcam_get_camui()->hasgain)
+					//{
+					//	printf("shpar.gain %d, shpar.offset %d\n", ((shpar.gain * 63) / 100), (shpar.offset * 2));
+					//	retval = atik_camera_setGain(((shpar.gain * 63) / 100), (shpar.offset * 2));
+					//	int gain = 0, offset = 0;
+					//	atik_camera_getGain(&gain, &offset);
+					//	printf("Gain %d, Offset %d\n", gain, offset);
+					//}
+					// This will work with version >= 1.4. No effect for version 1.1
+					// No way to check lib version. No way to check if the command has effect
+					if (strlen(imgcam_get_camui()->spdstr) > 0)
+					{	
+						atik_camera_setPreviewMode(shpar.speed);
+					}
+					if (atik_camera_getCapabilities()->has8BitMode)
+					{	
+						atik_camera_set8BitMode((shpar.bytepix==1));
+					}
+					isizeX = (shpar.width == 0) ? (int)atik_camera_getCapabilities()->pixelCountX : shpar.width;
+					isizeY = (shpar.height == 0) ? (int)atik_camera_getCapabilities()->pixelCountY : shpar.height;
+					shpar.width  = (int)atik_camera_imageWidth(((isizeX == 0)  ? atik_camera_getCapabilities()->pixelCountX : isizeX), (unsigned int)shpar.bin);
+					shpar.height = (int)atik_camera_imageHeight(((isizeY == 0) ? atik_camera_getCapabilities()->pixelCountY : isizeY), (unsigned int)shpar.bin);
+					shpar.tsize = isizeX * isizeY * shpar.bytepix;
+					shpar.totsize = shpar.tsize;
+					shpar.wtime = (int)(atik_camera_delay((double)(shpar.time/1000.0))/1000);
+					//printf("shpar.wtime %d,%d\n", shpar.wtime, shpar.time);
+					shpar.amp = ((shpar.time < 550) && (shpar.amp == 2)) ? 1 : shpar.amp; 
+
+					shpar.edit = 0;
+				}
+			
+				if(retval)
+				{
+					if (atik_camera_getCapabilities()->hasShutter)
+					{
+						// In light mode
+						// Open shutter, otherwise ensure close
+						retval = (shpar.mode == 0) ? atik_camera_setShutter(1) : atik_camera_setShutter(0);
+					}
+					if (retval)
+					{
+						retval = (atik_camera_startExposure(shpar.amp));
+					}
+				}
+			}
 #endif
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
@@ -972,6 +1189,25 @@ int imgcam_readout_ext(unsigned char *p)
 		}
 	}
 #endif
+#ifdef HAVE_ATIK
+	else if (camid == 3000)
+	{	
+		//Atik camera
+		if (atik_camera_getCapabilities()->hasShutter)
+		{
+			retval = atik_camera_setShutter(0);
+		}
+		//printf("Readout : %dx%d %d\n", isizeX, isizeY, shpar.bin);
+		//printf("GetImage: %dx%d %d\n", shpar.width, shpar.height, shpar.bin);
+		if ((retval) && (atik_camera_readCCD(0, 0, (unsigned int)isizeX, (unsigned int)isizeY, (unsigned int)shpar.bin, (unsigned int)shpar.bin)))
+		{
+			if ((retval = atik_camera_getImage((unsigned short *) p, (unsigned int)(shpar.width * shpar.height))))
+			{
+				length_transferred = shpar.tsize;	
+			}
+		}
+	}
+#endif
 	else
 	{
 		// Unknown
@@ -991,6 +1227,9 @@ int imgcam_readout_ext(unsigned char *p)
 					break;
 				case 52:
 					qhy5ii_decode(p);
+					break;
+				case 53:
+					minicam5_decode(p);
 					break;
 				case 6:
 					qhy6_decode(p);	
@@ -1025,6 +1264,15 @@ int imgcam_readout_ext(unsigned char *p)
 						imgcam_shutter(2);
 					}
 					qhy9l_decode(p);	
+					break;
+				case 92:
+					if (shpar.mode > 0)
+					{
+						// In dark mode
+						// Release shutter to avoid excess strain
+						imgcam_shutter(2);
+					}
+					qhy90a_decode(p);	
 					break;
 				case 10:
 					qhy10_decode(p);	
@@ -1083,11 +1331,15 @@ int imgcam_abort(int mode)
 		case 52:
 			retval = qhy5ii_AbortCapture();
 			break;
+		case 53:
+			retval = minicam5_AbortCapture();
+			break;
 		case 6:
 		case 7:
 		case 81:
 		case 9:
 		case 91:
+		case 92:
 		case 10:
 		case 11:
 		case 12:
@@ -1115,6 +1367,11 @@ int imgcam_abort(int mode)
 			retval = urvc_KillExposure();
 			break;
 #endif
+#ifdef HAVE_ATIK
+		case 3000:
+			retval = atik_camera_abortExposure();
+			break;
+#endif
 
 	}
 	loaded = (retval == 1) ? 0 : loaded;
@@ -1140,13 +1397,15 @@ int imgcam_settec(double setValue, int setMode)
 		case 60:
 		case 80:
 			break;
+		case 53:
+			retval = minicam5_setTec((int)setValue, 1);
+			break;			
 		case 7:
 		case 81:
 		case 9:
 		case 91:
+		case 92:
 		case 10:
-			retval = qhy_setDC201_i((int)setValue, 1);
-			break;
 		case 11:
 		case 12:
 			retval = qhy_setDC201_i((int)setValue, 1);
@@ -1168,6 +1427,28 @@ int imgcam_settec(double setValue, int setMode)
 			retval = urvc_SetTemperatureRegulation(setMode, setValue);
 			break;
 #endif
+#ifdef HAVE_ATIK
+		case 3000:
+			//Atik camera
+			// setMode = 2 -> warm up (if tec is on)
+			if (setMode == 1)
+			{
+				retval = atik_camera_setCooling((float)setValue);
+			}
+			else
+			{
+				COOLING_STATE state;
+				
+				if ((retval = atik_camera_getCoolingStatus(&state, NULL, NULL)))
+				{
+					if (state == COOLING_SETPOINT)
+					{
+						retval = atik_camera_initiateWarmUp();
+					}
+				}
+			}			
+			break;
+#endif
 	}
 	imgcam_get_tecp()->tecerr = (retval == 0) ? 1 : 0;
 	if ((retval == 0) && (strlen(cammsg) == 0))
@@ -1182,6 +1463,7 @@ int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 {
 	int retval = 0;
 	double mV = 0;
+	float pwrPct, currentTemp;
 	
 	cammsg[0] = '\0';
 	switch (camid)
@@ -1196,10 +1478,12 @@ int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 			*tC = qhy5lii_GetTemp();
 			retval = 1;
 			break;			
+		case 53:
 		case 7:
 		case 81:
 		case 9:
 		case 91:
+		case 92:
 		case 10:
 			retval = qhy_getDC201_i(tC, &mV);
 			break;
@@ -1219,6 +1503,18 @@ int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 #ifdef HAVE_URVC
 		case 2100:
 			retval = urvc_QueryTemperatureStatus(enabled, tC, setTemp, power);
+			break;
+#endif
+#ifdef HAVE_ATIK
+		case 3000:
+			//Atik camera
+			retval = atik_camera_getCoolingStatus((COOLING_STATE *) enabled, (float *) setTemp, &pwrPct);
+			if (retval)
+			{
+				*power = (int)(pwrPct*2.55);
+				retval = atik_camera_getTemperatureSensorStatus((unsigned int) 1, &currentTemp);
+				*tC = (double)currentTemp;
+			}
 			break;
 #endif
 	}
@@ -1241,6 +1537,7 @@ int imgcam_shutter(int cmd)
 		case 20:
 		case 5:
 		case 52:
+		case 53:
 		case 6:
 		case 60:
 		case 7:
@@ -1249,6 +1546,8 @@ int imgcam_shutter(int cmd)
 		case 11:
 		case 10:
 		case 12:
+		case 91:
+		case 92:
 			break;
 		case 9:
 		//case 91: //We need to understand why is shutter command not working.
@@ -1261,6 +1560,11 @@ int imgcam_shutter(int cmd)
 		case 2000:
 			retval = (sbig_Shutter(cmd) == 0);
 			break;
+#endif
+#ifdef HAVE_ATIK
+		case 3000:
+			//Atik camera
+			retval = atik_camera_setShutter(cmd);
 #endif
 	}
 	if ((retval == 0) && (strlen(cammsg) == 0))
@@ -1287,6 +1591,11 @@ int imgcam_wheel(int pos)
 		case 10:
 		case 12:
 			break;
+		case 53:
+		case 92:
+			cammsg[0] = '\0';
+			retval = qhy_setColorWheel(pos+48);
+			break;
 		case 9:
 			cammsg[0] = '\0';
 			retval = qhy9_setColorWheel(pos);
@@ -1303,6 +1612,12 @@ int imgcam_wheel(int pos)
 		case 2000:
 			// Sbig
 			retval = (sbig_CfwGoto(pos+1) == 0);
+			break;
+#endif
+#ifdef HAVE_ATIK
+		case 3000:
+			//Atik camera
+			retval = atik_camera_setFilter((unsigned int) pos);
 			break;
 #endif
 	}
@@ -1362,6 +1677,12 @@ int imgcam_wheel_getstatus(int *status)
 			}
 			break;
 #endif
+#ifdef HAVE_ATIK
+		case 3000:
+			// Atik
+			retval = atik_camera_getFilterWheelStatus(NULL, status, NULL, NULL);
+			break;
+#endif
 		default:
 			// QHY has no query feature when driven through camera
 			*status = 0; //Idle
@@ -1376,9 +1697,20 @@ int imgcam_wheel_getstatus(int *status)
 
 int imgcam_guide(enum GuiderAxis axis, enum GuiderMovement movement)
 {
-  if(camid != 52)
-    return 0;
-  return qhy5lii_guide(axis, movement);
+	int retval = 0;
+	switch (camid)
+	{
+		case 52:
+			retval = qhy5lii_guide(axis, movement);
+			break;
+		case 53:
+			retval = minicam5_guide(axis, movement);
+			break;
+		default:
+			retval = 0;
+			break;
+	}
+  return (retval);
 }
 
 

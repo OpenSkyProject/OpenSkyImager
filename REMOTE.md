@@ -96,10 +96,12 @@ confirm a new preview image is available:
 - CAMREFRESH:, Refresh camera list
 - CAMRESET:, Reset currently selected camera
   Will return error if a camera is connected already, or if "none" is selected
+- HASOFFSET: Return 1 (camera has offset control), Return 0 (not)
 - CAMOFFSET:0-255, Camera offset (0-255)
-  Will return error if out of range
+  Will return error if out of range or camera does not feature offset control
+- HASOFFSET: Return 1 (camera has gain control), Return 0 (not)
 - CAMGAIN:0-100, Camera offset (0-100)
-  Will return error if out of range
+  Will return error if out of range or camera does not feature gain control
 - CAMBINLIST:, Prints the camera bin (pipe separated) list to the command line.
   CAMBINSET must use ordinal position (0 based) from this list.
   That is CAMBINSET:1 will set the second element

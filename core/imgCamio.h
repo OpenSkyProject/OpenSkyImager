@@ -48,7 +48,7 @@ typedef struct
 
 typedef struct
 {
-	int istec;       // 0 = Not driveable tec or no tec 1 = Driveable tec 2 = Temp read only 3 = SBIG
+	int istec;       // 0 = Not driveable tec or no tec 1 = Driveable tec 2 = Temp read only 3 = SBIG 4= aTIK
 	int tecerr;      // Error setting / reading PWM
 	int tecpwr;      // Basically tecmin - tecmax
 	int tecmax;      // 0-255
@@ -60,6 +60,8 @@ typedef struct
 
 typedef struct
 {
+	int hasgain;
+	int hasoffset;
 	char camstr[2048];
 	char binstr[256];
 	char roistr[256];

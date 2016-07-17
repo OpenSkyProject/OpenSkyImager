@@ -176,3 +176,21 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - Update: IC8300 firmware (20141003) 
 - Fix: Math overflow occurring on saturated pixels when using URVC2 driver
 
+*Version 0.9.4*
+- New: ATIK camera line support. Tested ATIK-314L.
+  It's done by means of libatikccd (http://www.cloudmakers.eu/atikdrivers/).
+  Please download the package for your system before issuing cmake or one of 
+  the installation batches. Both version 1.1 & 1.4 are compatible. Version 1.4
+  implements the "Preview mode" aka download speed selection.
+- New: support for QHY miniCam5(S/F). Be sure to refresh the firmware list
+  and udev rules. (Experimental)
+- New: support fro QHY90A embedded camera Be sure to refresh the firmware list
+  and udev rules. (Experimental)
+- New: Gain and Offset sliders are now eanbled only if connected camera has
+  this feature. 
+- New: remote command HASOFFSET (returns 0/1)
+- New: remote command HASGAIN (returns 0/1)
+- Changed: CAMOFFSET command will report error if used when HASOFFSET = 0
+- Changed: CAMGAIN command will report error if used when HASGAIN = 0
+- Fix: a crash when using "LOADFILE" command from FIFO
+

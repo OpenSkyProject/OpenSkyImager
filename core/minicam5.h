@@ -1,8 +1,11 @@
 /*
- * imgBase.h
+ * qhy5ii.h
  *
  *  Created on: 01.09.2013
  *      Author: Giampiero Spezzano (gspezzano@gmail.com)
+ *
+ * Device access code is based on original QHY code from https://github.com/qhyccd-lzr
+ *
  *
  * This file is part of "OpenSkyImager".
  *
@@ -20,34 +23,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <time.h>
-#include <math.h>
-#include <wait.h>
-#include <glib.h>
-#include <glib/gi18n.h>
-#include "tools.h"
+#include "guider.h"
 
-#define APPICO "osi.png"
-#define ORZHND "handle_v.png"
-#define VRTHND "handle_o.png"
-#define APPNAM "OpenSkyImager"
-#define APPTIT "OpenSkyImager (c) 2013 JP & C AstroSoftware"
-#define APPVER "0.9.4"
-
-#ifdef DECLARE_MAIN
-	char imgBasePath[PATH_MAX];
-	char imgAppIco[PATH_MAX];
-	char imgOrzHnd[PATH_MAX];
-	char imgVrtHnd[PATH_MAX];
-#else
-	extern char imgBasePath[PATH_MAX];
-	extern char imgAppIco[PATH_MAX];
-	extern char imgOrzHnd[PATH_MAX];
-	extern char imgVrtHnd[PATH_MAX];
-#endif
+void   minicam5_init();
+int    minicam5_iscamera();
+int    minicam5_reset();
+int    minicam5_setregisters(qhy_exposure *expar);
+void   minicam5_decode(unsigned char *databuffer);
+int    minicam5_AbortCapture();
+int    minicam5_bonjour();
+int    minicam5_setTec(int pwm, int fan);
+int    minicam5_guide(enum GuiderAxis, enum GuiderMovement);

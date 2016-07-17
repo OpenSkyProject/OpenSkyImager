@@ -75,11 +75,11 @@ void fithdr_init(fit_rowhdr *hdr, int hdrsz)
 	strcpy(hdr[HDR_EXPOSURE].comment, "[s] Total integration time"); 
 	//GAIN
 	strcpy(hdr[HDR_GAIN].name, "GAIN"); 
-	hdr[HDR_GAIN].dtype = 'I'; 
+	hdr[HDR_GAIN].dtype = '\0'; // This will be activated if 'I' camera has feature 
 	strcpy(hdr[HDR_GAIN].comment, "Program value (0-100)"); 
 	//OFFSET
 	strcpy(hdr[HDR_OFFSET].name, "OFFSET"); 
-	hdr[HDR_OFFSET].dtype = 'I'; 
+	hdr[HDR_OFFSET].dtype = '\0'; // This will be activated 'I' if camera has feature 
 	strcpy(hdr[HDR_OFFSET].comment, "Program value (0-255)"); 
 	//XBINNING
 	strcpy(hdr[HDR_XBINNING].name, "XBINNING"); 

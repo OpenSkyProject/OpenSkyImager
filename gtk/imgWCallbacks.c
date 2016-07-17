@@ -562,9 +562,9 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 			fithdr[HDR_CCDTEMP].dvalue = round(imgcam_get_tecp()->tectemp * 100) / 100;
 			tmrtecrefresh = -1;
 		}
-		else if (imgcam_get_tecp()->istec == 3)
+		else if ((imgcam_get_tecp()->istec == 3) || (imgcam_get_tecp()->istec == 4))
 		{
-			// SBIG mode
+			// SBIG-ATIK mode
 			int enabled = 0;
 			// This is to prevent interrupt read during image readout
 			// The capture thread will lock for write
@@ -580,7 +580,7 @@ gboolean tmr_tecstatus_write (GtkWidget *widget)
 					}
 					else
 					{
-						// Manual
+						// Manual (SBIG) / Warm up (ATIK)
 						imgcam_settec(imgcam_get_tecp()->tecpwr, 2);							
 					}
 					g_rw_lock_writer_unlock(&thd_teclock);
@@ -995,7 +995,7 @@ void cmd_load_click(GtkWidget *widget, gpointer data)
 	}
 	else if (isfile(data))
 	{
-		filename = (char*)g_malloc(strlen(data));
+		filename = (char*)g_malloc(strlen(data)+1);
 		strcpy(filename, data);
 	}
 
@@ -1534,6 +1534,8 @@ gboolean mainw_delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 				readout = 0;
 				expose = 0;
 				g_rw_lock_writer_unlock(&thd_caplock);
+				//Press on disconnect
+				gtk_widget_activate(cmd_camera);
 				imgcam_end();
 				break;
 			default:
@@ -1766,6 +1768,8 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 				if (imgcam_disconnect() == 1)
 				{
 					// Disable camera model/type related UI 
+					gtk_widget_set_sensitive(hsc_gain, 0);
+					gtk_widget_set_sensitive(hsc_offset, 0);
 					combo_setlist(cmb_bin, "");
 					combo_setlist(cmb_csize, "");
 					combo_setlist(cmb_dspeed, "");
@@ -1813,6 +1817,10 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 				// some choices can only be made after connection
 				strcpy(fithdr[HDR_INSTRUME].svalue, gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cmb_camera)));
 				int tmp = 0;
+				gtk_widget_set_sensitive(hsc_gain, (imgcam_get_camui()->hasgain));
+				fithdr[HDR_GAIN].dtype = (imgcam_get_camui()->hasgain) ? 'I' : '\0'; 
+				gtk_widget_set_sensitive(hsc_offset, (imgcam_get_camui()->hasoffset));
+				fithdr[HDR_OFFSET].dtype = (imgcam_get_camui()->hasoffset) ? 'I' : '\0'; 
 				combo_setlist(cmb_bin, imgcam_get_camui()->binstr);
 				combo_setlist(cmb_csize, imgcam_get_camui()->roistr);
 				combo_setlist(cmb_dspeed, imgcam_get_camui()->spdstr);
@@ -1867,6 +1875,16 @@ void cmd_camera_click(GtkWidget *widget, gpointer data)
 				// Tec?
 				if (imgcam_get_tecp()->istec != 0)
 				{
+					if (imgcam_get_tecp()->istec == 4)
+					{
+						gtk_button_set_label(GTK_BUTTON(cmd_tecauto), C_("cooling","On"));
+						gtk_button_set_label(GTK_BUTTON(cmd_tecmanual), C_("cooling","WarmUp"));
+					}
+					else
+					{
+						gtk_button_set_label(GTK_BUTTON(cmd_tecauto), C_("cooling","Auto"));
+						gtk_button_set_label(GTK_BUTTON(cmd_tecmanual), C_("cooling","Manual"));
+					}
 					gtk_widget_set_sensitive(cmd_tecenable, 1);
 					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecenable), TRUE);
 				}
@@ -2590,7 +2608,7 @@ void cmd_tecenable_click(GtkWidget *widget, gpointer data)
 	{
 		if (imgcam_connected())
 		{
-			if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3))
+			if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3) || (imgcam_get_tecp()->istec == 4))
 			{
 				status = (status == 0) ? 1 : 0;
 				if (status == 1)
@@ -2767,7 +2785,29 @@ void cmd_tecauto_click(GtkWidget *widget, gpointer data)
 		}
 		else
 		{
+			g_rw_lock_reader_lock(&thd_teclock);
+			imgcam_get_tecp()->tecauto = status;
+			imgcam_get_tecp()->tecedit = 1;
+			g_rw_lock_reader_unlock(&thd_teclock);
 			gtk_widget_set_sensitive(spn_tectgt, 0);
+			if (imgcam_get_tecp()->istec == 4)
+			{
+				gtk_widget_set_sensitive(vsc_tecpwr, 0);
+				sprintf(imgmsg, C_("main","Tec set warm up"));
+			}
+			else
+			{
+				gtk_widget_set_sensitive(vsc_tecpwr, 1);
+				sprintf(imgmsg, C_("main","Tec set manual"));
+				//gtk_widget_set_sensitive(spn_tectgt, 0);
+			}
+			// Toggle
+			gtk_widget_set_sensitive(cmd_tecauto, 1);						
+			gtk_widget_set_sensitive(cmd_tecmanual, 0);						
+			error = 1;
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), FALSE);
+
+			/*gtk_widget_set_sensitive(spn_tectgt, 0);
 			gtk_widget_set_sensitive(vsc_tecpwr, 1);
 			g_rw_lock_reader_lock(&thd_teclock);
 			imgcam_get_tecp()->tecauto = status;
@@ -2779,7 +2819,7 @@ void cmd_tecauto_click(GtkWidget *widget, gpointer data)
 			gtk_widget_set_sensitive(cmd_tecauto, 1);						
 			gtk_widget_set_sensitive(cmd_tecmanual, 0);						
 			error = 1;
-			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), FALSE);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmd_tecauto), FALSE);*/
 		}
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, imgmsg);
 	}
@@ -3956,36 +3996,59 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 					printf("Fifo: ERROR=Camera is connected already\n");
 				}				
 			}
+			else if (strcmp(cmd, "HASOFFSET") == 0)
+			{
+				printf("Fifo: %s=%d\n", cmd, (imgcam_get_camui()->hasoffset));
+			}
 			else if (strcmp(cmd, "CAMOFFSET") == 0)
 			{
 				// Camera offset (0-255)
-				sscanf(arg, "%d", &ival);
-				sprintf(arg, "%d", ival);
-				if ((ival <= 255) && (ival >= 0)) 
+				if (imgcam_get_camui()->hasoffset)
 				{
-					gtk_range_set_value(GTK_RANGE(hsc_offset), (double)ival);
-					hsc_offset_changed(GTK_RANGE(hsc_offset), GTK_SCROLL_NONE, (double)ival, NULL);
-					printf("Fifo: %s=%s\n", cmd, arg);
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if ((ival <= 255) && (ival >= 0)) 
+					{
+						gtk_range_set_value(GTK_RANGE(hsc_offset), (double)ival);
+						hsc_offset_changed(GTK_RANGE(hsc_offset), GTK_SCROLL_NONE, (double)ival, NULL);
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=Offset out of range (0-255)\n");
+					}
 				}
 				else
 				{
-					printf("Fifo: ERROR=Offset out of range (0-255)\n");
+					printf("Fifo: ERROR=Offset not supported\n");
 				}
+				
+			}
+			else if (strcmp(cmd, "HASGAIN") == 0)
+			{
+				printf("Fifo: %s=%d\n", cmd, (imgcam_get_camui()->hasgain));
 			}
 			else if (strcmp(cmd, "CAMGAIN") == 0)
 			{
-				// Camera offset (0-100)
-				sscanf(arg, "%d", &ival);
-				sprintf(arg, "%d", ival);
-				if ((ival <= 100) && (ival >= 0)) 
+				if (imgcam_get_camui()->hasgain)
 				{
-					gtk_range_set_value(GTK_RANGE(hsc_gain), (double)ival);
-					hsc_gain_changed(GTK_RANGE(hsc_gain), GTK_SCROLL_NONE, (double)ival, NULL);
-					printf("Fifo: %s=%s\n", cmd, arg);
+					// Camera offset (0-100)
+					sscanf(arg, "%d", &ival);
+					sprintf(arg, "%d", ival);
+					if ((ival <= 100) && (ival >= 0)) 
+					{
+						gtk_range_set_value(GTK_RANGE(hsc_gain), (double)ival);
+						hsc_gain_changed(GTK_RANGE(hsc_gain), GTK_SCROLL_NONE, (double)ival, NULL);
+						printf("Fifo: %s=%s\n", cmd, arg);
+					}
+					else
+					{
+						printf("Fifo: ERROR=Gain out of range (0-100)\n");
+					}
 				}
 				else
 				{
-					printf("Fifo: ERROR=Gain out of range (0-100)\n");
+					printf("Fifo: ERROR=Gain not supported\n");
 				}
 			}
 			else if (strcmp(cmd, "CAMBINLIST") == 0)

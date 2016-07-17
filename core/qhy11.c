@@ -74,6 +74,8 @@ void qhy11_init()
 	imgcam_get_tecp()->tectemp    = 0.;     // Only meaningful when tecauto = 1; 
 	imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
 	
+	imgcam_get_camui()->hasgain = 1;
+	imgcam_get_camui()->hasoffset = 1;
 	strcpy(imgcam_get_camui()->binstr, "1|2|3|4:0");
 	/// Capture size values list, just translate "Full" (frame)
 	strcpy(imgcam_get_camui()->roistr, C_("camio","Full|512x512|256x256:0"));

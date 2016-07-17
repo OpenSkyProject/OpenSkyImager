@@ -1,8 +1,9 @@
 /*
- * qhi5ii.c
+ * minicam5.c
  *
- *  Created on: 01.09.2013
- *      Author: Giampiero Spezzano (gspezzano@gmail.com)
+ *  Created on: 30.06.2013
+ *      Author: Anat Ruangrassamee (aruangrassamee@gmail.com)
+ *      		Giampiero Spezzano (gspezzano@gmail.com)
  *
  * Device access code is based on original QHY code from https://github.com/qhyccd-lzr
  *
@@ -24,9 +25,9 @@
  */
 
 #define VENDOR_ID   0x1618
-#define PRODUCT_ID  0x0921
+#define PRODUCT_ID  0x0931
 #define SHORTEXP    0
-#define FWFILE      "qhy5ii.hex"
+#define FWFILE      "miniCam5.hex"
 #define IMGOFFSET   5
 #define USBTRAFFIC  30 // The higher the slower, max 255. (30, suggested)
 
@@ -34,44 +35,35 @@
 #include "libusbio.h"
 #include "qhycore.h"
 #include "imgCamio.h"
-#include "qhy5ii.h"
+#include "minicam5.h"
 
 // Not meant to be used elsewhere
-static int    qhy5ii_SetSpeed(int i);
-static int    qhy5ii_SetUSBTraffic(int i);
-static int    qhy5lii_SetHDR(int on);
-static int    qhy5lii_SetDepth(int Bpp);
-static int    qhy5ii_SetExposureTime(int etime);
-static int    qhy5ii_SetGain(int gain);
-static void   qhy5lii_SetGainMono(double gain);
-static void   qhy5lii_SetGainColor(double gain, double RG, double BG);
-static int    qhy5ii_set_imgsize(int width, int height);
-static void   qhy5ii_set_Resolution(int width, int height);
-static void   qhy5lii_set_1280x960();
-static void   qhy5lii_set_1024x768();
-static void   qhy5lii_set_800x600();
-static void   qhy5lii_set_640x480();
-static void   qhy5lii_set_320x240();
-static void   qhy5liiInitRegs();
-static double qhy5lii_setPLL(unsigned char clk);
+static int    minicam5_SetSpeed(int i);
+static int    minicam5_SetUSBTraffic(int i);
+static int    minicam5_SetHDR(int on);
+static int    minicam5_SetDepth(int Bpp);
+static int    minicam5_SetExposureTime(int etime);
+static int    minicam5_SetGain(int gain);
+static void   minicam5_SetGainMono(double gain);
+static void   minicam5_SetGainColor(double gain, double RG, double BG);
+static int    minicam5_set_imgsize(int width, int height);
+static void   minicam5_set_1280x960();
+static void   minicam5_set_1024x768();
+static void   minicam5_set_800x600();
+static void   minicam5_set_640x480();
+static void   minicam5_set_320x240();
+static void   minicam5InitRegs();
+static double minicam5_setPLL(unsigned char clk);
 
-static int camvariant = 0, camcolor = 0;
+static int camvariant = 1, camcolor = 0;
 
 // These are shared within the module and set from setRegisters
 static int exptime, gain, bin, speed, bytepix, hdr, width, height, totalsize, transfer_size;
 static int maxwidth, maxheight;
 static int longExpMode, usbspd;
-static int setgain[73]={0x004,0x005,0x006,0x007,0x008,0x009,0x00A,0x00B,
-				   0x00C,0x00D,0x00E,0x00F,0x010,0x011,0x012,0x013,0x014,
-				   0x015,0x016,0x017,0x018,0x019,0x01A,0x01B,0x01C,0x01D,
-				   0x01E,0x01F,0x051,0x052,0x053,0x054,0x055,0x056,0x057,
-				   0x058,0x059,0x05A,0x05B,0x05C,0x05D,0x05E,0x05F,0x6CE,
-				   0x6CF,0x6D0,0x6D1,0x6D2,0x6D3,0x6D4,0x6D5,0x6D6,0x6D7,
-				   0x6D8,0x6D9,0x6DA,0x6DB,0x6DC,0x6DD,0x6DE,0x6DF,0x6E0,
-				   0x6E1,0x6E2,0x6E3,0x6E4,0x6E5,0x6E6,0x6E7,0x6FC,0x6FD,0x6FE,0x6FF};
 static double pllratio;
 
-void qhy5ii_init()
+void minicam5_init()
 {
 	qhy_core_init();
 
@@ -85,10 +77,10 @@ void qhy5ii_init()
 
 	qhy_core_getreq()->sendregs  = 0xB5;
 	qhy_core_getreq()->startexp  = 0xB3;
-	qhy_core_getreq()->setdc201  = 0;
-	qhy_core_getreq()->getdc201  = 0;
-	qhy_core_getreq()->shutter   = 0;
-	qhy_core_getreq()->wheel     = 0;
+	qhy_core_getreq()->setdc201  = 0XC6;
+	qhy_core_getreq()->getdc201  = 0XC5;
+	qhy_core_getreq()->shutter   = 0XC7;
+	qhy_core_getreq()->wheel     = 0xD0;
 	
 	qhy_core_getcampars()->vid        = VENDOR_ID;
 	qhy_core_getcampars()->pid        = PRODUCT_ID;
@@ -96,17 +88,15 @@ void qhy5ii_init()
 	qhy_core_getcampars()->buftimes   = 0;
 	qhy_core_getcampars()->buftimef   = 0;
 	
-	// Positively no tec
-	imgcam_get_tecp()->istec      = 0;      // 0 = Not driveable tec or no tec 1 = Driveable tec
+	// Positively yes tec
+	imgcam_get_tecp()->istec      = 1;      // 0 = Not driveable tec or no tec 1 = Driveable tec
 	imgcam_get_tecp()->tecerr     = 0;      // Error reading / setting tec; 
-	imgcam_get_tecp()->tecpwr     = 0;      // Basically 0 - tecmax
-	imgcam_get_tecp()->tecmax     = 0;      // 0-255
+	imgcam_get_tecp()->tecpwr     = 5;      // Basically 0 - tecmax, value here is used for initial set on camera open 
+	imgcam_get_tecp()->tecmax     = 255;    // 0-255
 	imgcam_get_tecp()->tecauto    = 0;      // 0 = Manual, 1 = Seek target temp
 	imgcam_get_tecp()->tectemp    = 0.;     // Only meaningful when tecauto = 1; 
 	imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
-	
-	imgcam_get_camui()->hasgain = 1;
-	imgcam_get_camui()->hasoffset = 0;
+		
 	strcpy(imgcam_get_camui()->binstr, "");
 	strcpy(imgcam_get_camui()->roistr, "");
 	/// Combo box values list, keep N-<desc> format. Just translate <desc>
@@ -124,18 +114,18 @@ void qhy5ii_init()
 	imgcam_get_camui()->pszx = 0;
 	imgcam_get_camui()->pszy = 0;
 	
-	imgcam_get_expar()->bitpix  = 8;	
+	imgcam_get_expar()->bitpix  = 16;	
 	imgcam_get_expar()->bytepix = 1;	
 	imgcam_get_expar()->tsize   = 0;
 	imgcam_get_expar()->edit    = 0;	
 }
 
-int  qhy5ii_iscamera()
+int  minicam5_iscamera()
 {
 	return find_camera(VENDOR_ID, PRODUCT_ID);
 }
 
-int  qhy5ii_reset()
+int  minicam5_reset()
 {
 	int retval = 0;
 	char cmd[2048];
@@ -160,7 +150,7 @@ int  qhy5ii_reset()
 	return ((retval == 0) ? 1 : 0);
 }
 
-int qhy5ii_setregisters(qhy_exposure *expar)
+int minicam5_setregisters(qhy_exposure *expar)
 {
 	int retval = 1;
 	int ch, cw, cu, ce, cg, cs, cB; 
@@ -194,39 +184,35 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 		// Camera set
 		if (cw || ch || cB)
 		{ 
-			if (camvariant == 1)
-			{
-				//QHY5L-II
-				retval = (retval == 1) ? qhy5lii_SetDepth(bytepix) : 0;
-				retval = (retval == 1) ? qhy5lii_SetHDR(hdr) : 0; 
-			}
+			retval = (retval == 1) ? minicam5_SetDepth(bytepix) : 0;
+			retval = (retval == 1) ? minicam5_SetHDR(hdr) : 0; 
 			// If change size the whole shebang must be reset
-			retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
-			retval = (retval == 1) ? qhy5ii_SetSpeed(speed) : 0;
-			retval = (retval == 1) ? qhy5ii_set_imgsize(width, height) : 0;
-			retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime) : 0;
-			retval = (retval == 1) ? qhy5ii_SetGain(gain) : 0;
-			retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
-			retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime): 0;
+			retval = (retval == 1) ? minicam5_SetUSBTraffic(usbspd) : 0;
+			retval = (retval == 1) ? minicam5_SetSpeed(speed) : 0;
+			retval = (retval == 1) ? minicam5_set_imgsize(width, height) : 0;
+			retval = (retval == 1) ? minicam5_SetExposureTime(exptime) : 0;
+			retval = (retval == 1) ? minicam5_SetGain(gain) : 0;
+			retval = (retval == 1) ? minicam5_SetUSBTraffic(usbspd) : 0;
+			retval = (retval == 1) ? minicam5_SetExposureTime(exptime): 0;
 		}
 		else
 		{
 			// If not change size each parameters can be set
 			if (cu)
 			{ 
-				retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
+				retval = (retval == 1) ? minicam5_SetUSBTraffic(usbspd) : 0;
 			}
 			if (cs)
 			{ 
-				retval = (retval == 1) ? qhy5ii_SetSpeed(speed) : 0;
+				retval = (retval == 1) ? minicam5_SetSpeed(speed) : 0;
 			}
 			if (ce)
 			{ 
-				retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime) : 0;
+				retval = (retval == 1) ? minicam5_SetExposureTime(exptime) : 0;
 			}
 			if (cg)
 			{ 
-				retval = (retval == 1) ? qhy5ii_SetGain(gain) : 0;
+				retval = (retval == 1) ? minicam5_SetGain(gain) : 0;
 			}
 		}
 		// Reg set
@@ -241,12 +227,12 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 	}
 	else
 	{
-		retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime) : 0;
+		retval = (retval == 1) ? minicam5_SetExposureTime(exptime) : 0;
 	}
 	return (retval);
 }
 
-void qhy5ii_decode(unsigned char *databuffer)
+void minicam5_decode(unsigned char *databuffer)
 {
 	int i = 0, pixval = 0;
 		
@@ -297,110 +283,60 @@ void qhy5ii_decode(unsigned char *databuffer)
 	}
 }
 
-int qhy5ii_AbortCapture()
+int minicam5_AbortCapture()
 {
 	unsigned char REG[4];
 	REG[0] = 0; REG[1] = 0; REG[2] = 0; REG[3] = 0;
 	return qhy_cameraIO(qhy_core_getendp()->write, 0xc1, REG, sizeof(REG), 0, 0);
 }
 
-int qhy5ii_bonjour()
+int minicam5_bonjour()
 {
 	int retval = 0;
 	unsigned char buf[16];
 
+	
 	if ((retval = qhy_EepromRead(0x10, buf, 16)) == 1)
 	{
 		// Color mode?
 		camcolor = (buf[1] == 1);
 		// This will reset and "wake" the camera
-		if ((retval = qhy5ii_AbortCapture()) == 1)
+		if ((retval = minicam5_AbortCapture()) == 1)
 		{
 			// set Ui
-			if(buf[0] == 6)
+			imgcam_get_tecp()->istec = 1;  
+			strcpy(imgcam_get_camui()->roistr, "1280x960|1024x768|800x600|640x480|320x240:0");
+			strcpy(imgcam_get_camui()->snrstr, "");
+			strcpy(imgcam_get_camui()->bppstr, "2-12Bit|1-8Bit|3-Hdr:0");
+			if(camcolor == 1)
 			{
-				// QHY5L-II
-				camvariant = 1;
-				// Positively no tec (temp read only, no thread)
-				imgcam_get_tecp()->istec = 2;
-				strcpy(imgcam_get_camui()->roistr, "1280x960|1024x768|800x600|640x480|320x240:0");
-				strcpy(imgcam_get_camui()->snrstr, "");
-				strcpy(imgcam_get_camui()->bppstr, "2-12Bit|1-8Bit|3-Hdr:1");
-				if(camcolor == 1)
-				{
-					strcpy(imgcam_get_camui()->byrstr, "3");
-				}
-				else 
-				{
-					strcpy(imgcam_get_camui()->byrstr, "-1");
-				}
-				// Header values
-				imgcam_get_camui()->pszx = 3.75;
-				imgcam_get_camui()->pszy = 3.75;
-				maxwidth  = 1280;
-				maxheight =  960;
-				width   = 1280;
-				height  = 960;
-				bytepix = 1;
-				hdr     = 0;
-				retval = qhy5lii_SetDepth(bytepix);
+				strcpy(imgcam_get_camui()->byrstr, "3");
 			}
-			else if(buf[0] == 5)
+			else 
 			{
-				// QHY5P-II
+				strcpy(imgcam_get_camui()->byrstr, "-1");
+			}
+			// Header values
+			imgcam_get_camui()->pszx = 3.75;
+			imgcam_get_camui()->pszy = 3.75;
+			maxwidth  = 1280;
+			maxheight =  960;
+			width   = 1280;
+			height  = 960;
+			bytepix = 2;
+			hdr     = 0;
+			retval = minicam5_SetDepth(bytepix);
+			if(buf[0] == 7) 
+			{
+				// minicam5F
 				camvariant = 2;
-				// Positively no tec
-				imgcam_get_tecp()->istec = 0;
-				strcpy(imgcam_get_camui()->roistr, "2592x1944|2048x1536|1920x1080|1600x1200|1280x1024|1280x720|1024x768|800x600|640x480|320x240:0");
-				strcpy(imgcam_get_camui()->snrstr, "");
-				strcpy(imgcam_get_camui()->bppstr, "1-8Bit|:0");
-				if(camcolor == 1)
-				{
-					strcpy(imgcam_get_camui()->byrstr, "2");
-				}
-				else 
-				{
-					strcpy(imgcam_get_camui()->byrstr, "-1");
-				}
-				// Header values
-				imgcam_get_camui()->pszx = 2.20;
-				imgcam_get_camui()->pszy = 2.20;
-				maxwidth  = 2592;
-				maxheight = 1944;
-				width   = 2592;
-				height  = 1944;
-				bytepix = 1;
-				hdr     = 0;
-				retval  = 1;
+				strcpy(imgcam_get_camui()->whlstr, C_("camio","9-Positions|:0"));
 			}
-			else if(buf[0] == 1)
+			else
 			{
-				// QHY5-II
-				camvariant = 0;
-				// Positively no tec
-				imgcam_get_tecp()->istec = 0;
-				strcpy(imgcam_get_camui()->roistr, "1280x1024|1280x720|1024x768|960x720|800x800|800x600|640x480|400x400|320x240:0");
-				/// Combo box values list, keep N-<desc> format. Just translate <desc>
-				strcpy(imgcam_get_camui()->snrstr, C_("camio","0-Off|1-On:0"));
-				strcpy(imgcam_get_camui()->bppstr, "1-8Bit|:0");
-				if(camcolor == 1)
-				{
-					strcpy(imgcam_get_camui()->byrstr, "3");
-				}
-				else 
-				{
-					strcpy(imgcam_get_camui()->byrstr, "-1");
-				}
-				// Header values
-				imgcam_get_camui()->pszx = 5.20;
-				imgcam_get_camui()->pszy = 5.20;
-				maxwidth  = 1280;
-				maxheight = 1024;
-				width   = 1280;
-				height  = 1024;
-				bytepix = 1;
-				hdr     = 0;
-				retval  = 1;
+				// Minicam5S
+				camvariant = 1;
+				strcpy(imgcam_get_camui()->whlstr, "");
 			}
 			// Complete camera init
 			usbspd  = 255;
@@ -409,13 +345,13 @@ int qhy5ii_bonjour()
 			gain    = 20;
 			bin     = 1;
 			speed   = 0;
-			retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
-			retval = (retval == 1) ? qhy5ii_SetSpeed(speed) : 0;
-			retval = (retval == 1) ? qhy5ii_set_imgsize(width, height) : 0;
-			retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime) : 0;
-			retval = (retval == 1) ? qhy5ii_SetGain(gain) : 0;
-			retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
-			retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime): 0;
+			retval = (retval == 1) ? minicam5_SetUSBTraffic(usbspd) : 0;
+			retval = (retval == 1) ? minicam5_SetSpeed(speed) : 0;
+			retval = (retval == 1) ? minicam5_set_imgsize(width, height) : 0;
+			retval = (retval == 1) ? minicam5_SetExposureTime(exptime) : 0;
+			retval = (retval == 1) ? minicam5_SetGain(gain) : 0;
+			retval = (retval == 1) ? minicam5_SetUSBTraffic(usbspd) : 0;
+			retval = (retval == 1) ? minicam5_SetExposureTime(exptime): 0;
 		}
 	}
 	if (retval == 0)
@@ -425,7 +361,7 @@ int qhy5ii_bonjour()
 	return (retval);
 }
 
-int qhy5ii_SetSpeed(int spd)
+int minicam5_SetSpeed(int spd)
 {
 	// Both variants
 	// i=0,1,2    0=12M  1=24M  2=48M
@@ -442,7 +378,7 @@ int qhy5ii_SetSpeed(int spd)
 	return (qhy_cameraIO(qhy_core_getendp()->write, 0xc8, buf, sizeof(buf), 0x00, 0x00));
 }
 
-int qhy5ii_SetUSBTraffic(int i)
+int minicam5_SetUSBTraffic(int i)
 {
 	int retval = 0;
 	
@@ -458,7 +394,7 @@ int qhy5ii_SetUSBTraffic(int i)
 	return (retval);
 }
 
-int qhy5lii_SetHDR(int on) 
+int minicam5_SetHDR(int on) 
 {
 	int retval = 0;
 	/*HDR only in 1280*960 and 1024*768 
@@ -493,7 +429,7 @@ int qhy5lii_SetHDR(int on)
 	return (retval);
 }
 
-int qhy5lii_SetDepth(int Bpp)
+int minicam5_SetDepth(int Bpp)
 {
 	unsigned char buf[2];
 	
@@ -501,180 +437,89 @@ int qhy5lii_SetDepth(int Bpp)
 	return (qhy_cameraIO(qhy_core_getendp()->write, 0xcd, buf, 1, 0x00, 0x00));
 }
 
-int qhy5ii_SetExposureTime(int etime) 
+int minicam5_SetExposureTime(int etime) 
 {
-	// Both variants
-	if ((camvariant == 0) || (camvariant == 2))
+	/*if(emodchg == 1)
 	{
-		//QHY5-II
-		// Required input parameters: CMOSCLK  REG04  REG05 REG0C REG09
+		//when exposure mode changed, reset resolution to get the new value of QHY5L_PLL_Ratio
+		minicam5_set_imgsize(width, height);
+		emodchg = 0;
+	}*/
+	
+	// Required input parameters: CMOSCLK
+	double CMOSCLK;
 
-		double CMOSCLK;
-
-		if (speed == 1)
-		{
-			CMOSCLK = 48;
-		}
-		else
-		{
-			CMOSCLK = 24;
-		}
-		
-		double pixelPeriod;
-		pixelPeriod = 1 / CMOSCLK; // unit: us
-
-		double A, Q;
-		double P1, P2;
-		double RowTime; // unit: us
-		unsigned long ExpTime; // unit: us
-		unsigned short REG04, REG05, REG0C, REG09;
-		double MaxShortExpTime;
-
-		REG04 = qhy_I2CTwoRead(0x04);
-		REG05 = qhy_I2CTwoRead(0x05);
-		REG09 = qhy_I2CTwoRead(0x09);
-		REG0C = qhy_I2CTwoRead(0x0C);
-
-		// Get the microseconds
-		ExpTime = etime * 1000;
-
-		A = REG04 + 1;
-		P1 = 242;
-		P2 = 2 + REG05 - 19;
-		Q = P1 + P2;
-		RowTime = (A + Q) * pixelPeriod;
-
-		MaxShortExpTime = 15000 * RowTime - 180 * pixelPeriod - 4 * REG0C * pixelPeriod;
-
-		unsigned char buf[4];
-
-		if (ExpTime > MaxShortExpTime) 
-		{
-			qhy_I2CTwoWrite(0x09, 15000);
-
-			ExpTime = (unsigned long )(ExpTime - MaxShortExpTime);
-
-			buf[0] = 0;
-			buf[1] = (unsigned char) (((ExpTime / 1000)&~0xff00ffff) >> 16);
-			buf[2] = ((ExpTime / 1000)&~0xffff00ff) >> 8;
-			buf[3] = ((ExpTime / 1000)&~0xffffff00);
-
-			qhy_cameraIO(qhy_core_getendp()->write, 0xc1, buf, 4, 0x00, 0x00);
-
-			ExpTime = (unsigned long)(ExpTime + MaxShortExpTime);
-			longExpMode = 1;
-		}
-		else 
-		{
-			buf[0] = 0;
-			buf[1] = 0;
-			buf[2] = 0;
-			buf[3] = 0;
-
-			qhy_cameraIO(qhy_core_getendp()->write, 0xc1, buf, 4, 0x00, 0x00);
-
-			usleep(100);
-			REG09 = (unsigned short)((ExpTime + 180 * pixelPeriod + 4 * REG0C * pixelPeriod)/ RowTime);
-			if (REG09 < 1)
-			{
-				REG09 = 1;
-			}	
-			qhy_I2CTwoWrite(0x09, REG09);
-			ExpTime = (unsigned long)(REG09 * RowTime - 180 * pixelPeriod - 4 * REG0C * pixelPeriod);
-			longExpMode = 0;
-		}
+	if (speed == 1)
+	{
+		CMOSCLK = (bytepix == 2) ? 24 : 48;
 	}
-	else if (camvariant == 1)
+	else
 	{
-		//QHY5L-II
-		/*if(emodchg == 1)
+		CMOSCLK = (bytepix == 2) ? 12 : 24;
+	}
+
+	double pixelPeriod;
+	pixelPeriod = 1 / (CMOSCLK * pllratio); // unit: us
+
+	double RowTime;
+	unsigned long ExpTime;
+	unsigned short REG300C, REG3012;
+
+	double MaxShortExpTime;
+
+	REG300C = qhy_I2CTwoRead(0x300C);
+
+	RowTime = REG300C * pixelPeriod;
+
+	MaxShortExpTime = 65000 * RowTime;
+
+	// Get the microseconds!
+	ExpTime = etime * 1000;
+	
+	// ADDED TO AVOID THE PROBLEM FOR EXPOSURE about 2s in 12BIT MODE
+	if (ExpTime >1000000 && ExpTime <3000000){
+		ExpTime=3000000;
+	}
+	//END	
+
+	unsigned char buf[4];
+
+	if (ExpTime > MaxShortExpTime) 
+	{
+		if (longExpMode == 0) 
 		{
+			// Camera need to "enter" the long exp mode
+			//printf("Enter long exp mode\n");
+			longExpMode = 1;
 			//when exposure mode changed, reset resolution to get the new value of QHY5L_PLL_Ratio
-			qhy5ii_set_imgsize(width, height);
-			emodchg = 0;
-		}*/
-		
-		// Required input parameters: CMOSCLK
-		double CMOSCLK;
-
-		if (speed == 1)
-		{
-			CMOSCLK = (bytepix == 2) ? 24 : 48;
+			//minicam5_set_imgsize(width, height);
 		}
-		else
+		// Proper long exp mode command
+		qhy_I2CTwoWrite(0x3012, 65000);
+		ExpTime = ExpTime - MaxShortExpTime;
+
+		buf[0] = 0;
+		buf[1] = (unsigned char)(((ExpTime / 1000) & ~0xff00ffff) >> 16);
+		buf[2] = (unsigned char)(((ExpTime / 1000) & ~0xffff00ff) >> 8);
+		buf[3] = (unsigned char)((ExpTime / 1000) & ~0xffffff00);
+	
+		qhy_cameraIO(qhy_core_getendp()->write, 0xc1, buf, 4, 0x00, 0x00);
+	
+		ExpTime = ExpTime + MaxShortExpTime;
+		REG3012 = 65000;
+	}
+	else 
+	{
+
+		if (longExpMode == 1) 
 		{
-			CMOSCLK = (bytepix == 2) ? 12 : 24;
-		}
-
-		double pixelPeriod;
-		pixelPeriod = 1 / (CMOSCLK * pllratio); // unit: us
-
-		double RowTime;
-		unsigned long ExpTime;
-		unsigned short REG300C, REG3012;
-
-		double MaxShortExpTime;
-
-		REG300C = qhy_I2CTwoRead(0x300C);
-
-		RowTime = REG300C * pixelPeriod;
-
-		MaxShortExpTime = 65000 * RowTime;
-
-		// Get the microseconds!
-		ExpTime = etime * 1000;
-
-		unsigned char buf[4];
-
-		if (ExpTime > MaxShortExpTime) 
-		{
-			if (longExpMode == 0) 
-			{
-				// Camera need to "enter" the long exp mode
-				//printf("Enter long exp mode\n");
-				longExpMode = 1;
-				//when exposure mode changed, reset resolution to get the new value of QHY5L_PLL_Ratio
-				//qhy5ii_set_imgsize(width, height);
-			}
-			// Proper long exp mode command
-			qhy_I2CTwoWrite(0x3012, 65000);
-			ExpTime = ExpTime - MaxShortExpTime;
-
-			buf[0] = 0;
-			buf[1] = (unsigned char)(((ExpTime / 1000) & ~0xff00ffff) >> 16);
-			buf[2] = (unsigned char)(((ExpTime / 1000) & ~0xffff00ff) >> 8);
-			buf[3] = (unsigned char)((ExpTime / 1000) & ~0xffffff00);
-		
-			qhy_cameraIO(qhy_core_getendp()->write, 0xc1, buf, 4, 0x00, 0x00);
-		
-			ExpTime = ExpTime + MaxShortExpTime;
-			REG3012 = 65000;
-		}
-		else 
-		{
-
-			if (longExpMode == 1) 
-			{
-				// Camera must "exit" long exp mode
-				longExpMode = 0;
-				//printf("Exit long exp mode\n");
-				//when exposure mode changed, reset resolution to get the new value of QHY5L_PLL_Ratio
-				//qhy5ii_set_imgsize(width, height);
-				// After switching over, it should be performed once more
-				qhy5ii_AbortCapture();
-
-				usleep(100);
-				REG3012 = (unsigned short)(ExpTime / RowTime);
-				if (REG3012 < 1)
-				{
-					REG3012 = 1;
-				}
-				qhy_I2CTwoWrite(0x3012, REG3012);
-				ExpTime = (unsigned long)(REG3012 * RowTime);
-				longExpMode = 0;
-			}
-
-			qhy5ii_AbortCapture();
+			// Camera must "exit" long exp mode
+			longExpMode = 0;
+			//printf("Exit long exp mode\n");
+			//when exposure mode changed, reset resolution to get the new value of QHY5L_PLL_Ratio
+			//minicam5_set_imgsize(width, height);
+			// After switching over, it should be performed once more
+			minicam5_AbortCapture();
 
 			usleep(100);
 			REG3012 = (unsigned short)(ExpTime / RowTime);
@@ -684,60 +529,62 @@ int qhy5ii_SetExposureTime(int etime)
 			}
 			qhy_I2CTwoWrite(0x3012, REG3012);
 			ExpTime = (unsigned long)(REG3012 * RowTime);
+			longExpMode = 0;
 		}
+
+		minicam5_AbortCapture();
+
+		usleep(100);
+		REG3012 = (unsigned short)(ExpTime / RowTime);
+		if (REG3012 < 1)
+		{
+			REG3012 = 1;
+		}
+		qhy_I2CTwoWrite(0x3012, REG3012);
+		ExpTime = (unsigned long)(REG3012 * RowTime);
 	}
 	return 1;
 }
 
-int qhy5ii_SetGain(int gain)
+int minicam5_SetGain(int gain)
 {
-	if ((camvariant == 0) || (camvariant == 2))
+	if (longExpMode == 1)
 	{
-		//QHY5-II
-	    int i = (int)(72. * (gain / 100.));
-	    qhy_I2CTwoWrite(0x35, setgain[i]);
-	}
-	else if (camvariant == 1)
-	{
-		//QHY5L-II
-		if (longExpMode == 1)
+		minicam5_SetExposureTime(1);
+		if(camcolor == 1)
 		{
-			qhy5ii_SetExposureTime(1);
-			if(camcolor == 1)
-			{
-				/*double RG,BG;
-				RG = (double)QCam.wbred / 100.;
-				BG = (double)QCam.wbblue / 100.;
-				qhy5lii_SetGainColor(gain,RG,BG);*/
-				qhy5lii_SetGainColor(gain, 1, 1);
-			}
-			else
-			{
-				qhy5lii_SetGainMono(gain);
-			}
-			usleep(500000);
-			qhy5ii_SetExposureTime(exptime);
+			/*double RG,BG;
+			RG = (double)QCam.wbred / 100.;
+			BG = (double)QCam.wbblue / 100.;
+			minicam5_SetGainColor(gain,RG,BG);*/
+			minicam5_SetGainColor(gain, 1, 1);
 		}
 		else
 		{
-			if(camcolor == 1)
-			{
-				/*double RG,BG;
-				RG = (double)QCam.wbred / 100.;
-				BG = (double)QCam.wbblue / 100.;
-				qhy5lii_SetGainColor(gain,RG,BG);*/
-				qhy5lii_SetGainColor(gain, 1, 1);
-			}
-			else
-			{
-				qhy5lii_SetGainMono(gain);
-			}
+			minicam5_SetGainMono(gain);
+		}
+		usleep(500000);
+		minicam5_SetExposureTime(exptime);
+	}
+	else
+	{
+		if(camcolor == 1)
+		{
+			/*double RG,BG;
+			RG = (double)QCam.wbred / 100.;
+			BG = (double)QCam.wbblue / 100.;
+			minicam5_SetGainColor(gain,RG,BG);*/
+			minicam5_SetGainColor(gain, 1, 1);
+		}
+		else
+		{
+			minicam5_SetGainMono(gain);
 		}
 	}
 	return 1;
 }
 
-void qhy5lii_SetGainMono(double gain)
+void minicam5_SetGainMono(double gain)
 {
 	double Gain_Min, Gain_Max;
 
@@ -873,7 +720,7 @@ void qhy5lii_SetGainMono(double gain)
 
 }
 
-void qhy5lii_SetGainColor(double gain, double RG, double BG)
+void minicam5_SetGainColor(double gain, double RG, double BG)
 {
 	double Gain_Min, Gain_Max;
 
@@ -1013,85 +860,67 @@ void qhy5lii_SetGainColor(double gain, double RG, double BG)
 	qhy_I2CTwoWrite(0x3056, baseDGain);
 }
 
-int qhy5ii_set_imgsize(int width, int height)
+int minicam5_set_imgsize(int width, int height)
 {
-	// Both variants
 	int retval = 1;
 	
-	if ((camvariant == 0) || (camvariant == 2))
+	switch (width)
 	{
-		//QHY5-II
-		qhy5ii_set_Resolution(width, height);
-	}
-	else if (camvariant == 1)
-	{
-		//QHY5L-II
-		switch (width)
-		{
-			case 1280:
-				qhy5lii_set_1280x960();
-				break;
-			case 1024:
-				qhy5lii_set_1024x768();
-				break;
-			case 800:
-				qhy5lii_set_800x600();
-				break;
-			case 640:
-				qhy5lii_set_640x480();
-				break;
-			case 320:
-				qhy5lii_set_320x240();
-				break;
-			default:
-				retval = 0;
-				break;
-		}
-	}
-	else
-	{
-		retval = 0;
+		case 1280:
+			minicam5_set_1280x960();
+			break;
+		case 1024:
+			minicam5_set_1024x768();
+			break;
+		case 800:
+			minicam5_set_800x600();
+			break;
+		case 640:
+			minicam5_set_640x480();
+			break;
+		case 320:
+			minicam5_set_320x240();
+			break;
+		default:
+			retval = 0;
+			break;
 	}
 	return (retval);
 }
 
-double qhy5lii_GetTemp()
+int minicam5_setTec(int pwm, int fan) 
 {
-	double slope;
-	double T0;
-	uint16_t sensed, calib1, calib2;
+	unsigned char REG[3];
+	REG[0] = 0x01;
+	if (camvariant == 1)
+	{
+		REG[2] = 0xDF; 
+	}
+	else
+	{
+		REG[2] = 0xEB; 
+	}
 
-	// start measuring
-	qhy_I2CTwoWrite(0x30B4, 0x0011);
+	if (fan==0)
+	{
+		pwm = 0;
+	}
+	if( pwm == 0 )	// TEC off
+	{
+		REG[1]=0;
+	}
+	else			// TEC manual
+	{
+		REG[1]=(unsigned char)pwm;
+	}
 
-	// reading the calibration params gives just enough time	
-	calib1 = qhy_I2CTwoRead(0x30C6);
-	calib2 = qhy_I2CTwoRead(0x30C8);
-	
-	// stop measuring
-	qhy_I2CTwoWrite(0x30B4, 0x0000);
-	sensed = qhy_I2CTwoRead(0x30B2);
-	
-	slope = (70.0 - 55.0)/(calib1 - calib2);
-	T0 = (slope*calib1 - 70.0);
-	return slope * sensed - T0;
+   	return (qhy_cameraiIO(qhy_core_getendp()->write, REG, sizeof(REG)));
 }
 
-void qhy5ii_set_Resolution(int width, int height)
-{	
-	qhy_I2CTwoWrite(0x09, 200);
-	qhy_I2CTwoWrite(0x01, 8 + (maxheight - height) / 2); // y start
-	qhy_I2CTwoWrite(0x02, 16 + (maxwidth - width) / 2); // x start
-	qhy_I2CTwoWrite(0x03, (unsigned short)(height - 1)); // y size
-	qhy_I2CTwoWrite(0x04, (unsigned short)(width - 1)); // x size
-	qhy_I2CTwoWrite(0x22, 0x00); // normal bin
-	qhy_I2CTwoWrite(0x23, 0x00); // normal bin
-}
-
-void qhy5lii_set_1280x960()
+void minicam5_set_1280x960()
 {
-	qhy5liiInitRegs();
-	pllratio = qhy5lii_setPLL(0);
+	minicam5InitRegs();
+	pllratio = minicam5_setPLL(0);
 
 	int xstart = 4;
 	int ystart = 4;
@@ -1107,10 +936,10 @@ void qhy5lii_set_1280x960()
 	qhy_I2CTwoWrite(0x301A, 0x10DC); // RESET_REGISTER
 }
 
-void qhy5lii_set_1024x768() 
+void minicam5_set_1024x768() 
 {
-	qhy5liiInitRegs();
-	pllratio = qhy5lii_setPLL(0);
+	minicam5InitRegs();
+	pllratio = minicam5_setPLL(0);
 
 	int xstart = 4 + (maxwidth - width) / 2;
 	int ystart = 4 + (maxheight - height) / 2;
@@ -1126,10 +955,10 @@ void qhy5lii_set_1024x768()
 	qhy_I2CTwoWrite(0x301A, 0x10DC); // RESET_REGISTER
 }
 
-void qhy5lii_set_800x600()
+void minicam5_set_800x600()
 {
-	qhy5liiInitRegs();
-     pllratio = qhy5lii_setPLL(2);
+	minicam5InitRegs();
+     pllratio = minicam5_setPLL(2);
 
 	int xstart = 4 + (maxwidth - width) / 2; ;
 	int ystart = 4 + (maxheight - height) / 2; ;
@@ -1145,10 +974,10 @@ void qhy5lii_set_800x600()
 	qhy_I2CTwoWrite(0x301A, 0x10DC); // RESET_REGISTER
 }
 
-void qhy5lii_set_640x480()
+void minicam5_set_640x480()
 {
-	qhy5liiInitRegs();
-	pllratio = qhy5lii_setPLL(1);
+	minicam5InitRegs();
+	pllratio = minicam5_setPLL(1);
 
 	int xstart = 4 + (maxwidth - width) / 2; ;
 	int ystart = 4 + (maxheight - height) / 2; ;
@@ -1164,10 +993,10 @@ void qhy5lii_set_640x480()
 	qhy_I2CTwoWrite(0x301A, 0x10DC); // RESET_REGISTER
 }
 
-void qhy5lii_set_320x240() 
+void minicam5_set_320x240() 
 {
-	qhy5liiInitRegs();
-	pllratio = qhy5lii_setPLL(1);
+	minicam5InitRegs();
+	pllratio = minicam5_setPLL(1);
 
 	int xstart = 4 + (maxwidth - width) / 2; ;
 	int ystart = 4 + (maxheight - height) / 2; ;
@@ -1183,7 +1012,7 @@ void qhy5lii_set_320x240()
 	qhy_I2CTwoWrite(0x301A, 0x10DC); // RESET_REGISTER
 }
 
-void qhy5liiInitRegs()
+void minicam5InitRegs()
 {
 	// [720p, 25fps input27Mhz,output50Mhz, ]
 	qhy_I2CTwoWrite(0x301A, 0x0001); // RESET_REGISTER
@@ -1501,7 +1330,7 @@ void qhy5liiInitRegs()
 	qhy_I2CTwoWrite(0x3064, 0x1802);
 }
 
-double qhy5lii_setPLL(unsigned char clk)
+double minicam5_setPLL(unsigned char clk)
 {
 	double i = 0;
 
@@ -1598,7 +1427,7 @@ double qhy5lii_setPLL(unsigned char clk)
 }
 
 
-int qhy5lii_guide(enum GuiderAxis axis, enum GuiderMovement direction)
+int minicam5_guide(enum GuiderAxis axis, enum GuiderMovement direction)
 {
   unsigned char buf[2] = { 0, 0 };
   int v = 2;

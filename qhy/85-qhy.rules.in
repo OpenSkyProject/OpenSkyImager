@@ -22,6 +22,7 @@ ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="8613", RUN+="/sbin/fxload -t fx2 -I 
 ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="081a", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
 ATTRS{idVendor}=="1856", ATTRS{idProduct}=="0011", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy5.hex -D $env{DEVNAME} -s /etc/qhyccd/qhy5loader.hex"
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0920", RUN+="/sbin/fxload -t fx2 -I @QHY5II_FW@ -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0930", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/miniCam5.hex -D $env{DEVNAME}"
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0259", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy6.hex -D $env{DEVNAME}"
 ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="2980", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy6pro.hex -D $env{DEVNAME}"
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="4022", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy7.hex -D $env{DEVNAME}"
@@ -37,6 +38,7 @@ ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6740", RUN+="/sbin/fxload -t fx2 -I 
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6940", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy22.hex -D $env{DEVNAME}"
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="8140", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy23.hex -D $env{DEVNAME}"
 ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="8613", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/qhy16000.hex -D $env{DEVNAME}"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="8322", RUN+="/sbin/fxload -t fx2lp -I /etc/qhyccd/ic90a.hex -D $env{DEVNAME}"
 
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0005", RUN+="/sbin/fxload -t fx2 -I /etc/qhyccd/slavefifo.hex -D $env{DEVNAME}"
 
@@ -58,6 +60,7 @@ ATTRS{idVendor}=="1618", ATTRS{idProduct}=="b618*", OWNER="root", GROUP="video",
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="a285*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="IMG2S"
 ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="296d*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="QHY5"
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0921*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="QHY5II"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="0931*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="MINICAM5"
 ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="081d*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="QHY6o"
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="025a*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="QHY6"
 ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="2981*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="QHY6pro"
@@ -74,6 +77,7 @@ ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6741*", OWNER="root", GROUP="video",
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="6941*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="QHY22"
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="8141*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="QHY22"
 ATTRS{idVendor}=="1618", ATTRS{idProduct}=="1611*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="QHY16000"
+ATTRS{idVendor}=="1618", ATTRS{idProduct}=="8323*", OWNER="root", GROUP="video", MODE="0666", SYMLINK+="IC90A"
 
 ATTRS{modalias}=="usb:v1618p666A*",OWNER="root", GROUP="video", MODE="0666", SYMLINK+="IMG132E"
 

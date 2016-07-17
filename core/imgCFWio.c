@@ -143,7 +143,7 @@ gpointer thd_get_idle_run(gpointer thd_data)
 	// About the result got
 	// The post process will work on the GUI, hence to be thread safe must be 
 	// Executed from the main loop -> timer.
-	cfwpos = (status == 0)? cfwpos : -1;
+	cfwpos = (status == 0) ? cfwpos : -1;
 	g_timeout_add(1, tmr_run, GINT_TO_POINTER(status == 0));
 	return 0;
 }

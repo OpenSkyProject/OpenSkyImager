@@ -26,12 +26,16 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Supported camera list
 ==================
-As of version 0.9.0 several QHY camera are actively developed against:
+As of version 0.9.4 several QHY camera are actively developed against:
 QHY2 (old color model),5,5II series,6 (both firmware),7,8(Old),8L,9,10,11,12,
-IC8300.
+IC8300, QHY90A (experimental), minicam5S / minicam5F (experimental).
 
 Models that have been 100% tested are: QHY2(old color model), QHY5, 5II series,
 6 (both firmware),7, 8(Old), 8L, 9, 11, 12, IC8300.
+
+For QHY90A, minicam5S, minicam5F the basic develop from Anat Ruangrassamee have 
+been fully tested. However my integration into main project has not. That's why
+I prefer to have it marked as experimental.
 
 Please note that through the iAstroHub package:
 <http://sourceforge.net/projects/iastrohub/>
@@ -72,10 +76,10 @@ If not a request can be submitted on the QHY forum http://www.qhyccd.com/ccdbbs
 
 Color filter wheel support
 =======================
-As of version 0.9.0 both QHY 5 positions 2" and the new QHYCFW2 series are 
+As of version 0.9.4 both QHY 5 positions 2" and the new QHYCFW2 series are 
 supported. Both with serial and through camera connection.
 Models that are known to support cfw-through connection are QHY7/9/11/21/22/23.
-
+Also embedded CFW of minicam5F and QHY90A are supported.
 
 Remote control
 ==============
@@ -104,8 +108,14 @@ Usual CMake/Make commands can of course be used, but a couple of install scripts
 have been provided, reworking those originally developed by Clive Rogers:
 
  - install_OSI.bash will install all that is needed to use QHY camera series
- - install_OSI_full.bash will add SBIG (unidrv) support
-
+ - install_OSI_full.bash will add SBIG (unidrv) support and ATIK (libatikccd)
+ 
+install_OSI_full will add unidrv latest driver if missing, while you'll need to
+download ATIK library from (http://www.cloudmakers.eu/atikdrivers/).
+As of version 0.9.4 version 1.1 or 1.4 of the library is needed. Version 1.4 
+implements the "Preview mode" aka download speed selection. Version 1.1 will use
+"slow" download speed no matter the program setting.
+ 
 (Notice: to install with URVC (aka SBIG parport) please see manual)
  
 Both scripts will check for dependencies, (prompt for install if needed), 

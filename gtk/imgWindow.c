@@ -114,6 +114,8 @@ void spn_exptime_build()
 	//Callbacks
 	g_signal_connect(G_OBJECT(spn_exptime), "key-press-event", G_CALLBACK(numbers_input_keypress), (gpointer)"4:+1:+9999:0:value-changed");	
 	g_signal_connect(G_OBJECT(spn_exptime), "value-changed", G_CALLBACK(spn_exptime_changed),  NULL);
+	// Init
+	spn_exptime_changed(GTK_SPIN_BUTTON(spn_exptime), NULL); 
 }
 
 /*void cmb_exptime_build()
@@ -524,6 +526,7 @@ void hsc_offset_build()
 	gtk_range_set_value(GTK_RANGE(hsc_offset), 120);
 	imgcam_get_expar()->offset = 120;
 	fithdr[HDR_OFFSET].ivalue = imgcam_get_expar()->offset;
+	gtk_widget_set_sensitive(hsc_offset, 0);
 }
 
 void hsc_gain_build()
@@ -537,6 +540,7 @@ void hsc_gain_build()
 	gtk_range_set_value(GTK_RANGE(hsc_gain), 20);
 	imgcam_get_expar()->gain = 20;
 	fithdr[HDR_GAIN].ivalue = imgcam_get_expar()->gain;
+	gtk_widget_set_sensitive(hsc_gain, 0);
 }
 
 void cmb_csize_build()

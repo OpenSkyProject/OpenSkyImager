@@ -79,6 +79,8 @@ void qhy6old_init()
 	imgcam_get_tecp()->tectemp    = 0.;     // Only meaningful when tecauto = 1; 
 	imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
 	
+	imgcam_get_camui()->hasgain = 1;
+	imgcam_get_camui()->hasoffset = 1;
 	strcpy(imgcam_get_camui()->binstr, "1x1|2x2:0");
 	strcpy(imgcam_get_camui()->roistr, "");
 	/// Combo box values list, keep N-<desc> format. Just translate <desc>
