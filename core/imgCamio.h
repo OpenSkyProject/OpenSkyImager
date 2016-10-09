@@ -48,7 +48,7 @@ typedef struct
 
 typedef struct
 {
-	int istec;       // 0 = Not driveable tec or no tec 1 = Driveable tec 2 = Temp read only 3 = SBIG 4= aTIK
+	int istec;       // 0 = Not driveable tec or no tec, 1 = Driveable tec, 2 = Temp read only, 3 = SBIG, 4 = ATIK
 	int tecerr;      // Error setting / reading PWM
 	int tecpwr;      // Basically tecmin - tecmax
 	int tecmax;      // 0-255

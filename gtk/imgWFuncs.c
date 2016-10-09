@@ -238,6 +238,10 @@ void set_img_fit()
 		{
 			fwhm_show();
 		}
+		if (crssv == 1)
+		{
+			crosshair_show();
+		}
 	}
 	fit = 1;
 	g_rw_lock_reader_unlock(&pixbuf_lock);
@@ -257,6 +261,10 @@ void set_img_full()
 	if (fwhmv == 1)
 	{
 		fwhm_show();
+	}
+	if (crssv == 1)
+	{
+		crosshair_show();
 	}
 	g_rw_lock_reader_unlock(&pixbuf_lock);
 }
@@ -536,12 +544,12 @@ void fwhm_hide()
 
 	// Clear Roi
 	gtk_image_clear(GTK_IMAGE(fwhmroi));
+	gtk_fixed_move(GTK_FIXED(fixed), fwhmroi, 0, 0);
 	
 	// Clear label
 	fwhmfbk[0] = '\0';
 	gtk_label_set_text(GTK_LABEL(lbl_fbkfwhm), (gchar *) fwhmfbk);
 	gtk_fixed_move(GTK_FIXED(fixed), lbl_fbkfwhm, 0, 0);
-
 }
 
 void fwhm_calc()
@@ -773,6 +781,36 @@ void fwhm_calc()
 	afwhm = (vfwhm + ofwhm) / 2.;
 	*/
 	pfwhm = resp;
+}
+
+void crosshair_show()
+{
+	int crsssize = MIN(imgpix_get_width() / 5, imgpix_get_height() / 5);
+	crsssize = MAX(crsssize, 100);
+	crsssize /= imgratio;
+	crsssize += ( crsssize % 2 );
+	
+	// Center on image data regardless of "fit to screen"
+	int crssx = ((imgpix_get_width() / (2 * imgratio)) - (crsssize / 2)), crssy = ((imgpix_get_height() / ( 2 * imgratio)) - (crsssize / 2));
+	GdkPixbuf *pixbuf;
+
+	// Set flag "is visible"	
+	crssv = 1;
+
+	pixbuf = imgpix_get_crosshair(crsssize);
+	gtk_image_set_from_pixbuf((GtkImage *) crssroi, pixbuf);
+	g_object_unref(pixbuf);
+	gtk_fixed_move(GTK_FIXED(fixed), crssroi, crssx, crssy);	
+}
+
+void crosshair_hide()
+{
+	// Set flag "is visible"	
+	crssv = 0;
+
+	// Clear Roi
+	gtk_image_clear(GTK_IMAGE(crssroi));
+	gtk_fixed_move(GTK_FIXED(fixed), crssroi, 0, 0);	
 }
 
 void tec_init_graph()

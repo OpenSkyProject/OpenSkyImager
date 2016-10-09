@@ -91,8 +91,8 @@
 
 	// Widgets
 	GtkWidget *window, *swindow, *fixed, *imgevent;
-	GtkWidget *image, *histogram, *fwhmroi;
-	GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_focus,*cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
+	GtkWidget *image, *histogram, *fwhmroi, *crssroi;
+	GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_focus,*cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram, *cmd_crss, *img_crss;
 	GtkWidget *hsc_maxadu, *hsc_minadu;
 	GtkWidget *box_main, *pnd_main, *pnd_left, *box_top_left, *box_bot_left, *tab_right, *tab_settings;
 	GtkWidget *imgstatus, *imgstatec, *imgstafit;
@@ -177,6 +177,7 @@
 	char fpsfbk[16];
 	char fwhmfbk[64];
 	int fwhmx = 0, fwhmy = 0, fwhmv = 0, fwhms = 64, fwhmp = 4096, pfwhm = 1, fwhmlblh = 0, fwhmlblw = 0;
+	int crssv = 0;
 	double afwhm = 0.;
 	int tecrun = 0, tecprerun = 0, tecspeed = 0;
 	struct tm tlstart, tlend;
@@ -203,8 +204,8 @@
 
 	// Widgets
 	extern GtkWidget *window, *swindow, *fixed, *imgevent;
-	extern GtkWidget *image, *histogram, *fwhmroi;
-	extern GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_focus, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram;
+	extern GtkWidget *image, *histogram, *fwhmroi, *crssroi;
+	extern GtkWidget *cmd_settings, *cmd_about, *cmd_capture, *cmd_focus, *cmd_load, *cmd_run, *cmd_hold, *cmd_fit, *cmd_histogram, *cmd_crss, *img_crss;
 	extern GtkWidget *hsc_maxadu, *hsc_minadu;
 	extern GtkWidget *box_main, *pnd_main, *pnd_left, *box_top_left, *box_bot_left, *tab_right, *tab_settings;
 	extern GtkWidget *imgstatus, *imgstatec, *imgstafit;
@@ -289,6 +290,7 @@
 	extern char fpsfbk[16];
 	extern char fwhmfbk[64];
 	extern int fwhmx, fwhmy, fwhmv, fwhms, fwhmp, pfwhm, fwhmlblh, fwhmlblw;
+	extern int crssv;
 	extern double afwhm;
 	extern int tecrun, tecprerun, tecspeed;
 	extern struct tm tlstart, tlend;

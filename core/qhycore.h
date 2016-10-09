@@ -110,7 +110,7 @@ int qhy_setDC201_i(int pwm, int fan);
 int qhy_Shutter(int cmd);
 int qhy_setColorWheel(int Pos);
 int qhy_getImgData(int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred);
-
+int qhy_getImgData_align(int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred);
 
 int             qhy_EepromRead(unsigned char addr, unsigned char* data, unsigned short len);
 int             qhy_I2CTwoWrite(uint16_t addr,unsigned short value);

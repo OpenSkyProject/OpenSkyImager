@@ -28,6 +28,7 @@
 static GdkPixbuf *pixbuf = NULL;
 static GdkPixbuf *hstbuf = NULL;
 static GdkPixbuf *sqrbuf = NULL;
+static GdkPixbuf *crsbuf = NULL;
 static GdkPixbuf *roibuf = NULL;
 int pwidth, pheight, pdebayer, pbpp = 1;
 static char     *pixmsg;
@@ -147,6 +148,113 @@ void imgpix_init_histogram()
 	}
 }
 
+GdkPixbuf *imgpix_get_crosshair(int size)
+{
+	int rowstride;
+	int x, y, r = ((size / 2) - 1), r1 = (-size / 20), r2 =  (size / 20), err = 0;
+	guchar *pixels, *p;
+	
+	crsbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, size, size);
+	rowstride = gdk_pixbuf_get_rowstride (crsbuf);
+	pixels    = gdk_pixbuf_get_pixels (crsbuf);
+	
+	// Clear pixels
+	for (y = 0; y < size; y++)
+	{
+		for (x = 0; x < size; x++)
+		{
+			p = pixels + (y) * rowstride + (x) * 4;
+			p[0] = 0;
+			p[1] = 0;
+			p[2] = 0;
+			p[3] = 0;
+		}
+	}	
+	
+	// Draw a circle
+    x = r;
+    y = 0;
+
+    while (x >= y)
+    {
+    	p = pixels + (r+y) * rowstride + (r+x) * 4;
+		p[0] = 150;
+		p[3] = 255;
+    	p = pixels + (r+x) * rowstride + (r+y) * 4;
+		p[0] = 150;
+		p[3] = 255;
+    	p = pixels + (r+x) * rowstride + (r-y) * 4;
+		p[0] = 150;
+		p[3] = 255;
+    	p = pixels + (r+y) * rowstride + (r-x) * 4;
+		p[0] = 150;
+		p[3] = 255;
+    	p = pixels + (r-y) * rowstride + (r-x) * 4;
+		p[0] = 150;
+		p[3] = 255;
+    	p = pixels + (r-x) * rowstride + (r-y) * 4;
+		p[0] = 150;
+		p[3] = 255;
+    	p = pixels + (r-x) * rowstride + (r+y) * 4;
+		p[0] = 150;
+		p[3] = 255;
+    	p = pixels + (r-y) * rowstride + (r+x) * 4;
+		p[0] = 150;
+		p[3] = 255;
+
+        y += 1;
+        err += 1 + 2*y;
+        if (2*(err-x) + 1 > 0)
+        {
+            x -= 1;
+            err += 1 - 2*x;
+        }
+    }
+		
+	// Draw h lines (inside circle)
+	for (x = -r; x < r; x++)
+	{
+		if(x*x + r1*r1 <= r*r)
+		{
+			p = pixels + (r1+r) * rowstride + (x+r) * 4;
+			p[0] = 150;
+			p[1] = 0;
+			p[2] = 0;
+			p[3] = 255;
+		}
+		if(x*x + r2*r2 <= r*r)
+		{
+			p = pixels + (r2+r) * rowstride + (x+r) * 4;
+			p[0] = 150;
+			p[1] = 0;
+			p[2] = 0;
+			p[3] = 255;
+		}
+	}
+	
+	// Draw v lines  (inside circle)
+	for (y = -r; y < r; y++)
+	{
+		if(y*y + r1*r1 <= r*r)
+		{
+			p = pixels + (y+r) * rowstride + (r1+r) * 4;
+			p[0] = 150;
+			p[1] = 0;
+			p[2] = 0;
+			p[3] = 255;
+		}
+		if(y*y + r2*r2 <= r*r)
+		{
+			p = pixels + (y+r) * rowstride + (r2+r) * 4;
+			p[0] = 150;
+			p[1] = 0;
+			p[2] = 0;
+			p[3] = 255;
+		}
+	}
+	return crsbuf;
+}
+
 GdkPixbuf *imgpix_get_roi_square(int size)
 {
 	int rowstride;
@@ -162,10 +270,20 @@ GdkPixbuf *imgpix_get_roi_square(int size)
 		for (col = 0; col < size; col++)
 		{
 			p = pixels + row * rowstride + col * 4;
-			p[0] = ((row == 0) || (row == (size - 1)) || (col == 0) || (col == (size - 1))) ? 150 : 0;
-			p[1] = 0;
-			p[2] = 0;
-			p[3] = ((row == 0) || (row == (size - 1)) || (col == 0) || (col == (size - 1))) ? 255 : 0;
+			if ((row == 0) || (row == (size - 1)) || (col == 0) || (col == (size - 1)))
+			{
+				p[0] = 150;
+				p[1] = 0;
+				p[2] = 0;
+				p[3] = 255;
+			}
+			else
+			{
+				p[0] = 0;
+				p[1] = 0;
+				p[2] = 0;
+				p[3] = 0;
+			}
 		}
 	}
 	return sqrbuf;

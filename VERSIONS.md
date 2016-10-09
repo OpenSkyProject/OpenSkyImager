@@ -194,3 +194,16 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - Changed: CAMGAIN command will report error if used when HASGAIN = 0
 - Fix: a crash when using "LOADFILE" command from FIFO
 
+*Version 0.9.5*
+- Fix: minicam5 series not showing when connected
+- Fix: QHY90A not enabling Gain/Offset (previous version regression)
+- Fix: DSI-II not enabling Gain/Offset (previous version regression)
+- Fix: ATIK cooling not available from Fifo
+- New: QHY through camera CFW rotation wait time is now model based
+- New: Improved minicam5 / QHY5-II series frame transfer (safer and/or quicker)
+- New: improved ATIK short exposure time control
+- New: Center image area crosscreen to help CCD guider sky align
+Minicam5 status: 
+- minicam5S cooling ok, short exposure ok, long exposure ko
+- minicam5f cooling ko, short exposure ok, long exposure ko, CFW control ok.
+

@@ -175,6 +175,11 @@ gboolean tmr_capture_progress_refresh (int *readoutok)
 			fwhm_show();
 		}
 	
+		if ((crssv == 1) && (*readoutok == 1))
+		{
+			crosshair_show();
+		}
+	
 		if (capture)
 		{
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(spn_shots), (int)tmpshots);
@@ -1295,6 +1300,20 @@ void cmd_fit_click(GtkWidget *widget, gpointer data)
 		gtk_button_set_label(GTK_BUTTON(widget), C_("main","1:1"));
 		set_img_full();
 		gtk_statusbar_write(GTK_STATUSBAR(imgstatus), 0, C_("main","Original size"));
+	}
+}   
+
+void cmd_crss_click(GtkWidget *widget, gpointer data)
+{	
+	if (crssv == 0)
+	{
+		// Show crosshair
+		crosshair_show();
+	}
+	else
+	{
+		// Show crosshair
+		crosshair_hide();
 	}
 }   
 
@@ -3574,7 +3593,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 			else if (strcmp(cmd, "TECAUTO") == 0)
 			{
 				// Enable disable tec feedback mode (using current target temp)
-				if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3))
+				if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3) || (imgcam_get_tecp()->istec == 4))
 				{
 					if (gtk_widget_get_sensitive(cmd_tecenable) || gtk_widget_get_sensitive(cmd_tecdisable))
 					{
@@ -3630,7 +3649,7 @@ gboolean fiforeadcb (GIOChannel *gch, GIOCondition condition, gpointer data)
 			else if (strcmp(cmd, "SETTEMP") == 0)
 			{
 				// Set target temperature (if tecread & tecauto are not set already, it will do)
-				if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3))
+				if ((imgcam_get_tecp()->istec == 1) || (imgcam_get_tecp()->istec == 3) || (imgcam_get_tecp()->istec == 4))
 				{
 					if (gtk_widget_get_sensitive(cmd_tecenable) || gtk_widget_get_sensitive(cmd_tecdisable))
 					{

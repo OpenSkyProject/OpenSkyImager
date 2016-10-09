@@ -38,6 +38,8 @@ void fwhm_center(int setx, int sety, int abspos);
 void fwhm_show();
 void fwhm_hide();
 void fwhm_calc();
+void crosshair_show();
+void crosshair_hide();
 void tec_init_graph();
 void tec_show_graph();
 void tec_print_graph();

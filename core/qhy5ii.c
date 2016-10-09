@@ -215,10 +215,12 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 			if (cu)
 			{ 
 				retval = (retval == 1) ? qhy5ii_SetUSBTraffic(usbspd) : 0;
+				ce = 1;
 			}
 			if (cs)
 			{ 
 				retval = (retval == 1) ? qhy5ii_SetSpeed(speed) : 0;
+				ce = 1;
 			}
 			if (ce)
 			{ 
@@ -232,8 +234,8 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 		// Reg set
 		totalsize      = width * height * bytepix;
 		// IMGOFFSET bytes are not returned when in 800x600 mode. Firmware issue?
-		//transfer_size  = totalsize + IMGOFFSET;
-		transfer_size  = totalsize + (((width != 800) && (width != 2592)) ? IMGOFFSET : 0);
+		transfer_size  = totalsize + IMGOFFSET;
+		//transfer_size  = totalsize + (((width != 800) && (width != 2592)) ? IMGOFFSET : 0);
 		expar->totsize = totalsize;
 		expar->tsize   = transfer_size;
 
@@ -241,7 +243,10 @@ int qhy5ii_setregisters(qhy_exposure *expar)
 	}
 	else
 	{
-		retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime) : 0;
+		if (exptime > 1000)
+		{
+			retval = (retval == 1) ? qhy5ii_SetExposureTime(exptime) : 0;
+		}
 	}
 	return (retval);
 }
@@ -1129,7 +1134,7 @@ void qhy5lii_set_1024x768()
 void qhy5lii_set_800x600()
 {
 	qhy5liiInitRegs();
-     pllratio = qhy5lii_setPLL(2);
+    pllratio = qhy5lii_setPLL(2);
 
 	int xstart = 4 + (maxwidth - width) / 2; ;
 	int ystart = 4 + (maxheight - height) / 2; ;

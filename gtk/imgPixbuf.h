@@ -28,6 +28,7 @@ GdkPixbuf   *imgpix_get_data();
 int         imgpix_save_data(char *path);
 GdkPixbuf   *imgpix_get_histogram(int scale);
 int         imgpix_save_histogram_data(char *path);
+GdkPixbuf   *imgpix_get_crosshair(int size);
 GdkPixbuf   *imgpix_get_roi_square(int size);
 GdkPixbuf   *imgpix_get_roi_data(int centerx, int centery, int size);
 int         imgpix_loaded();

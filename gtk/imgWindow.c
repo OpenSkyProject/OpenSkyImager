@@ -272,6 +272,36 @@ void cmd_fit_build()
 	g_signal_connect(G_OBJECT(cmd_fit), "clicked", G_CALLBACK(cmd_fit_click), NULL);
 }
 
+void cmd_crss_build()
+{
+	GError *error = NULL;
+	char imgCrssIco[PATH_MAX];
+	
+	cmd_crss = gtk_toggle_button_new_with_label_color("", 25, 30, &clrSelected);	
+
+	strcpy(imgCrssIco, imgBasePath);
+	strcat(imgCrssIco, CRSSICO);
+	img_crss = gtk_image_new();
+	GdkPixbuf *crspixbuf = gdk_pixbuf_new_from_file(imgCrssIco, &error);
+	if(crspixbuf) 
+	{
+		gtk_image_set_from_pixbuf(GTK_IMAGE(img_crss), crspixbuf);
+		gtk_button_set_image(GTK_BUTTON(cmd_crss), img_crss);
+	}
+	else
+	{
+		gtk_button_set_label(GTK_BUTTON(cmd_crss), "C");	
+	}
+	g_object_unref(crspixbuf);
+	if (error != NULL)
+	{
+		g_error_free(error);
+	}
+
+	// Callbacks
+	g_signal_connect(G_OBJECT(cmd_crss), "clicked", G_CALLBACK(cmd_crss_click), NULL);
+}
+
 void lbl_fbkimg_build()
 {
 	PangoFontDescription *fd; 
@@ -417,6 +447,7 @@ void image_build()
 	// Image
 	image    = gtk_image_new();	
 	fwhmroi  = gtk_image_new();	
+	crssroi  = gtk_image_new();	
 	imgevent = gtk_event_box_new();
 	gtk_event_box_set_visible_window(GTK_EVENT_BOX(imgevent), FALSE);
 	
@@ -448,6 +479,7 @@ void swindow_build()
 	// Pack image into scrolled window
 	gtk_fixed_put(GTK_FIXED(fixed), imgevent, 0, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), fwhmroi, 0, 0);
+	gtk_fixed_put(GTK_FIXED(fixed), crssroi, 0, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbkimg,  10, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbktec, 100, 0);
 	gtk_fixed_put(GTK_FIXED(fixed), lbl_fbkfps, 230, 0);
@@ -1602,6 +1634,7 @@ void box_top_left_build()
 	pbr_exptime_build();
 	cmd_hold_build();
 	cmd_load_build();
+	cmd_crss_build();
 	cmd_fit_build();
 
 	// Pack into box_top_left
@@ -1619,8 +1652,9 @@ void box_top_left_build()
 	gtk_table_attach(GTK_TABLE(box_top_left), cmd_run,      0, 6, 6,  7, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(box_top_left), pbr_exptime,  0, 6, 7,  8, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_SHRINK | GTK_FILL, 0, 5);
 	gtk_table_attach(GTK_TABLE(box_top_left), cmd_hold,     0, 6, 8,  9, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_top_left), cmd_load,     0, 3, 9, 10, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_SHRINK | GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(box_top_left), cmd_fit,      3, 6, 9, 10, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_SHRINK | GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), cmd_load,     0, 2, 9, 10, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_SHRINK | GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), cmd_crss,     2, 4, 9, 10, GTK_FILL, GTK_SHRINK | GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(box_top_left), cmd_fit,      4, 6, 9, 10, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_SHRINK | GTK_FILL, 0, 0);
 }
 
 void box_bot_left_build()
@@ -1745,6 +1779,9 @@ void window_build()
 	#endif
 	gtk_color_get_lighter(&clrSelected);
 	gtk_color_get_alert(&clrKill);
+
+	// Pre set for display button images
+	g_object_set(gtk_settings_get_default(), "gtk-button-images", TRUE, NULL); 
 
 	box_main_build();
 

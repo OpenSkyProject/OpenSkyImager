@@ -643,9 +643,18 @@ int imgcfw_set_slot(int slot, gpointer (*postProcess)(int))
 					postReadProcess = postProcess;
 					if ((retval = imgcam_wheel(slot)) == 1)
 					{
+						int wait = 10;
 						cfwpos = slot;
 						sprintf(cfwmsg, C_("cfw","Filter wheel moving to slot: %d"), slot + 1);
-						g_timeout_add_seconds((READ_TIME * 2), tmr_run, (gpointer)1);
+						switch (imgcam_get_camid())
+						{
+							case 92:
+								wait = 20;
+								break;
+							default:
+								wait = 10;
+						}
+						g_timeout_add_seconds(wait, tmr_run, (gpointer)1);
 					}
 					else
 					{

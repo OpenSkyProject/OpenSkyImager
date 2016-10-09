@@ -44,6 +44,7 @@ gboolean spn_exptime_changed (GtkSpinButton *spinbutton, gpointer user_data);
 void cmd_load_click(GtkWidget *widget, gpointer data);
 void cmd_run_click(GtkWidget *widget, gpointer data);
 void cmd_hold_click(GtkWidget *widget, gpointer data);
+void cmd_crss_click(GtkWidget *widget, gpointer data);
 void cmd_fit_click(GtkWidget *widget, gpointer data);
 void cmd_histogram_click(GtkWidget *widget, gpointer data);
 gboolean spn_histogram_changed (GtkSpinButton *spinbutton, gpointer user_data);

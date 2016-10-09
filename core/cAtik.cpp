@@ -386,4 +386,8 @@ char *atik_camera_getCfwList()
 	return cfwList;
 }
 
+int atik_camera_minExposure()
+{
+	return 200;
+}
 #endif //HAVE_ATIK

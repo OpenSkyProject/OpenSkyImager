@@ -28,6 +28,8 @@
 #define SQR3(x) ((x)*(x)*(x))
 #define SQRT3(x) (exp(log(x)/3))
 
+#define _GNU_SOURCE //This is needed to "see" memmem function in strings.h
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -62,6 +64,8 @@ void qhy_core_init()
 	endp.info  = 0;
 	endp.read  = 0;
 	endp.write = 0;
+	endp.iread  = 0;
+	endp.iwrite = 0;
 	endp.bulk  = 0;
 	endp.aux   = 0;
 
@@ -614,6 +618,85 @@ int qhy_getImgData(int transfer_size, unsigned char *databuffer, int *errcode, i
 		//printf("Bulk errcode: %d\n", *errcode);
 		sprintf(coremsg, C_("qhycore","getImgData failed, error %d"), *errcode);
 	}
+	return (*errcode == 0);
+}
+
+/* 
+   qhy_getImgData_align is adapted from lin_guider source 
+   Author: Andrew Stepanenko (Galaxy Master)
+   (c)GM software' 08-13
+   Project page: http://sourceforge.net/projects/linguider/
+*/
+int qhy_getImgData_align(int transfer_size, unsigned char *databuffer, int *errcode, int *length_transferred)
+{
+	int transferred = 0;
+	int try_cnt = 0;
+	int pos = 0;
+	int to_read = transfer_size + 5;
+	int ret = 0;
+	unsigned char pat[4] = {0xaa, 0x11, 0xcc, 0xee};
+
+	while (( to_read ) && !(try_cnt > 3))
+	{
+		ret = libusb_bulk_transfer( hDevice, endp.bulk, databuffer + pos, to_read, &transferred, ((to_read > 15000000) ? 60000: 40000));
+		if( ret != 0 )
+		{
+			if( try_cnt > 3 )
+			{
+				pos = 0;
+				break;
+			}
+			try_cnt++;
+			continue;
+		}
+
+		pos += transferred;
+		to_read -= transferred;
+		
+		void *ppat = memmem(databuffer + pos -5, 4, pat, 4);
+
+		if ((to_read) && (ppat))
+		{
+			/* 
+				Here we are using the pattern as a frame delimiter. If we still have bytes
+				to read and the pattern is found then the frames are missalined and we are at
+				the end of the previous frame. We have to start again.
+			*/
+			// printf("#### Aligning frame, pos=%d, to_read=%d.\n", pos, to_read);
+			try_cnt++;
+			pos = 0;
+			to_read = transfer_size + 5;			
+			continue;
+		}
+			
+		if ((to_read <= 0) && (ppat == NULL))
+		{
+			/* 
+				If by accident to_read is 0 and we are not at the end of the frame
+				we have missed the alignment pattern, so look for the next one.
+			*/
+			// printf("Frame seems to be invalid, retrying!\n");
+			try_cnt++;
+			pos = 0;
+			if( try_cnt > 3 )
+			{
+				// printf("Frame Failed - no pattern found!\n");
+				break;
+			}
+			to_read = transfer_size + 5;
+			try_cnt++;
+			continue;
+		}
+
+		//printf("Read: %d of %d, try_cnt=%d, result=%d.\n", transferred, to_read + transferred, try_cnt, ret);
+		
+	}
+
+	//printf("Frame succeded: %d bytes\n", pos);
+	//Report last libusb exit code and lenght transferred
+	*errcode = ret;
+	*length_transferred = pos;
+
 	return (*errcode == 0);
 }
 

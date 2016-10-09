@@ -70,6 +70,7 @@
 		extern "C" int atik_camera_getColorId();
 		extern "C" char *atik_camera_getBinList();
 		extern "C" char *atik_camera_getCfwList();
+		extern "C" int atik_camera_minExposure();
 	#else
 		// The following definitions are copied from original <atikccdusb.h>
 		// Inclusion of that file from within a c source is not possible
@@ -156,6 +157,7 @@
 		int atik_camera_getColorId();
 		char *atik_camera_getBinList();
 		char *atik_camera_getCfwList();
+		int atik_camera_minExposure();
 	#endif
 #endif
 

@@ -464,6 +464,11 @@ char *imgcam_init_list(int all)
 		strcat(imgcam_get_camui()->camstr, "|QHY5II-Series");
 	}
 
+	if ((imgcam_iscamera("miniCAM5-Series")) || (all))
+	{
+		strcat(imgcam_get_camui()->camstr, "|miniCAM5-Series");
+	}
+
 	if ((imgcam_iscamera("QHY6")) || (all))
 	{
 		strcat(imgcam_get_camui()->camstr, "|QHY6");
@@ -1096,8 +1101,8 @@ int imgcam_shoot()
 						retval = (shpar.mode == 0) ? atik_camera_setShutter(1) : atik_camera_setShutter(0);
 					}
 					if (retval)
-					{
-						retval = (atik_camera_startExposure(shpar.amp));
+					{ 
+						retval = (shpar.time > atik_camera_minExposure()) ? (atik_camera_startExposure(shpar.amp)) : 1;
 					}
 				}
 			}
@@ -1158,7 +1163,16 @@ int imgcam_readout_ext(unsigned char *p)
 		}
 		//char *buf = NULL;
 		//printf("Begin readout: %s\n", gettimestamp(buf));
-		retval = qhy_getImgData(shpar.tsize, p, &error, &length_transferred);
+		switch (camid)
+		{
+			case 52:
+			case 53:
+				retval = qhy_getImgData_align(shpar.totsize, p, &error, &length_transferred);
+				break;
+			default:
+				retval = qhy_getImgData(shpar.tsize, p, &error, &length_transferred);
+				break;
+		}
 		//printf("End readout  : %s\n", gettimestamp(buf));
 	}
 	else if (camid == 1000) // plouis
@@ -1199,7 +1213,19 @@ int imgcam_readout_ext(unsigned char *p)
 		}
 		//printf("Readout : %dx%d %d\n", isizeX, isizeY, shpar.bin);
 		//printf("GetImage: %dx%d %d\n", shpar.width, shpar.height, shpar.bin);
-		if ((retval) && (atik_camera_readCCD(0, 0, (unsigned int)isizeX, (unsigned int)isizeY, (unsigned int)shpar.bin, (unsigned int)shpar.bin)))
+		if (retval)
+		{
+			if (shpar.time > atik_camera_minExposure())
+			{
+				//printf("longExposure\n");
+				retval = atik_camera_readCCD(0, 0, (unsigned int)isizeX, (unsigned int)isizeY, (unsigned int)shpar.bin, (unsigned int)shpar.bin);
+			}
+			else
+			{
+				retval = atik_camera_readCCD_delay(0, 0, (unsigned int)isizeX, (unsigned int)isizeY, (unsigned int)shpar.bin, (unsigned int)shpar.bin, (double)shpar.wtime/1000.);
+			}		
+		}
+		if (retval)
 		{
 			if ((retval = atik_camera_getImage((unsigned short *) p, (unsigned int)(shpar.width * shpar.height))))
 			{
@@ -1485,8 +1511,6 @@ int imgcam_gettec(double *tC, double *setTemp, int *power, int *enabled)
 		case 91:
 		case 92:
 		case 10:
-			retval = qhy_getDC201_i(tC, &mV);
-			break;
 		case 11:
 		case 12:
 			retval = qhy_getDC201_i(tC, &mV);

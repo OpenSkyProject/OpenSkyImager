@@ -97,6 +97,8 @@ void minicam5_init()
 	imgcam_get_tecp()->tectemp    = 0.;     // Only meaningful when tecauto = 1; 
 	imgcam_get_tecp()->settemp    = 0.;     // Only meaningful when tecauto = 1; 
 		
+	imgcam_get_camui()->hasgain = 1;
+	imgcam_get_camui()->hasoffset = 0;
 	strcpy(imgcam_get_camui()->binstr, "");
 	strcpy(imgcam_get_camui()->roistr, "");
 	/// Combo box values list, keep N-<desc> format. Just translate <desc>
@@ -201,10 +203,12 @@ int minicam5_setregisters(qhy_exposure *expar)
 			if (cu)
 			{ 
 				retval = (retval == 1) ? minicam5_SetUSBTraffic(usbspd) : 0;
+				ce = 1;
 			}
 			if (cs)
 			{ 
 				retval = (retval == 1) ? minicam5_SetSpeed(speed) : 0;
+				ce = 1;
 			}
 			if (ce)
 			{ 
@@ -218,8 +222,8 @@ int minicam5_setregisters(qhy_exposure *expar)
 		// Reg set
 		totalsize      = width * height * bytepix;
 		// IMGOFFSET bytes are not returned when in 800x600 mode. Firmware issue?
-		//transfer_size  = totalsize + IMGOFFSET;
-		transfer_size  = totalsize + (((width != 800) && (width != 2592)) ? IMGOFFSET : 0);
+		transfer_size  = totalsize + IMGOFFSET;
+		//transfer_size  = totalsize + (((width != 800) && (width != 2592)) ? IMGOFFSET : 0);
 		expar->totsize = totalsize;
 		expar->tsize   = transfer_size;
 
@@ -227,7 +231,10 @@ int minicam5_setregisters(qhy_exposure *expar)
 	}
 	else
 	{
-		retval = (retval == 1) ? minicam5_SetExposureTime(exptime) : 0;
+		if (exptime > 1000)
+		{
+			retval = (retval == 1) ? minicam5_SetExposureTime(exptime) : 0;
+		}
 	}
 	return (retval);
 }
@@ -892,7 +899,7 @@ int minicam5_setTec(int pwm, int fan)
 {
 	unsigned char REG[3];
 	REG[0] = 0x01;
-	if (camvariant == 1)
+	if (camvariant == 2)
 	{
 		REG[2] = 0xDF; 
 	}
@@ -914,7 +921,7 @@ int minicam5_setTec(int pwm, int fan)
 		REG[1]=(unsigned char)pwm;
 	}
 
-   	return (qhy_cameraiIO(qhy_core_getendp()->write, REG, sizeof(REG)));
+   	return (qhy_cameraiIO(qhy_core_getendp()->iwrite, REG, sizeof(REG)));
 }
 
 void minicam5_set_1280x960()

@@ -36,9 +36,10 @@
 #define APPICO "osi.png"
 #define ORZHND "handle_v.png"
 #define VRTHND "handle_o.png"
+#define CRSSICO "crosshair.png"
 #define APPNAM "OpenSkyImager"
 #define APPTIT "OpenSkyImager (c) 2013 JP & C AstroSoftware"
-#define APPVER "0.9.4"
+#define APPVER "0.9.5"
 
 #ifdef DECLARE_MAIN
 	char imgBasePath[PATH_MAX];
