@@ -203,7 +203,12 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - New: Improved minicam5 / QHY5-II series frame transfer (safer and/or quicker)
 - New: improved ATIK short exposure time control
 - New: Center image area crosscreen to help CCD guider sky align
-Minicam5 status: 
-- minicam5S cooling ok, short exposure ok, long exposure ko
-- minicam5f cooling ko, short exposure ok, long exposure ko, CFW control ok.
+- Minicam5 status: 
+	- minicam5S cooling ok, short exposure ok, long exposure ko
+	- minicam5f cooling ko, short exposure ok, long exposure ko, CFW control ok.
+
+*Version 0.9.6*
+- Fix: ATIK double shutter movement (383L+) with exposure time below 200ms
+- Compiled and tested also against version 1.6 of libatikccd. For the moment
+  being all three versions are compatibles (1.1, 1.4, 1.6).
 
