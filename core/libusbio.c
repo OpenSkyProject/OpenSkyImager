@@ -52,8 +52,8 @@ int find_camera(int vendorid, int productid)
 				}
 			}
 		}
+		libusb_free_device_list(list, 1);
 	}
-	libusb_free_device_list(list, 1);
 	return (retcode);
 }
 
@@ -107,8 +107,8 @@ int open_camera(int vendorid, int productid, libusb_device_handle **handle, char
 				found = NULL;
 			}
 		}
+		libusb_free_device_list(list, 1);
 	}
-	libusb_free_device_list(list, 1);
 	return retcode;
 }
 

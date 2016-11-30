@@ -287,12 +287,12 @@ void cmd_crss_build()
 	{
 		gtk_image_set_from_pixbuf(GTK_IMAGE(img_crss), crspixbuf);
 		gtk_button_set_image(GTK_BUTTON(cmd_crss), img_crss);
+		g_object_unref(crspixbuf);
 	}
 	else
 	{
 		gtk_button_set_label(GTK_BUTTON(cmd_crss), "C");	
 	}
-	g_object_unref(crspixbuf);
 	if (error != NULL)
 	{
 		g_error_free(error);

@@ -212,3 +212,8 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - Compiled and tested also against version 1.6 of libatikccd. For the moment
   being all three versions are compatibles (1.1, 1.4, 1.6).
 
+*Version 0.9.7*
+- Fix: Program segfault if libusb can't be init (thanks to Robby Grossman)
+- Fix: Program trying to unref a NULL object on certain circumstances (thanks to
+  Robby Grossman)
+

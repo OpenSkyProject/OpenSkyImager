@@ -3254,6 +3254,8 @@ void cmd_fovcalc_click(GtkWidget *widget, gpointer data)
 	sscanf(gtk_entry_get_text(GTK_ENTRY(txt_fovypix)), "%d", &iPy); 
 	iPy = (iPy < 0) ? 0 : iPy;	
 
+	//printf("Fl: %d, Px: %d, Py: %d, Psx: %f, Psy: %f \n", iFL, iPx, iPy, dPxsz, dPysz);
+
 	// If both basic and camra are present
 	if ((iFL > 0) && (iPx > 0)  && (iPy > 0) && (dPxsz > 0) && (dPysz > 0))
 	{
