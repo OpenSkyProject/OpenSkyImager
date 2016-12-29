@@ -217,3 +217,10 @@ already tested (http://sourceforge.net/projects/iastrohub/).
 - Fix: Program trying to unref a NULL object on certain circumstances (thanks to
   Robby Grossman)
 
+*Version 0.9.8*
+- New: Update to comply Atik SDK Ver. 1.13 (Thanks to Detlef Lange for testing 
+  shutter equipped camera). You may need to update gcc/g++ as version 4.8.1 is 
+  required minimum. Try follow hint from here: 
+  http://mortenvp.com/installing-a-newer-gccg-on-ubuntu-12-04-lts/
+  Previous versions of Atik SDK are now incompatible.
+  

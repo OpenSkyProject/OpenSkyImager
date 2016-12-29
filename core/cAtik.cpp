@@ -381,13 +381,14 @@ char *atik_camera_getBinList()
 {
 	return binList;
 }
+
 char *atik_camera_getCfwList()
 {
 	return cfwList;
 }
 
-int atik_camera_minExposure()
+int atik_camera_setDarkFrameMode(int useMode)
 {
-	return 200;
+	return selectedDevice->setDarkFrameMode((useMode != 0));
 }
 #endif //HAVE_ATIK

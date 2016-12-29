@@ -54,6 +54,9 @@ struct AtikCapabilities {
   COOLER_TYPE cooler;
   COLOUR_TYPE colour;
   int offsetX, offsetY;
+  bool supportsLongExposure;
+  double minShortExposure;
+  double maxShortExposure;
 };
 
 class AtikCamera {
@@ -63,7 +66,7 @@ class AtikCamera {
     virtual bool open() = 0;
     virtual void close() = 0;
     virtual bool setParam(PARAM_TYPE code, long value) = 0;
-    virtual bool getCapabilities(const char **name, CAMERA_TYPE *type, bool *hasShutter, bool* hasGuidePort, bool* has8BitMode, bool* hasFilterWheel, unsigned *lineCount, unsigned* pixelCountX, unsigned* pixelCountY, double* pixelSizeX, double* pixelSizeY, unsigned* maxBinX, unsigned* maxBinY, unsigned *tempSensorCount, COOLER_TYPE* cooler, COLOUR_TYPE* colour, int *offsetX, int *offsetY) = 0;
+    virtual bool getCapabilities(const char **name, CAMERA_TYPE *type, bool *hasShutter, bool* hasGuidePort, bool* has8BitMode, bool* hasFilterWheel, unsigned *lineCount, unsigned* pixelCountX, unsigned* pixelCountY, double* pixelSizeX, double* pixelSizeY, unsigned* maxBinX, unsigned* maxBinY, unsigned *tempSensorCount, COOLER_TYPE* cooler, COLOUR_TYPE* colour, int *offsetX, int *offsetY, bool *supportsLongExposure, double *minShortExposure, double *maxShortExposure) = 0;
     virtual bool getCapabilities(const char **name, CAMERA_TYPE *type, AtikCapabilities *capabilities) = 0;
     virtual bool getTemperatureSensorStatus(unsigned sensor, float *currentTemp) = 0;
     virtual bool getCoolingStatus(COOLING_STATE *state, float* targetTemp, float *power) = 0;
@@ -73,6 +76,7 @@ class AtikCamera {
     virtual bool setFilter(unsigned index) = 0;
     virtual bool setPreviewMode(bool useMode) = 0;
     virtual bool set8BitMode(bool useMode) = 0;
+    virtual bool setDarkFrameMode(bool useMode) = 0;
     virtual bool startExposure(bool amp) = 0;
     virtual bool abortExposure() = 0;
     virtual bool readCCD(unsigned startX, unsigned startY, unsigned sizeX, unsigned sizeY, unsigned binX, unsigned binY) = 0;
@@ -88,6 +92,10 @@ class AtikCamera {
     virtual unsigned delay(double delay) = 0;
     virtual unsigned imageWidth(unsigned width, unsigned binX) = 0;
     virtual unsigned imageHeight(unsigned height, unsigned binY) = 0;
+    virtual unsigned getSerialNumber() = 0;
+    virtual unsigned getVersionMajor() = 0;
+    virtual unsigned getVersionMinor() = 0;
+    virtual const char *getLastError() = 0;
     virtual ~AtikCamera() { };
 };
 

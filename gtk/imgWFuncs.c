@@ -1305,6 +1305,10 @@ gpointer thd_capture_run(gpointer thd_data)
 		// We also need to pause the tec thread
 		g_rw_lock_reader_lock(&thd_teclock);
 		thdshoot = imgcam_shoot();
+		// Just in case exptime was reset
+		fithdr[HDR_EXPTIME].dvalue = (double)(imgcam_get_shpar()->time/1000.);
+		fithdr[HDR_EXPOSURE].dvalue = (double)(imgcam_get_shpar()->time/1000.);
+		//		
 		g_rw_lock_reader_unlock(&thd_teclock);
 		expose = thdshoot;
 		readout = 0;

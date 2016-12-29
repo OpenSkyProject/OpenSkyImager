@@ -1085,24 +1085,36 @@ int imgcam_shoot()
 					shpar.height = (int)atik_camera_imageHeight(((isizeY == 0) ? atik_camera_getCapabilities()->pixelCountY : isizeY), (unsigned int)shpar.bin);
 					shpar.tsize = isizeX * isizeY * shpar.bytepix;
 					shpar.totsize = shpar.tsize;
+					//printf("shpar.time, minShortExposure %d,%d\n", shpar.time, (int)(atik_camera_getCapabilities()->minShortExposure*1000));
+					if (shpar.time < (int)(atik_camera_getCapabilities()->minShortExposure*1000))
+					{	
+						//Reset user choice if incompatible
+						shpar.time = (int)(atik_camera_getCapabilities()->minShortExposure*1000);
+					}
 					shpar.wtime = (int)(atik_camera_delay((double)(shpar.time/1000.0))/1000);
-					//printf("shpar.wtime %d,%d\n", shpar.wtime, shpar.time);
+					//printf("shpar.wtime, shpar.time %d,%d\n", shpar.wtime, shpar.time);
 					shpar.amp = ((shpar.time < 550) && (shpar.amp == 2)) ? 1 : shpar.amp; 
+					if (atik_camera_getCapabilities()->hasShutter)
+					{
+						// In light mode no fiddle with shutter (1.13 onward), but set darkMode appropriately
+						atik_camera_setDarkFrameMode(shpar.mode);
+					}
 
 					shpar.edit = 0;
 				}
 			
 				if(retval)
 				{
-					if (shpar.time > atik_camera_minExposure())
+					//printf("shpar.time, maxShortExposure %d,%d\n", shpar.time, (int)(atik_camera_getCapabilities()->maxShortExposure*1000));
+					if (shpar.time > (int)(atik_camera_getCapabilities()->maxShortExposure*1000))
 					{ 
-						if (atik_camera_getCapabilities()->hasShutter)
-						{
-							// In light mode
-							// Open shutter, otherwise ensure close
-							retval = (shpar.mode == 0) ? atik_camera_setShutter(1) : atik_camera_setShutter(0);
-						}
+						// Do the start exposure in computer timed mode
 						retval = (retval) ? (atik_camera_startExposure(shpar.amp)) : retval;
+					}
+					else
+					{
+						//Reset wait time to let program thread "sit on readout only
+						shpar.wtime = 1;
 					}
 				}
 			}
@@ -1211,32 +1223,17 @@ int imgcam_readout_ext(unsigned char *p)
 		//printf("GetImage: %dx%d %d\n", shpar.width, shpar.height, shpar.bin);
 		if (retval)
 		{
-			if (shpar.time > atik_camera_minExposure())
+			if (shpar.time > (int)(atik_camera_getCapabilities()->maxShortExposure*1000))
 			{
 				//printf("longExposure\n");
-				if ((retval) && (atik_camera_getCapabilities()->hasShutter) && (shpar.mode == 0))
-				{
-					// If in light mode shutter was open when starting exposure -> close
-					retval = atik_camera_setShutter(0);
-				}
+				// No fiddle with shutter (ver. 1.13 onward)
 				retval = atik_camera_readCCD(0, 0, (unsigned int)isizeX, (unsigned int)isizeY, (unsigned int)shpar.bin, (unsigned int)shpar.bin);
 			}
 			else
 			{
-				//if ((retval) && (atik_camera_getCapabilities()->hasShutter))
-				//{
-				//	// In light mode
-				//	// Open shutter, otherwise ensure close
-				//	retval = (shpar.mode == 0) ? atik_camera_setShutter(1) : atik_camera_setShutter(0);
-				//}
-				//retval = (retval) ? atik_camera_readCCD_delay(0, 0, (unsigned int)isizeX, (unsigned int)isizeY, (unsigned int)shpar.bin, (unsigned int)shpar.bin, (double)shpar.wtime/1000.) : retval;
-				//if ((retval) && (atik_camera_getCapabilities()->hasShutter) && (shpar.mode == 0))
-				//{
-				//	// If in light mode shutter was open when starting exposure -> close
-				//	retval = atik_camera_setShutter(0);
-				//}
-				// Light / Dark mode is ignored.
-				retval = atik_camera_readCCD_delay(0, 0, (unsigned int)isizeX, (unsigned int)isizeY, (unsigned int)shpar.bin, (unsigned int)shpar.bin, (double)shpar.wtime/1000.);
+				//printf("shortExposure\n");
+				// In short exposure mode we use exptime and not wait time as timing is camera based
+				retval = atik_camera_readCCD_delay(0, 0, (unsigned int)isizeX, (unsigned int)isizeY, (unsigned int)shpar.bin, (unsigned int)shpar.bin, (double)shpar.time/1000.);
 			}		
 		}
 		if (retval)

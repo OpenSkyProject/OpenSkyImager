@@ -51,6 +51,7 @@
 		extern "C" int atik_camera_setFilter(unsigned int index);
 		extern "C" int atik_camera_setPreviewMode(int useMode);
 		extern "C" int atik_camera_set8BitMode(int useMode);
+    	extern "C" int atik_camera_setDarkFrameMode(int useMode);
 		extern "C" int atik_camera_startExposure(int amp);
 		extern "C" int atik_camera_abortExposure();
 		extern "C" int atik_camera_readCCD(unsigned int startX, unsigned int startY, unsigned int sizeX, unsigned int sizeY, unsigned int binX, unsigned int binY);
@@ -70,7 +71,6 @@
 		extern "C" int atik_camera_getColorId();
 		extern "C" char *atik_camera_getBinList();
 		extern "C" char *atik_camera_getCfwList();
-		extern "C" int atik_camera_minExposure();
 	#else
 		// The following definitions are copied from original <atikccdusb.h>
 		// Inclusion of that file from within a c source is not possible
@@ -115,6 +115,9 @@
 		  COOLER_TYPE cooler;
 		  COLOUR_TYPE colour;
 		  int offsetX, offsetY;
+		  char supportsLongExposure;
+		  double minShortExposure;
+		  double maxShortExposure;
 		} AtikCapabilities;
 
 		int atik_list_create();
@@ -138,6 +141,7 @@
 		int atik_camera_setFilter(unsigned int index);
 		int atik_camera_setPreviewMode(int useMode);
 		int atik_camera_set8BitMode(int useMode);
+    	int atik_camera_setDarkFrameMode(int useMode);
 		int atik_camera_startExposure(int amp);
 		int atik_camera_abortExposure();
 		int atik_camera_readCCD(unsigned int startX, unsigned int startY, unsigned int sizeX, unsigned int sizeY, unsigned int binX, unsigned int binY);
@@ -157,7 +161,6 @@
 		int atik_camera_getColorId();
 		char *atik_camera_getBinList();
 		char *atik_camera_getCfwList();
-		int atik_camera_minExposure();
 	#endif
 #endif
 
